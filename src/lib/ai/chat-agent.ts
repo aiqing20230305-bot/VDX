@@ -1,0 +1,196 @@
+/**
+ * 超级视频Agent — 聊天代理
+ * 理解用户意图，主动引导，协调各模块完成视频生成
+ */
+import { streamText } from './claude'
+import type {
+  ChatMessage,
+  QuickAction,
+  ScriptGenerationInput,
+  SecondaryCreationInput,
+  GenerationMode,
+} from '@/types'
+
+const SYSTEM_PROMPT = `你是「超级视频Agent」，一个顶尖的AI视频制作助手。你的能力包括：
+
+🎬 核心能力：
+1. **脚本创意生成** — 根据选题/图片生成多个发散性脚本创意
+2. **分镜图制作** — 将脚本转为12格分镜图（15秒）或按时长动态分配
+3. **视频生成** — 调用 Seedance 2.0 或可灵AI生成一致性视频
+4. **视频分析与二创** — 分析输入视频所有元素，支持描述式改动后二创
+5. **全流程编排** — 支持「步骤审核」或「全自动」两种模式
+
+🧠 工作方式：
+- 我会主动了解你的需求，引导你一步步完成
+- 每个阶段我都会清晰说明下一步是什么
+- 你随时可以修改任何阶段的内容
+- 我会记住你的偏好，让每次创作更顺畅
+
+💡 我能主动发现：
+- 当前热门视频风格和选题趋势
+- 更好的创作路径和视觉表达方式
+- 基于你的创作历史推荐进化方向
+
+使用规则：
+- 回复简洁有力，避免废话
+- 关键决策用选项形式呈现（A/B/C）
+- 技术细节只在用户询问时展开
+- 始终保持创作激情和专业态度
+- 用中文回复`
+
+export interface AgentIntent {
+  type:
+    | 'generate_script'
+    | 'generate_storyboard'
+    | 'generate_video'
+    | 'analyze_video'
+    | 'secondary_creation'
+    | 'chat'
+    | 'clarify'
+    | 'select_script'
+    | 'select_engine'
+    | 'set_mode'
+  data?: Partial<ScriptGenerationInput & SecondaryCreationInput & {
+    scriptIndex: number
+    engine: string
+    mode: GenerationMode
+    videoPath: string
+  }>
+}
+
+export function buildWelcomeMessage(): ChatMessage {
+  return {
+    id: 'welcome',
+    role: 'assistant',
+    type: 'action',
+    content: `👋 我是**超级视频Agent**，你的AI视频制作伙伴。
+
+我可以帮你：
+- 🎯 **从选题到成片**：描述想法 → 脚本 → 分镜 → 视频
+- 🖼️ **图片生视频**：上传图片 → 自动创作
+- 🎬 **视频二创**：上传视频 → 分析 → 改造重生
+- 💬 **聊着聊着就出来了**：告诉我你想做什么
+
+你想从哪里开始？`,
+    metadata: {
+      actions: [
+        {
+          id: 'from_topic',
+          label: '📝 我有一个选题',
+          description: '描述你的想法，我来创作',
+          action: 'start_from_topic',
+          variant: 'primary',
+        },
+        {
+          id: 'from_image',
+          label: '🖼️ 我有几张图',
+          description: '上传图片，生成视频',
+          action: 'start_from_images',
+          variant: 'secondary',
+        },
+        {
+          id: 'from_video',
+          label: '🎬 我想二创视频',
+          description: '上传视频，分析改造',
+          action: 'start_from_video',
+          variant: 'secondary',
+        },
+        {
+          id: 'explore',
+          label: '✨ 帮我想个选题',
+          description: '让AI主动推荐',
+          action: 'suggest_topics',
+          variant: 'outline',
+        },
+      ] as QuickAction[],
+    },
+    createdAt: new Date(),
+  }
+}
+
+export function buildScriptSelectionActions(scriptCount: number): QuickAction[] {
+  return [
+    ...Array.from({ length: scriptCount }, (_, i) => ({
+      id: `select_script_${i}`,
+      label: `选方案 ${['A', 'B', 'C', 'D', 'E'][i] ?? String(i + 1)}`,
+      action: 'select_script',
+      params: { index: i },
+      variant: 'secondary' as const,
+    })),
+    {
+      id: 'regenerate',
+      label: '🔄 重新生成',
+      action: 'regenerate_scripts',
+      variant: 'outline',
+    },
+    {
+      id: 'mix',
+      label: '🔀 混合多个',
+      action: 'mix_scripts',
+      variant: 'outline',
+    },
+  ]
+}
+
+export function buildPostStoryboardActions(): QuickAction[] {
+  return [
+    {
+      id: 'gen_seedance',
+      label: '🚀 Seedance 2.0 生成',
+      description: '高质量，较慢',
+      action: 'generate_video',
+      params: { engine: 'seedance' },
+      variant: 'primary',
+    },
+    {
+      id: 'gen_kling',
+      label: '⚡ 可灵AI生成',
+      description: '快速，5-10秒片段',
+      action: 'generate_video',
+      params: { engine: 'kling' },
+      variant: 'secondary',
+    },
+    {
+      id: 'edit_storyboard',
+      label: '✏️ 修改分镜',
+      action: 'edit_storyboard',
+      variant: 'outline',
+    },
+  ]
+}
+
+export function buildModeSelectionActions(): QuickAction[] {
+  return [
+    {
+      id: 'auto_mode',
+      label: '⚡ 全自动完成',
+      description: '直接生成最终视频',
+      action: 'set_mode',
+      params: { mode: 'auto' },
+      variant: 'primary',
+    },
+    {
+      id: 'step_mode',
+      label: '🔍 步骤审核',
+      description: '每步我来确认',
+      action: 'set_mode',
+      params: { mode: 'step-by-step' },
+      variant: 'secondary',
+    },
+  ]
+}
+
+export async function* streamAgentResponse(
+  userMessage: string,
+  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>,
+  context?: string
+): AsyncGenerator<string> {
+  const contextNote = context ? `\n\n当前上下文：${context}` : ''
+
+  yield* streamText(
+    SYSTEM_PROMPT + contextNote,
+    userMessage,
+    conversationHistory,
+    { source: 'chat-agent' }
+  )
+}
