@@ -59,7 +59,7 @@ export const FrameSequence: React.FC<FrameSequenceProps> = ({
   // 使用 TransitionFactory 应用转场效果
   // frame.transition 支持字符串（'fade'/'none'）或对象配置
   return (
-    <TransitionFactory progress={progress} config={frame.transition}>
+    <TransitionFactory progress={progress} config={frame.transition as any}>
       {content}
     </TransitionFactory>
   )
