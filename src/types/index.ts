@@ -90,6 +90,7 @@ export interface Storyboard {
   totalFrames: number     // 总帧数 (15s=12帧，每5s增加4帧)
   frames: StoryboardFrame[]
   coverPrompt?: string
+  subtitles?: SubtitleTrack[]  // 字幕轨道 ⭐ v1.3.0 新增
   createdAt: Date
 }
 
@@ -145,6 +146,45 @@ export interface VideoAnalysis {
   moodBoard: string[]
   suggestedEdits: string[]
   createdAt: Date
+}
+
+// ─── Subtitle / 字幕系统 ⭐ v1.3.0 新增 ───────────────────────
+export type SubtitlePosition = 'top' | 'middle' | 'bottom'
+export type SubtitleAlign = 'left' | 'center' | 'right'
+
+export interface SubtitleStyle {
+  fontSize?: number          // 字体大小（默认 24）
+  fontFamily?: string        // 字体（默认 sans-serif）
+  color?: string             // 文字颜色（默认 #FFFFFF）
+  backgroundColor?: string   // 背景颜色（可选，默认半透明黑色）
+  stroke?: {
+    color: string            // 描边颜色
+    width: number            // 描边宽度（像素）
+  }
+  padding?: number           // 内边距（默认 16）
+  lineHeight?: number        // 行高（默认 1.5）
+  textAlign?: SubtitleAlign  // 对齐方式（默认 center）
+  shadow?: {
+    offsetX: number
+    offsetY: number
+    blur: number
+    color: string
+  }
+}
+
+export interface SubtitleEntry {
+  startTime: number          // 开始时间（秒）
+  endTime: number            // 结束时间（秒）
+  text: string               // 字幕文本
+  position?: SubtitlePosition // 位置（默认 bottom）
+  style?: Partial<SubtitleStyle> // 样式覆盖
+}
+
+export interface SubtitleTrack {
+  id: string
+  entries: SubtitleEntry[]
+  defaultStyle?: SubtitleStyle // 默认样式
+  enabled?: boolean            // 是否启用（默认 true）
 }
 
 // ─── Secondary Creation / 二创 ──────────────────────────────
