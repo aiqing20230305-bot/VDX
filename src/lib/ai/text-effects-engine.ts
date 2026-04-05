@@ -76,18 +76,20 @@ export async function addTextEffects(
         "startTime": 0,
         "endTime": 2,
         "text": "超级视频 v1.3",
-        "position": "center",
-        "animation": {
-          "type": "zoomIn",
-          "duration": 30,
-          "easing": "ease-out",
-          "exitAnimation": true
-        }
+        "position": "center"
       }
     ]
   },
   "summary": "添加了标题动画"
 }
+
+标题配置说明：
+- startTime/endTime: 必需，标题显示的时间范围（秒）
+- text: 必需，标题文本
+- position: 可选，位置 "top"|"center"|"bottom"，默认 "center"
+- animation: 可选，动画配置（如果不确定就不要添加）
+
+重要：如果用户没有明确要求动画效果，就不要添加 animation 字段！
 
 ## 弹幕配置示例 (type: "bullets"):
 {
@@ -125,13 +127,27 @@ export async function addTextEffects(
       []
     )
 
-    // 解析 JSON 响应
-    const jsonMatch = response.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      throw new Error('无法解析 AI 响应')
+    console.log('[TextEffects] AI 响应:', response)
+
+    // 解析 JSON 响应 - 支持多种格式
+    let jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/)
+    if (jsonMatch) {
+      // 匹配 ```json ... ``` 格式
+      console.log('[TextEffects] 使用 JSON 代码块格式')
+    } else {
+      // 匹配普通 JSON 对象
+      jsonMatch = response.match(/\{[\s\S]*\}/)
     }
 
-    const result = JSON.parse(jsonMatch[0])
+    if (!jsonMatch) {
+      console.error('[TextEffects] 无法从响应中提取 JSON')
+      throw new Error('无法解析 AI 响应，请尝试更具体的描述')
+    }
+
+    const jsonStr = jsonMatch[1] || jsonMatch[0]
+    console.log('[TextEffects] 提取的 JSON:', jsonStr)
+
+    const result = JSON.parse(jsonStr)
 
     // 根据类型添加到 storyboard
     const updatedStoryboard = { ...storyboard }
@@ -174,6 +190,13 @@ export async function addTextEffects(
     }
   } catch (err) {
     console.error('[TextEffectsEngine] 处理失败:', err)
-    throw new Error('文字效果配置失败，请尝试更具体的描述')
+
+    // 提供更详细的错误信息
+    if (err instanceof SyntaxError) {
+      throw new Error('AI 响应格式错误，请尝试更简单的描述，例如："在视频开头显示标题：超级视频"')
+    }
+
+    const errorMsg = err instanceof Error ? err.message : String(err)
+    throw new Error(`文字效果配置失败：${errorMsg}`)
   }
 }
