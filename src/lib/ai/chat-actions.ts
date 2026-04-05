@@ -104,6 +104,13 @@ export function buildPostStoryboardActions(): QuickAction[] {
       variant: 'secondary',
     },
     {
+      id: 'add_text_effects',
+      label: '📝 添加文字效果',
+      description: '字幕、标题、弹幕',
+      action: 'add_text_effects',
+      variant: 'secondary',
+    },
+    {
       id: 'edit_storyboard',
       label: '✏️ 修改分镜',
       action: 'edit_storyboard',

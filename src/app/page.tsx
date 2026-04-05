@@ -470,6 +470,70 @@ export default function HomePage() {
           break
         }
 
+        case 'add_text_effects': {
+          const sb = storyboardRef.current
+          if (!sb) return
+
+          addMessage({
+            role: 'user',
+            content: '添加文字效果',
+          })
+
+          addMessage({
+            role: 'assistant',
+            type: 'action',
+            content: '选择要添加的文字效果类型：',
+            metadata: {
+              actions: [
+                {
+                  id: 'add_subtitles',
+                  label: '📝 添加字幕',
+                  description: '时间轴同步字幕',
+                  action: 'add_subtitles',
+                  variant: 'primary',
+                },
+                {
+                  id: 'add_titles',
+                  label: '🎬 添加标题动画',
+                  description: '6 种动画效果',
+                  action: 'add_titles',
+                  variant: 'primary',
+                },
+                {
+                  id: 'add_bullets',
+                  label: '💬 添加弹幕',
+                  description: '右向左滚动弹幕',
+                  action: 'add_bullets',
+                  variant: 'secondary',
+                },
+              ],
+            },
+          })
+          break
+        }
+
+        case 'add_subtitles':
+        case 'add_titles':
+        case 'add_bullets': {
+          const effectType = action === 'add_subtitles' ? 'subtitles' : action === 'add_titles' ? 'titles' : 'bullets'
+          const effectName = action === 'add_subtitles' ? '字幕' : action === 'add_titles' ? '标题动画' : '弹幕'
+
+          addMessage({
+            role: 'user',
+            content: `添加${effectName}`,
+          })
+
+          addMessage({
+            role: 'assistant',
+            content: `请描述你想要的${effectName}内容。例如：\n${
+              effectType === 'subtitles' ? '- "在视频开始时显示：欢迎来到超级视频"\n- "第3秒到第5秒显示：这是一个测试"' :
+              effectType === 'titles' ? '- "在视频开头添加标题：超级视频 v1.3，使用缩放进入效果"\n- "5秒后显示：精彩内容即将呈现"' :
+              '- "添加弹幕：666、太酷了、awesome"\n- "在第2秒出现：这个效果真棒"'
+            }`,
+          })
+          break
+        }
+
         case 'pick_ratio': {
           // Step 1 完成，进入 Step 2: 选时长
           const topic1 = params?.topic as string
