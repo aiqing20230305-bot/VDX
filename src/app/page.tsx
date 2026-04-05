@@ -1463,24 +1463,29 @@ function simulateVideoProgress(
       progress = 100
       clearInterval(interval)
 
+      // ⚠️ 注意：这只是进度条模拟，不代表真实视频已生成
+      // 真实场景下需要等待服务端返回真实的视频URL
       updateMessage(msgId, {
         metadata: {
           videoJob: {
             ...job,
-            status: 'completed',
+            status: 'running', // 保持 running 状态
             progress: 100,
-            outputUrl: '/outputs/demo.mp4',
+            // ❌ 不设置 outputUrl，因为视频还没真正生成
             logs: [
               ...job.logs,
               {
                 timestamp: new Date(),
                 level: 'info' as const,
-                message: `视频生成完成，共 ${totalFrames} 帧`,
+                message: `分镜处理完成（${totalFrames} 帧），正在合成视频...`,
               },
             ],
           },
         },
       })
+
+      // TODO: 这里应该调用真实的视频生成API，等待完成后再更新为 completed 状态
+      // 暂时不显示下载按钮，避免误导用户
       return
     }
 

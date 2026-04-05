@@ -373,3 +373,65 @@ export interface EvolutionInsight {
   source: string
   createdAt: Date
 }
+
+// ─── Multi-Model Routing / 多模型路由 ⭐ v1.5.0 新增 ──────────
+export type ModelType = 'seedance' | 'kling'
+export type SceneComplexity = 'simple' | 'medium' | 'complex'
+export type MotionIntensity = 'static' | 'slow' | 'medium' | 'fast' | 'dynamic'
+
+export interface ModelCapabilities {
+  model: ModelType
+  strengths: string[]        // 擅长领域
+  weaknesses: string[]       // 不擅长领域
+  bestForStyles: VideoStyle[] // 最适合的风格
+  maxDuration: number        // 最大时长（秒）
+  costPerSecond: number      // 成本（相对值）
+  qualityScore: number       // 质量分数（0-10）
+  speedScore: number         // 速度分数（0-10）
+  consistencyScore: number   // 一致性分数（0-10）
+}
+
+export interface StyleAnalysisResult {
+  frameIndex: number
+  style: VideoStyle
+  complexity: SceneComplexity
+  motionIntensity: MotionIntensity
+  hasCharacters: boolean     // 是否有人物
+  hasText: boolean           // 是否有文字
+  hasFastAction: boolean     // 是否有快速动作
+  hasComplexCamera: boolean  // 是否有复杂镜头运动
+  keywords: string[]         // 关键特征词
+  recommendedModel: ModelType
+  confidence: number         // 0-1，推荐置信度
+}
+
+export interface ModelRoutingDecision {
+  frameIndex: number
+  selectedModel: ModelType
+  reason: string             // 选择原因
+  alternativeModel?: ModelType
+  confidence: number         // 0-1
+  estimatedQuality: number   // 0-10 预估质量
+  estimatedCost: number      // 相对成本
+}
+
+export interface ModelRoutingStrategy {
+  prioritize: 'quality' | 'speed' | 'cost' | 'balanced'
+  forceModel?: ModelType     // 强制使用某个模型
+  allowMixedModels: boolean  // 是否允许混合使用模型
+  qualityThreshold: number   // 质量阈值（0-10）
+  budgetLimit?: number       // 预算上限
+}
+
+export interface ModelRoutingResult {
+  storyboardId: string
+  strategy: ModelRoutingStrategy
+  decisions: ModelRoutingDecision[]
+  summary: {
+    seedanceCount: number
+    klingCount: number
+    estimatedTotalCost: number
+    estimatedAverageQuality: number
+  }
+  createdAt: Date
+}
