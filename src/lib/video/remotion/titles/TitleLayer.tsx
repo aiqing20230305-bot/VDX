@@ -5,7 +5,7 @@
 import React from 'react'
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion'
 import { Title } from './Title'
-import type { TitleTrack } from '@/types'
+import type { TitleTrack, TitleAnimationConfig } from '@/types'
 
 export interface TitleLayerProps {
   tracks: TitleTrack[]
@@ -41,7 +41,13 @@ export const TitleLayer: React.FC<TitleLayerProps> = ({ tracks }) => {
     >
       {visibleTitles.map(({ trackId, entry, defaultStyle, defaultAnimation }) => {
         // 合并默认动画配置
-        const finalAnimation = {
+        const finalAnimation: TitleAnimationConfig = {
+          type: 'fadeIn',
+          duration: 30,
+          delay: 0,
+          easing: 'ease-out',
+          exitAnimation: false,
+          exitDuration: 20,
           ...defaultAnimation,
           ...entry.animation,
         }
