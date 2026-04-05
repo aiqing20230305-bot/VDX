@@ -1,8 +1,8 @@
 ---
 name: 06-video-assemble
-version: 1.2.0
+version: 1.3.0
 description: |
-  视频生成 Pipeline 编排。支持 Seedance/Kling 逐帧生成 + FFmpeg 拼接，或 Remotion 程序化渲染（含 5 种转场）。
+  视频生成 Pipeline 编排。支持 Seedance/Kling 逐帧生成 + FFmpeg 拼接，或 Remotion 程序化渲染（含转场/字幕/标题/弹幕）。
   触发场景：用户确认分镜后选择引擎开始生成、需要完整视频输出。
 allowed-tools:
   - Bash
@@ -222,6 +222,55 @@ storyboard.titles = titles
 - `TitleLayer`: 标题层（多轨道管理）
 - `animations`: 动画效果库
 
+### 弹幕系统（v1.3）
+
+**功能特性：**
+- ✅ 右向左滚动动画
+- ✅ 轨道碰撞避让算法（自动分配轨道）
+- ✅ 手动轨道指定（固定位置）
+- ✅ 速度可配置（像素/秒）
+- ✅ 完全可配置样式（字体/颜色/描边/阴影/背景）
+- ✅ 多轨道支持
+- ✅ GPU 加速（transform 优化）
+
+**使用示例：**
+```typescript
+const bullets: BulletTrack[] = [
+  {
+    id: 'main',
+    entries: [
+      {
+        id: 'b1',
+        time: 1,              // 出现时间（秒）
+        text: '弹幕内容',
+        speed: 200,           // 滚动速度（像素/秒，默认 200）
+        lane: 0,              // 可选：手动指定轨道
+        style: {              // 可选：样式覆盖
+          fontSize: 32,
+          color: '#FF0000',
+        },
+      },
+    ],
+    laneHeight: 40,           // 轨道高度（像素）
+    maxLanes: 10,             // 最大轨道数
+    defaultSpeed: 200,        // 默认速度
+  },
+]
+
+// 在 Storyboard 中使用
+storyboard.bullets = bullets
+```
+
+**核心组件：**
+- `Bullet`: 单条弹幕组件
+- `BulletLayer`: 弹幕层（多轨道管理 + 碰撞避让）
+
+**碰撞避让算法：**
+- 动态检测每个轨道的空闲时间
+- 如果弹幕指定了 `lane`，直接使用
+- 否则查找第一个有足够空间的轨道
+- 所有轨道满时随机分配
+
 ## 迭代记录
 
 - v1.0.0: Seedance + Kling 双引擎编排 + FFmpeg 拼接
@@ -238,10 +287,11 @@ storyboard.titles = titles
   - ✅ GPU 加速（transform/opacity）
   - ✅ 转场系统集成到 FrameSequence
   - ✅ 完整测试覆盖（单元测试 + 集成测试）
-- v1.3.0 (2026-04-05): Remotion 文字系统（Phase 3 部分完成） ⭐
+- v1.3.0 (2026-04-05): Remotion 文字系统（Phase 3 完成） ⭐
   - ✅ 字幕系统（时间轴同步/多轨道/SRT 格式）
   - ✅ 标题动画（6 种动画类型/进入退出/打字机）
+  - ✅ 弹幕系统（右向左滚动/碰撞避让/多轨道）
   - ✅ 完全可配置样式（字体/颜色/描边/阴影）
-  - ✅ GPU 优化（willChange / pointerEvents）
-  - ✅ 完整测试覆盖（字幕 3 测试 + 标题 4 测试）
-- 待迭代: 弹幕效果、音频同步、前端 UI 集成
+  - ✅ GPU 优化（willChange / pointerEvents / transform）
+  - ✅ 完整测试覆盖（字幕 3 + 标题 4 + 弹幕 4 = 11 测试）
+- 待迭代: 音频同步、前端 UI 集成
