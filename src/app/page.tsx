@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChatMessage } from '@/components/chat/ChatMessage'
 import { ChatInput } from '@/components/chat/ChatInput'
 import { RemotionPreview } from '@/components/video/RemotionPreview'
+import { HistorySidebar } from '@/components/history/HistorySidebar'
+import { Clock } from 'lucide-react'
 import {
   buildWelcomeMessage,
   buildScriptSelectionActions,
@@ -29,6 +31,7 @@ export default function HomePage() {
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null)
   const [mode, setMode] = useState<GenerationMode>('step-by-step')
   const [showPreview, setShowPreview] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
   /** 上下文状态：记录当前等待的回答类型 */
   const [contextState, setContextState] = useState<{
     type: 'waiting_image_confirmation' | 'waiting_style' | 'waiting_duration' | 'waiting_text_effects' | null
@@ -1441,6 +1444,15 @@ ${parts.join('\n\n')}
 
         {/* 状态指示器 */}
         <div className="ml-auto flex items-center gap-3">
+          {/* 历史记录按钮 */}
+          <button
+            onClick={() => setShowHistory(true)}
+            className="glass px-3 py-1.5 rounded-full flex items-center gap-2 hover:bg-white/5 transition-all group"
+          >
+            <Clock size={14} className="text-purple-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-medium text-zinc-300">历史</span>
+          </button>
+
           <div className="glass px-3 py-1.5 rounded-full flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
@@ -1519,6 +1531,34 @@ ${parts.join('\n\n')}
           }}
         />
       )}
+
+      {/* History Sidebar */}
+      <HistorySidebar
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        onLoadRecord={(record) => {
+          // 根据记录类型恢复状态
+          if (record.type === 'storyboard' && record.metadata.frames) {
+            const sb: Storyboard = {
+              id: record.id,
+              scriptId: record.metadata.scriptId,
+              totalFrames: record.metadata.totalFrames,
+              frames: record.metadata.frames,
+              createdAt: new Date(record.createdAt),
+            }
+            setStoryboard(sb)
+            addMessage({
+              role: 'assistant',
+              content: `📂 已加载历史分镜：${record.title}`,
+              type: 'storyboard',
+              metadata: {
+                storyboard: sb,
+                aspectRatio: '9:16' as const,
+              },
+            })
+          }
+        }}
+      />
     </div>
   )
 }
