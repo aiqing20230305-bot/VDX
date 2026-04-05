@@ -1,8 +1,8 @@
 ---
 name: 06-video-assemble
-version: 1.1.0
+version: 1.2.0
 description: |
-  视频生成 Pipeline 编排。支持 Seedance/Kling 逐帧生成 + FFmpeg 拼接，或 Remotion 程序化渲染。
+  视频生成 Pipeline 编排。支持 Seedance/Kling 逐帧生成 + FFmpeg 拼接，或 Remotion 程序化渲染（含 5 种转场）。
   触发场景：用户确认分镜后选择引擎开始生成、需要完整视频输出。
 allowed-tools:
   - Bash
@@ -30,7 +30,8 @@ allowed-tools:
 ### Remotion 优势
 
 - ✅ **React 组件化**：用 JSX 描述视频
-- ✅ **淡入淡出转场**：0.5秒交叉淡化
+- ✅ **5 种转场效果**：fade / slide / zoom / rotate / wipe
+- ✅ **7 种缓动函数**：linear / ease-in / ease-out / ease-in-out / cubic 变体
 - ✅ **帧级精确控制**：interpolate() 实现任意动画
 - ✅ **实时预览**：浏览器中预览效果
 - ✅ **类型安全**：TypeScript 全程检查
@@ -96,15 +97,61 @@ const outputUrl = await runVideoPipeline({
 
 - 渲染引擎: `src/lib/video/remotion-pipeline.ts`
 - React 组件: `src/lib/video/remotion/compositions/`
+- 转场系统: `src/lib/video/remotion/transitions/`
 - API 端点: `src/app/api/video/remotion-render/route.ts`
 - 配置文件: `remotion.config.ts`
+
+### 转场系统（v1.2）
+
+**5 种转场类型：**
+
+| 类型 | 说明 | 配置示例 |
+|------|------|----------|
+| **fade** | 淡入淡出（透明度） | `{ type: 'fade', duration: 15, easing: 'ease-in-out' }` |
+| **slide** | 滑动进入（位移） | `{ type: 'slide', direction: 'left', easing: 'ease-out' }` |
+| **zoom** | 缩放进入（scale） | `{ type: 'zoom', zoomType: 'in', scale: 1.5 }` |
+| **rotate** | 旋转进入（3D） | `{ type: 'rotate', axis: 'y', angle: 90 }` |
+| **wipe** | 擦除效果（clip-path） | `{ type: 'wipe', direction: 'circle' }` |
+
+**7 种缓动函数：**
+- `linear`：匀速
+- `ease-in`：加速
+- `ease-out`：减速
+- `ease-in-out`：先加速后减速
+- `ease-in-cubic`：三次方加速
+- `ease-out-cubic`：三次方减速
+- `ease-in-out-cubic`：三次方先加速后减速
+
+**向后兼容**：
+```typescript
+// 字符串格式（向后兼容）
+transition: 'fade'
+
+// 对象格式（完整配置）
+transition: {
+  type: 'fade',
+  config: { duration: 15, easing: 'ease-in-out' }
+}
+```
+
+**工厂模式**：
+- `TransitionFactory` 根据配置动态选择转场组件
+- 未知类型自动降级到无转场
+- GPU 加速：所有转场使用 `transform`/`opacity` 不触发 layout
 
 ## 迭代记录
 
 - v1.0.0: Seedance + Kling 双引擎编排 + FFmpeg 拼接
-- v1.1.0 (2026-04-05): Remotion 程序化渲染集成 ⭐
+- v1.1.0 (2026-04-05): Remotion 程序化渲染集成（Phase 1） ⭐
   - ✅ React 组件描述视频
   - ✅ 淡入淡出转场效果
   - ✅ 帧级精确控制
   - ✅ 与 FFmpeg 方案并存
-- 待迭代: 更多转场效果（缩放、滑动、旋转）、字幕系统、音频同步
+- v1.2.0 (2026-04-05): Remotion 转场系统（Phase 2） ⭐
+  - ✅ 5 种转场类型（fade / slide / zoom / rotate / wipe）
+  - ✅ 7 种缓动函数（linear / ease-in/out / cubic 变体）
+  - ✅ 工厂模式动态选择
+  - ✅ 向后兼容字符串配置
+  - ✅ GPU 加速（transform/opacity）
+  - ✅ 测试覆盖（平均渲染 9 秒/6 秒视频）
+- 待迭代: 集成转场到 FrameSequence、字幕系统、音频同步、更多文字动画

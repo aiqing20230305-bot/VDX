@@ -73,7 +73,10 @@ export interface StoryboardFrame {
   duration: number        // 该帧时长 (秒)
   description: string     // 画面描述
   cameraAngle: string     // 镜头角度
-  transition?: string     // 转场方式
+  transition?: string | { // 转场方式⭐ v1.3.0 扩展：支持字符串或配置对象
+    type: 'none' | 'fade' | 'slide' | 'zoom' | 'rotate' | 'wipe'
+    config?: Record<string, any>  // 转场配置
+  }
   titleAnimation?: {      // 文字动画（可选）⭐ v1.2.0 新增
     type: 'fluid' | 'particle' | 'ascii'
     text: string
