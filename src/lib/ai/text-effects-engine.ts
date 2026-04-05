@@ -123,8 +123,7 @@ export async function addTextEffects(
   try {
     const response = await generateText(
       systemPrompt,
-      `用户请求：${userRequest}`,
-      []
+      `用户请求：${userRequest}`
     )
 
     console.log('[TextEffects] AI 响应:', response)
