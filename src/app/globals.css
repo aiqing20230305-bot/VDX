@@ -1,8 +1,8 @@
-@import "tailwindcss";
-
-/* 字体加载 - Satoshi + DM Sans */
+/* 字体加载 - Satoshi + DM Sans（必须在 @import "tailwindcss" 之前） */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
 
 /* ============================================================
    超级视频Agent - 创意活力设计系统 v1.6.0
