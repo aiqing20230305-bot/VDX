@@ -147,11 +147,12 @@ transition: {
   - ✅ 淡入淡出转场效果
   - ✅ 帧级精确控制
   - ✅ 与 FFmpeg 方案并存
-- v1.2.0 (2026-04-05): Remotion 转场系统（Phase 2） ⭐
+- v1.2.0 (2026-04-05): Remotion 转场系统（Phase 2 完成） ⭐
   - ✅ 5 种转场类型（fade / slide / zoom / rotate / wipe）
   - ✅ 7 种缓动函数（linear / ease-in/out / cubic 变体）
   - ✅ 工厂模式动态选择
   - ✅ 向后兼容字符串配置
   - ✅ GPU 加速（transform/opacity）
-  - ✅ 测试覆盖（平均渲染 9 秒/6 秒视频）
-- 待迭代: 集成转场到 FrameSequence、字幕系统、音频同步、更多文字动画
+  - ✅ 转场系统集成到 FrameSequence
+  - ✅ 完整测试覆盖（单元测试 + 集成测试）
+- 待迭代: 字幕系统、音频同步、更多文字动画、前端 UI 集成
