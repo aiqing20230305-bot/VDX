@@ -1226,44 +1226,60 @@ ${parts.join('\n\n')}
   )
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100">
-      {/* Header */}
-      <header className="flex-shrink-0 px-4 py-3 border-b border-zinc-800 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
-          ✦
+    <div className="flex flex-col h-screen bg-[#0a0a0f] text-[#f5f5f7] relative overflow-hidden">
+      {/* 背景网格效果 */}
+      <div className="absolute inset-0 bg-grid opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+
+      {/* Header - 玻璃态设计 */}
+      <header className="relative flex-shrink-0 px-6 py-4 glass border-b border-white/10 flex items-center gap-4 z-10">
+        {/* Logo */}
+        <div className="relative group">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-neon animate-neon-pulse">
+            ✦
+          </div>
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 opacity-0 group-hover:opacity-50 blur-xl transition-opacity" />
         </div>
-        <div>
-          <h1 className="text-sm font-semibold text-zinc-100">超级视频Agent</h1>
-          <p className="text-xs text-zinc-500">AI视频生产力OS</p>
+
+        {/* 品牌信息 */}
+        <div className="flex flex-col">
+          <h1 className="text-base font-bold text-gradient">超级视频Agent</h1>
+          <p className="text-xs text-zinc-400">AI视频生产力OS</p>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <div className="flex items-center gap-2">
+
+        {/* 状态指示器 */}
+        <div className="ml-auto flex items-center gap-3">
+          <div className="glass px-3 py-1.5 rounded-full flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
-                isLoading ? 'bg-violet-400 animate-pulse' : 'bg-green-500'
+                isLoading
+                  ? 'bg-purple-400 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]'
+                  : 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]'
               }`}
             />
-            <span className="text-xs text-zinc-500">{isLoading ? '生成中…' : '就绪'}</span>
+            <span className="text-xs font-medium text-zinc-300">
+              {isLoading ? '生成中…' : '就绪'}
+            </span>
           </div>
         </div>
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+      <div className="relative flex-1 overflow-y-auto px-6 py-8 space-y-6">
         {messages.map(msg => (
           <ChatMessage key={msg.id} message={msg} onAction={handleAction} />
         ))}
 
         {isLoading && messages[messages.length - 1]?.role === 'user' && (
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+          <div className="flex gap-4 animate-fade-in">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-neon">
               ✦
             </div>
-            <div className="bg-zinc-800 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1 items-center">
+            <div className="glass rounded-2xl rounded-tl-sm px-5 py-3 flex gap-1.5 items-center border border-white/10">
               {[0, 1, 2].map(i => (
                 <div
                   key={i}
-                  className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce"
+                  className="w-2 h-2 bg-gradient-to-r from-purple-400 to-cyan-400 rounded-full animate-bounce"
                   style={{ animationDelay: `${i * 0.15}s` }}
                 />
               ))}

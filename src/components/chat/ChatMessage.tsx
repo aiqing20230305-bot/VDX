@@ -22,28 +22,31 @@ export function ChatMessage({ message, onAction }: Props) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className={cn('flex gap-3', isAssistant ? 'flex-row' : 'flex-row-reverse')}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className={cn('flex gap-4', isAssistant ? 'flex-row' : 'flex-row-reverse')}
     >
       {/* Avatar */}
       <div className={cn(
-        'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold',
+        'relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold group',
         isAssistant
-          ? 'bg-gradient-to-br from-violet-500 to-blue-600 text-white'
-          : 'bg-zinc-700 text-zinc-200'
+          ? 'bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 text-white shadow-neon'
+          : 'glass border border-white/10 text-zinc-200'
       )}>
-        {isAssistant ? '✦' : 'U'}
+        {isAssistant && (
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 opacity-0 group-hover:opacity-50 blur-xl transition-opacity" />
+        )}
+        <span className="relative z-10">{isAssistant ? '✦' : 'U'}</span>
       </div>
 
       {/* Content */}
-      <div className={cn('flex flex-col gap-2 max-w-[85%]', isAssistant ? 'items-start' : 'items-end')}>
-        {/* Text bubble */}
+      <div className={cn('flex flex-col gap-3 max-w-[85%]', isAssistant ? 'items-start' : 'items-end')}>
+        {/* Text bubble - 玻璃态设计 */}
         {message.content && (
           <div className={cn(
-            'px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap',
+            'px-5 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap transition-all',
             isAssistant
-              ? 'bg-zinc-800 text-zinc-100 rounded-tl-sm'
-              : 'bg-violet-600 text-white rounded-tr-sm'
+              ? 'glass border border-white/10 text-zinc-100 rounded-tl-sm hover:border-purple-500/30'
+              : 'bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-tr-sm shadow-[0_4px_20px_rgba(168,85,247,0.3)]'
           )}>
             <MarkdownText text={message.content} />
           </div>
