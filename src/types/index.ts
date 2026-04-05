@@ -91,6 +91,7 @@ export interface Storyboard {
   frames: StoryboardFrame[]
   coverPrompt?: string
   subtitles?: SubtitleTrack[]  // 字幕轨道 ⭐ v1.3.0 新增
+  titles?: TitleTrack[]        // 标题轨道 ⭐ v1.3.0 新增
   createdAt: Date
 }
 
@@ -185,6 +186,68 @@ export interface SubtitleTrack {
   entries: SubtitleEntry[]
   defaultStyle?: SubtitleStyle // 默认样式
   enabled?: boolean            // 是否启用（默认 true）
+}
+
+// ─── Title Animation / 标题动画 ⭐ v1.3.0 新增 ──────────────
+export type TitleAnimationType =
+  | 'slideIn'     // 滑动进入
+  | 'fadeIn'      // 淡入
+  | 'zoomIn'      // 缩放进入
+  | 'bounceIn'    // 弹跳进入
+  | 'rotateIn'    // 旋转进入
+  | 'typewriter'  // 打字机效果
+  | 'none'        // 无动画
+
+export type TitleAnimationDirection = 'left' | 'right' | 'top' | 'bottom'
+export type TitlePosition = 'top' | 'center' | 'bottom'
+export type TitleAlign = 'left' | 'center' | 'right'
+
+export interface TitleStyle {
+  fontSize?: number          // 字体大小（默认 48）
+  fontFamily?: string        // 字体（默认 sans-serif）
+  fontWeight?: string | number // 字重（默认 bold）
+  color?: string             // 文字颜色（默认 #FFFFFF）
+  backgroundColor?: string   // 背景颜色（可选）
+  stroke?: {
+    color: string            // 描边颜色
+    width: number            // 描边宽度
+  }
+  shadow?: {
+    offsetX: number
+    offsetY: number
+    blur: number
+    color: string
+  }
+  padding?: number           // 内边距（默认 24）
+  textAlign?: TitleAlign     // 对齐方式（默认 center）
+  letterSpacing?: number     // 字间距（默认 0）
+}
+
+export interface TitleAnimationConfig {
+  type: TitleAnimationType
+  direction?: TitleAnimationDirection // 方向（适用于 slideIn）
+  duration?: number          // 动画时长（帧数，默认 30）
+  delay?: number             // 延迟（帧数，默认 0）
+  easing?: string            // 缓动函数（默认 ease-out）
+  exitAnimation?: boolean    // 是否有退出动画（默认 false）
+  exitDuration?: number      // 退出动画时长（帧数，默认 20）
+}
+
+export interface TitleEntry {
+  startTime: number          // 开始时间（秒）
+  endTime: number            // 结束时间（秒）
+  text: string               // 标题文本
+  position?: TitlePosition   // 位置（默认 center）
+  style?: Partial<TitleStyle> // 样式
+  animation?: TitleAnimationConfig // 动画配置
+}
+
+export interface TitleTrack {
+  id: string
+  entries: TitleEntry[]
+  defaultStyle?: TitleStyle  // 默认样式
+  defaultAnimation?: TitleAnimationConfig // 默认动画
+  enabled?: boolean          // 是否启用（默认 true）
 }
 
 // ─── Secondary Creation / 二创 ──────────────────────────────
