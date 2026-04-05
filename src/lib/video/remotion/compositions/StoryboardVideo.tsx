@@ -1,12 +1,13 @@
 /**
  * Remotion 分镜视频主合成组件
- * 将多个分镜帧组合成完整视频，支持转场、字幕和标题
+ * 将多个分镜帧组合成完整视频，支持转场、字幕、标题和弹幕
  */
 import React from 'react'
 import { AbsoluteFill, Sequence } from 'remotion'
 import { FrameSequence } from './FrameSequence'
 import { SubtitleLayer } from '../subtitles'
 import { TitleLayer } from '../titles'
+import { BulletLayer } from '../bullets'
 import { framesToSequences } from '../utils'
 import type { Storyboard } from '@/types'
 
@@ -45,6 +46,11 @@ export const StoryboardVideo: React.FC<StoryboardVideoProps> = ({
       {/* 标题层 */}
       {storyboard.titles && storyboard.titles.length > 0 && (
         <TitleLayer tracks={storyboard.titles} />
+      )}
+
+      {/* 弹幕层 */}
+      {storyboard.bullets && storyboard.bullets.length > 0 && (
+        <BulletLayer tracks={storyboard.bullets} />
       )}
     </AbsoluteFill>
   )

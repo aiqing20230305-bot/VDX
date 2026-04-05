@@ -92,6 +92,7 @@ export interface Storyboard {
   coverPrompt?: string
   subtitles?: SubtitleTrack[]  // 字幕轨道 ⭐ v1.3.0 新增
   titles?: TitleTrack[]        // 标题轨道 ⭐ v1.3.0 新增
+  bullets?: BulletTrack[]      // 弹幕轨道 ⭐ v1.3.0 新增
   createdAt: Date
 }
 
@@ -247,6 +248,46 @@ export interface TitleTrack {
   entries: TitleEntry[]
   defaultStyle?: TitleStyle  // 默认样式
   defaultAnimation?: TitleAnimationConfig // 默认动画
+  enabled?: boolean          // 是否启用（默认 true）
+}
+
+// ─── Bullet Comments / 弹幕 ⭐ v1.3.0 新增 ─────────────────
+export interface BulletStyle {
+  fontSize?: number          // 字体大小（默认 24）
+  fontFamily?: string        // 字体（默认 sans-serif）
+  fontWeight?: string | number // 字重（默认 normal）
+  color?: string             // 文字颜色（默认 #FFFFFF）
+  backgroundColor?: string   // 背景颜色（可选）
+  stroke?: {
+    color: string            // 描边颜色
+    width: number            // 描边宽度
+  }
+  shadow?: {
+    offsetX: number
+    offsetY: number
+    blur: number
+    color: string
+  }
+  padding?: number           // 内边距（默认 8）
+  opacity?: number           // 不透明度（默认 0.9）
+}
+
+export interface BulletEntry {
+  id: string                 // 唯一标识
+  time: number               // 出现时间（秒）
+  text: string               // 弹幕文本
+  style?: Partial<BulletStyle> // 样式覆盖
+  speed?: number             // 滚动速度（像素/秒，默认 200）
+  lane?: number              // 指定轨道（可选，用于固定位置）
+}
+
+export interface BulletTrack {
+  id: string
+  entries: BulletEntry[]
+  defaultStyle?: BulletStyle // 默认样式
+  defaultSpeed?: number      // 默认速度（像素/秒，默认 200）
+  laneHeight?: number        // 轨道高度（像素，默认 40）
+  maxLanes?: number          // 最大轨道数（默认 10）
   enabled?: boolean          // 是否启用（默认 true）
 }
 
