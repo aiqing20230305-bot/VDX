@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChatMessage } from '@/components/chat/ChatMessage'
 import { ChatInput } from '@/components/chat/ChatInput'
+import { RemotionPreview } from '@/components/video/RemotionPreview'
 import {
   buildWelcomeMessage,
   buildScriptSelectionActions,
@@ -27,6 +28,7 @@ export default function HomePage() {
   const [selectedScript, setSelectedScript] = useState<Script | null>(null)
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null)
   const [mode, setMode] = useState<GenerationMode>('step-by-step')
+  const [showPreview, setShowPreview] = useState(false)
   /** 上下文状态：记录当前等待的回答类型 */
   const [contextState, setContextState] = useState<{
     type: 'waiting_image_confirmation' | 'waiting_style' | 'waiting_duration' | 'waiting_text_effects' | null
@@ -537,6 +539,26 @@ export default function HomePage() {
               '- "添加弹幕：666、太酷了、awesome"\n- "在第2秒出现：这个效果真棒"'
             }`,
           })
+          break
+        }
+
+        case 'preview_text_effects': {
+          const sb = storyboardRef.current
+          if (!sb) {
+            addMessage({
+              role: 'assistant',
+              content: '⚠️ 请先生成分镜图再预览文字效果',
+            })
+            return
+          }
+
+          addMessage({
+            role: 'user',
+            content: '预览文字效果',
+          })
+
+          // 打开预览模态框
+          setShowPreview(true)
           break
         }
 
@@ -1386,6 +1408,39 @@ ${parts.join('\n\n')}
       <div className="flex-shrink-0 px-4 pb-4">
         <ChatInput onSend={handleSend} disabled={isLoading} />
       </div>
+
+      {/* Remotion Preview Modal */}
+      {showPreview && storyboard && (
+        <RemotionPreview
+          storyboard={storyboard}
+          onClose={() => setShowPreview(false)}
+          onSave={(updatedStoryboard) => {
+            setStoryboard(updatedStoryboard)
+            setShowPreview(false)
+            addMessage({
+              role: 'assistant',
+              content: '✅ 预览已保存，可以继续编辑或渲染完整视频！',
+              metadata: {
+                actions: [
+                  {
+                    id: 'preview_effects',
+                    label: '👀 继续预览',
+                    action: 'preview_text_effects',
+                    variant: 'secondary',
+                  },
+                  {
+                    id: 'generate_video',
+                    label: '🎬 生成视频（Remotion）',
+                    action: 'generate_video',
+                    params: { engine: 'remotion' },
+                    variant: 'primary',
+                  },
+                ],
+              },
+            })
+          }}
+        />
+      )}
     </div>
   )
 }
