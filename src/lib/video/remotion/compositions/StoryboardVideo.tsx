@@ -29,7 +29,6 @@ export const StoryboardVideo: React.FC<StoryboardVideoProps> = ({
         >
           <FrameSequence
             frame={seq.frame}
-            shouldFadeIn={seq.shouldFade}
             totalFrames={seq.durationInFrames}
           />
         </Sequence>

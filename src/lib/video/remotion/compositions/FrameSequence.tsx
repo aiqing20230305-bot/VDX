@@ -1,50 +1,30 @@
 /**
  * Remotion 单帧组件
- * 渲染单个分镜帧，支持淡入淡出效果
+ * 渲染单个分镜帧，支持可配置的转场效果
  */
 import React from 'react'
-import { AbsoluteFill, Img, interpolate, useCurrentFrame } from 'remotion'
+import { AbsoluteFill, Img, useCurrentFrame } from 'remotion'
+import { TransitionFactory } from '../transitions/TransitionFactory'
 import type { StoryboardFrame } from '@/types'
 
 export interface FrameSequenceProps {
   frame: StoryboardFrame
-  shouldFadeIn?: boolean
   totalFrames: number
 }
 
 export const FrameSequence: React.FC<FrameSequenceProps> = ({
   frame,
-  shouldFadeIn = false,
   totalFrames,
 }) => {
   const currentFrame = useCurrentFrame()
 
-  // 淡入效果：前 15 帧（0.5秒 @ 30fps）从 0 → 1
-  const fadeInDuration = 15
-  const fadeInOpacity = shouldFadeIn
-    ? interpolate(currentFrame, [0, fadeInDuration], [0, 1], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      })
-    : 1
+  // 计算转场进度（0-1）
+  // 用于转场动画的进度计算
+  const progress = totalFrames > 0 ? Math.min(currentFrame / totalFrames, 1) : 1
 
-  // 淡出效果：最后 15 帧从 1 → 0
-  const fadeOutStart = totalFrames - fadeInDuration
-  const fadeOutOpacity = interpolate(
-    currentFrame,
-    [fadeOutStart, totalFrames],
-    [1, 0],
-    {
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
-    }
-  )
-
-  // 取两者最小值（交叉淡化）
-  const finalOpacity = Math.min(fadeInOpacity, fadeOutOpacity)
-
-  return (
-    <AbsoluteFill style={{ opacity: finalOpacity }}>
+  // 渲染内容（图片或文字占位符）
+  const content = (
+    <AbsoluteFill>
       {frame.imageUrl ? (
         <Img
           src={frame.imageUrl}
@@ -74,5 +54,13 @@ export const FrameSequence: React.FC<FrameSequenceProps> = ({
         </div>
       )}
     </AbsoluteFill>
+  )
+
+  // 使用 TransitionFactory 应用转场效果
+  // frame.transition 支持字符串（'fade'/'none'）或对象配置
+  return (
+    <TransitionFactory progress={progress} config={frame.transition}>
+      {content}
+    </TransitionFactory>
   )
 }
