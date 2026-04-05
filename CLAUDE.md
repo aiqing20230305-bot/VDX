@@ -183,7 +183,12 @@ contextState: {
 
 ## 进化方向
 
-1. 多模型路由（根据风格自动选择最优生成模型）
+1. ✅ **多模型路由**（v1.5.0 已完成）⭐ 新增
+   - 风格分析引擎（SceneComplexity/MotionIntensity）
+   - 智能路由决策（Seedance vs Kling）
+   - 4 种策略（质量/速度/成本/平衡）
+   - 自动集成到生成流程
+   - 详见：`docs/MODEL_ROUTING.md`
 2. 角色一致性系统（IP 角色在所有帧保持一致）
 3. 音频同步（歌词/节拍驱动分镜节奏）
 4. ✅ **Remotion 程序化视频渲染**（v1.4.0 已完成 Phase 4 Part 3） ⭐

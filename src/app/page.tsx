@@ -399,18 +399,55 @@ export default function HomePage() {
 
         case 'generate_video_with_frames': {
           // 使用选中的帧生成视频
-          const engine = (params?.engine as 'seedance' | 'kling') ?? 'seedance'
           const frameIndices = (params?.frameIndices as number[]) ?? []
           const sb = storyboardRef.current
           if (!sb || frameIndices.length === 0) return
+
+          // 创建只包含选中帧的临时 storyboard
+          const selectedFrames = frameIndices.map(i => sb.frames[i])
+
+          // 🤖 智能路由：为选中的帧推荐模型
+          let engine = (params?.engine as 'seedance' | 'kling')
+
+          if (!engine) {
+            try {
+              const routingRes = await fetch('/api/model-routing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  storyboardId: sb.id,
+                  frames: selectedFrames,
+                  strategy: {
+                    prioritize: 'balanced',
+                    allowMixedModels: false,
+                    qualityThreshold: 7,
+                  },
+                }),
+              })
+              const routingData = await routingRes.json()
+
+              if (routingData.success && routingData.data) {
+                const { summary } = routingData.data
+                engine = summary.seedanceCount >= summary.klingCount ? 'seedance' : 'kling'
+
+                addMessage({
+                  role: 'assistant',
+                  content: `🤖 **智能路由**：推荐 ${engine === 'seedance' ? 'Seedance 2.0' : '可灵AI'}（质量 ${summary.estimatedAverageQuality.toFixed(1)}/10）`,
+                })
+              }
+            } catch (err) {
+              console.error('[Routing Error]', err)
+              engine = 'seedance'
+            }
+          }
+
+          engine = engine || 'seedance'
 
           addMessage({
             role: 'user',
             content: `使用 ${frameIndices.length} 帧 · ${engine === 'seedance' ? 'Seedance 2.0' : '可灵AI'} 生成`,
           })
 
-          // 创建只包含选中帧的临时 storyboard
-          const selectedFrames = frameIndices.map(i => sb.frames[i])
           const filteredStoryboard = {
             ...sb,
             frames: selectedFrames,
@@ -440,9 +477,50 @@ export default function HomePage() {
         }
 
         case 'generate_video': {
-          const engine = (params?.engine as string) ?? 'seedance'
           const sb = storyboardRef.current
           if (!sb) return
+
+          // 🤖 智能路由：如果没有指定模型，自动分析并推荐
+          let engine = (params?.engine as string)
+
+          if (!engine) {
+            // 调用模型路由API
+            try {
+              const routingRes = await fetch('/api/model-routing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  storyboardId: sb.id,
+                  frames: sb.frames,
+                  strategy: {
+                    prioritize: 'balanced',
+                    allowMixedModels: false, // 统一使用一个模型
+                    qualityThreshold: 7,
+                  },
+                }),
+              })
+              const routingData = await routingRes.json()
+
+              if (routingData.success && routingData.data) {
+                const { summary, decisions } = routingData.data
+                // 使用主导模型
+                engine = summary.seedanceCount >= summary.klingCount ? 'seedance' : 'kling'
+
+                // 展示路由推荐
+                addMessage({
+                  role: 'assistant',
+                  content: `🤖 **智能路由推荐**\n\n根据 ${sb.frames.length} 帧场景分析：\n- Seedance 适合帧数：${summary.seedanceCount}\n- Kling 适合帧数：${summary.klingCount}\n\n**推荐模型**：${engine === 'seedance' ? 'Seedance 2.0（写实风格）' : '可灵AI（动态场景）'}\n预估质量：${summary.estimatedAverageQuality.toFixed(1)}/10`,
+                })
+              }
+            } catch (err) {
+              console.error('[Routing Error]', err)
+              // 降级：使用默认模型
+              engine = 'seedance'
+            }
+          }
+
+          // 确保有默认值
+          engine = engine || 'seedance'
 
           addMessage({
             role: 'user',
