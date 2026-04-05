@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+
+  // Empty turbopack config to allow webpack config to work
+  // Remotion requires webpack externals configuration
+  turbopack: {},
+
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Externalize Remotion packages that contain binary dependencies

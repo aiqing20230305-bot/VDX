@@ -15,7 +15,7 @@ export const RemotionRoot: React.FC = () => {
       {/* 分镜视频组件 */}
       <Composition
         id="StoryboardVideo"
-        component={StoryboardVideo}
+        component={StoryboardVideo as any}
         durationInFrames={300}  // 默认10秒（30fps），运行时会覆盖
         fps={30}
         width={1920}
@@ -35,7 +35,7 @@ export const RemotionRoot: React.FC = () => {
       {/* Pretext 文字动画组件 */}
       <Composition
         id="FluidText"
-        component={PretextFluidText}
+        component={PretextFluidText as any}
         durationInFrames={90}  // 3 秒
         fps={30}
         width={1920}
@@ -53,7 +53,7 @@ export const RemotionRoot: React.FC = () => {
 
       <Composition
         id="ParticleText"
-        component={PretextParticleText}
+        component={PretextParticleText as any}
         durationInFrames={120}  // 4 秒
         fps={30}
         width={1920}
@@ -72,7 +72,7 @@ export const RemotionRoot: React.FC = () => {
 
       <Composition
         id="ASCIIArt"
-        component={PretextASCIIArt}
+        component={PretextASCIIArt as any}
         durationInFrames={90}  // 3 秒
         fps={30}
         width={1920}
