@@ -191,18 +191,18 @@ contextState: {
    - 详见：`docs/MODEL_ROUTING.md`
 2. 角色一致性系统（IP 角色在所有帧保持一致）
 3. 音频同步（歌词/节拍驱动分镜节奏）
-4. ✅ **Remotion 程序化视频渲染**（v1.4.0 已完成 Phase 4 Part 3） ⭐
+4. ✅ **Remotion 程序化视频渲染**（v1.7.0 已完成 Phase 4 全部）⭐
    - Phase 1: React 组件描述视频、基础转场 ✅
    - Phase 2: 5 种转场效果（fade/slide/zoom/rotate/wipe） ✅
    - Phase 3: 完整文字系统 ✅
      - 字幕：时间轴同步/多轨道/SRT 格式/淡入淡出
      - 标题：6 种动画/进入退出/打字机效果
      - 弹幕：右向左滚动/碰撞避让/速度可配置
-   - Phase 4: UI 集成与优化 🚧
+   - Phase 4: UI 集成与优化 ✅
      - Part 1: 文字效果 API 和引擎 ✅
      - Part 2: 科技时尚 UI 改造 ✅
      - Part 3: 端到端流程打通 ✅
-     - Part 4: 预览和编辑器（待开发）
+     - Part 4: 预览和编辑器 ✅
    - 7 种缓动函数、GPU 加速
    - 与 FFmpeg/Seedance/Kling 并存
 5. ✅ **Pretext 精确文字动画**（v1.2.0 已完成 Phase 1）⭐ 新增
