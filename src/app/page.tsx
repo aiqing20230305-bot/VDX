@@ -29,7 +29,7 @@ export default function HomePage() {
   const [mode, setMode] = useState<GenerationMode>('step-by-step')
   /** 上下文状态：记录当前等待的回答类型 */
   const [contextState, setContextState] = useState<{
-    type: 'waiting_image_confirmation' | 'waiting_style' | 'waiting_duration' | null
+    type: 'waiting_image_confirmation' | 'waiting_style' | 'waiting_duration' | 'waiting_text_effects' | null
     data?: Record<string, unknown>
   }>({ type: null })
   /** 用户上传的参考图片，按类型分类 */
@@ -521,6 +521,12 @@ export default function HomePage() {
           addMessage({
             role: 'user',
             content: `添加${effectName}`,
+          })
+
+          // 设置上下文状态，等待用户输入文字效果描述
+          setContextState({
+            type: 'waiting_text_effects',
+            data: { effectType },
           })
 
           addMessage({
@@ -1080,6 +1086,92 @@ ${parts.join('\n\n')}
           )
           return
         }
+      }
+
+      // 处理文字效果输入
+      if (contextState.type === 'waiting_text_effects' && message) {
+        const effectType = contextState.data?.effectType as 'subtitles' | 'titles' | 'bullets'
+        const effectName = effectType === 'subtitles' ? '字幕' : effectType === 'titles' ? '标题动画' : '弹幕'
+        const sb = storyboardRef.current
+
+        if (!sb) {
+          addMessage({
+            role: 'assistant',
+            content: '需要先生成分镜才能添加文字效果哦',
+          })
+          setContextState({ type: null })
+          return
+        }
+
+        setIsLoading(true)
+        setContextState({ type: null }) // 清除上下文
+
+        try {
+          // 调用文字效果 API
+          const res = await fetch('/api/text-effects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              storyboard: sb,
+              userRequest: message,
+              effectType,
+            }),
+          })
+
+          const data = await res.json() as {
+            storyboard?: Storyboard
+            summary?: string
+            error?: string
+          }
+
+          if (data.error) {
+            throw new Error(data.error)
+          }
+
+          if (data.storyboard) {
+            // 更新 storyboard
+            setStoryboard(data.storyboard)
+
+            addMessage({
+              role: 'assistant',
+              content: `✅ ${effectName}已添加成功！\n\n${data.summary}\n\n💡 提示：现在可以使用 Remotion 引擎渲染带文字效果的视频。`,
+              metadata: {
+                actions: [
+                  {
+                    id: 'preview_effects',
+                    label: '👀 预览效果',
+                    description: '在浏览器中预览',
+                    action: 'preview_text_effects',
+                    variant: 'primary' as const,
+                  },
+                  {
+                    id: 'gen_remotion',
+                    label: '🎬 生成视频（Remotion）',
+                    description: '渲染带文字效果的视频',
+                    action: 'generate_video',
+                    params: { engine: 'remotion' },
+                    variant: 'primary' as const,
+                  },
+                  {
+                    id: 'add_more',
+                    label: '➕ 继续添加文字效果',
+                    action: 'add_text_effects',
+                    variant: 'secondary' as const,
+                  },
+                ],
+              },
+            })
+          }
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err)
+          addMessage({
+            role: 'assistant',
+            content: `❌ ${effectName}添加失败：${msg}\n\n请尝试更具体的描述，例如指定时间、位置等信息。`,
+          })
+        } finally {
+          setIsLoading(false)
+        }
+        return
       }
 
       // Storyboard modification detection
