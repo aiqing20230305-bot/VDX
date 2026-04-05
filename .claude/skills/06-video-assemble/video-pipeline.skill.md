@@ -139,6 +139,89 @@ transition: {
 - 未知类型自动降级到无转场
 - GPU 加速：所有转场使用 `transform`/`opacity` 不触发 layout
 
+### 字幕系统（v1.3）
+
+**功能特性：**
+- ✅ 时间轴精确同步（基于 fps）
+- ✅ 淡入淡出动画（默认 0.2 秒）
+- ✅ 完全可配置样式（字体/颜色/描边/背景/阴影）
+- ✅ 多轨道支持（中英双语字幕）
+- ✅ 3 种位置（顶部/中间/底部）
+- ✅ SRT 格式导入导出
+
+**使用示例：**
+```typescript
+const subtitles: SubtitleTrack[] = [
+  {
+    id: 'main',
+    entries: [
+      {
+        startTime: 0,
+        endTime: 3,
+        text: '欢迎来到超级视频',
+        position: 'bottom',
+      },
+    ],
+  },
+]
+
+// 在 Storyboard 中使用
+storyboard.subtitles = subtitles
+```
+
+**核心组件：**
+- `Subtitle`: 单条字幕组件
+- `SubtitleLayer`: 字幕层（多轨道管理）
+- `parseSRT` / `generateSRT`: SRT 格式工具
+
+### 标题动画系统（v1.3）
+
+**6 种动画类型：**
+- `slideIn`: 滑动进入（4 个方向）
+- `fadeIn`: 淡入
+- `zoomIn`: 缩放进入
+- `bounceIn`: 弹跳进入
+- `rotateIn`: 旋转进入
+- `typewriter`: 打字机效果（逐字显示）
+
+**功能特性：**
+- ✅ 进入与退出动画
+- ✅ 7 种缓动函数
+- ✅ 3 种位置（top/center/bottom）
+- ✅ 完全可配置样式（字体/颜色/描边/阴影/背景）
+- ✅ 多轨道支持
+
+**使用示例：**
+```typescript
+const titles: TitleTrack[] = [
+  {
+    id: 'main',
+    entries: [
+      {
+        startTime: 0,
+        endTime: 3,
+        text: '标题文本',
+        position: 'center',
+        animation: {
+          type: 'slideIn',
+          direction: 'bottom',
+          duration: 30,
+          exitAnimation: true,
+        },
+      },
+    ],
+  },
+]
+
+// 在 Storyboard 中使用
+storyboard.titles = titles
+```
+
+**核心组件：**
+- `Title`: 单个标题组件
+- `TitleLayer`: 标题层（多轨道管理）
+- `animations`: 动画效果库
+
 ## 迭代记录
 
 - v1.0.0: Seedance + Kling 双引擎编排 + FFmpeg 拼接
@@ -155,4 +238,10 @@ transition: {
   - ✅ GPU 加速（transform/opacity）
   - ✅ 转场系统集成到 FrameSequence
   - ✅ 完整测试覆盖（单元测试 + 集成测试）
-- 待迭代: 字幕系统、音频同步、更多文字动画、前端 UI 集成
+- v1.3.0 (2026-04-05): Remotion 文字系统（Phase 3 部分完成） ⭐
+  - ✅ 字幕系统（时间轴同步/多轨道/SRT 格式）
+  - ✅ 标题动画（6 种动画类型/进入退出/打字机）
+  - ✅ 完全可配置样式（字体/颜色/描边/阴影）
+  - ✅ GPU 优化（willChange / pointerEvents）
+  - ✅ 完整测试覆盖（字幕 3 测试 + 标题 4 测试）
+- 待迭代: 弹幕效果、音频同步、前端 UI 集成

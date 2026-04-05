@@ -186,9 +186,12 @@ contextState: {
 1. 多模型路由（根据风格自动选择最优生成模型）
 2. 角色一致性系统（IP 角色在所有帧保持一致）
 3. 音频同步（歌词/节拍驱动分镜节奏）
-4. ✅ **Remotion 程序化视频渲染**（v1.2.0 已完成 Phase 2）
+4. ✅ **Remotion 程序化视频渲染**（v1.3.0 已完成 Phase 3 大部分）
    - Phase 1: React 组件描述视频、基础转场
    - Phase 2: 5 种转场效果（fade/slide/zoom/rotate/wipe）
+   - Phase 3: 字幕系统 + 标题动画系统
+     - 字幕：时间轴同步/多轨道/SRT 格式/淡入淡出
+     - 标题：6 种动画/进入退出/打字机效果
    - 7 种缓动函数、GPU 加速
    - 与 FFmpeg/Seedance/Kling 并存
 5. ✅ **Pretext 精确文字动画**（v1.2.0 已完成 Phase 1）⭐ 新增
