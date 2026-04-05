@@ -89,7 +89,6 @@ export const Bullet: React.FC<BulletProps> = ({
   // 描边
   if (finalStyle.stroke) {
     textStyle.WebkitTextStroke = `${finalStyle.stroke.width}px ${finalStyle.stroke.color}`
-    textStyle.textStroke = `${finalStyle.stroke.width}px ${finalStyle.stroke.color}`
   }
 
   // 阴影
