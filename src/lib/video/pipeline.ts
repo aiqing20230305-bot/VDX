@@ -20,6 +20,8 @@ export interface PipelineOptions {
   aspectRatio: AspectRatio
   consistencyPrompt?: string
   referenceImageUrl?: string
+  /** 产品图片路径列表，每帧视频生成时都传入保证产品一致性 */
+  productImages?: string[]
   onProgress?: (frameIndex: number, total: number, videoUrl?: string) => void
 }
 
@@ -29,6 +31,24 @@ export interface PipelineOptions {
 export async function runVideoPipeline(options: PipelineOptions): Promise<string> {
   const { engine, storyboard, aspectRatio, onProgress } = options
   const frames = storyboard.frames
+
+  // Remotion 引擎：直接渲染完整视频（不需要逐帧生成）
+  if (engine === 'remotion') {
+    const { renderWithRemotion } = await import('./remotion-pipeline')
+
+    const outputUrl = await renderWithRemotion({
+      storyboard,
+      aspectRatio,
+      onProgress: (progress) => {
+        // 将 0-1 进度转换为帧索引
+        onProgress?.(Math.floor(progress * frames.length), frames.length)
+      },
+    })
+
+    return outputUrl
+  }
+
+  // Seedance / Kling 引擎：逐帧生成后拼接
   const clipUrls: string[] = []
 
   for (let i = 0; i < frames.length; i++) {
@@ -39,13 +59,14 @@ export async function runVideoPipeline(options: PipelineOptions): Promise<string
 
     try {
       if (engine === 'seedance') {
-        // dreamina CLI: 提交 + 自动轮询，直接返回视频URL
+        // dreamina CLI: 有产品图时走 multimodal2video，保证产品一致性
         clipUrl = await seedanceGenerate({
           prompt: buildPrompt(frame.imagePrompt, options.consistencyPrompt),
           imageUrl: frame.imageUrl ?? options.referenceImageUrl,
           model: 'seedance2.0',
           duration: Math.max(4, Math.min(Math.round(frame.duration), 15)),
           ratio: aspectRatio as '16:9' | '9:16' | '1:1',
+          productImages: options.productImages,
         })
 
       } else if (engine === 'kling') {

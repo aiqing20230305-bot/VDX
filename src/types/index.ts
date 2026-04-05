@@ -74,6 +74,11 @@ export interface StoryboardFrame {
   description: string     // 画面描述
   cameraAngle: string     // 镜头角度
   transition?: string     // 转场方式
+  titleAnimation?: {      // 文字动画（可选）⭐ v1.2.0 新增
+    type: 'fluid' | 'particle' | 'ascii'
+    text: string
+    config: Record<string, any>  // 灵活配置
+  }
 }
 
 export interface Storyboard {
@@ -156,7 +161,7 @@ export interface ElementModification {
 
 // ─── Chat / 对话 ────────────────────────────────────────────
 export type MessageRole = 'user' | 'assistant' | 'system'
-export type MessageType = 'text' | 'script' | 'storyboard' | 'video' | 'action' | 'progress'
+export type MessageType = 'text' | 'script' | 'storyboard' | 'video' | 'action' | 'progress' | 'frame_selector' | 'video_frame_extractor'
 
 export interface ChatMessage {
   id: string
@@ -166,10 +171,18 @@ export interface ChatMessage {
   metadata?: {
     script?: Script
     storyboard?: Storyboard
+    aspectRatio?: '9:16' | '16:9'
     videoJob?: VideoJob
     analysis?: VideoAnalysis
     actions?: QuickAction[]
     progress?: { value: number; label: string }
+    generation?: {
+      stage: string
+      current?: number
+      total?: number
+      detail?: string
+      startedAt?: number
+    }
   }
   createdAt: Date
 }

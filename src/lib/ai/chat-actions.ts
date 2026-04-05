@@ -81,19 +81,26 @@ export function buildScriptSelectionActions(scriptCount: number): QuickAction[] 
 export function buildPostStoryboardActions(): QuickAction[] {
   return [
     {
-      id: 'gen_kling',
-      label: '⚡ 可灵AI生成',
-      description: '快速，5-10秒片段',
-      action: 'generate_video',
-      params: { engine: 'kling' },
+      id: 'select_frames',
+      label: '🎯 选择帧生成',
+      description: '选择想用的分镜帧',
+      action: 'select_frames_for_video',
       variant: 'primary',
     },
     {
       id: 'gen_seedance',
-      label: '🚀 即梦 Seedance',
-      description: '高质量，较慢',
+      label: '🚀 全部帧 - Seedance',
+      description: '用全部分镜生成（即梦）',
       action: 'generate_video',
       params: { engine: 'seedance' },
+      variant: 'secondary',
+    },
+    {
+      id: 'gen_kling',
+      label: '⚡ 全部帧 - 可灵',
+      description: '用全部分镜生成（可灵）',
+      action: 'generate_video',
+      params: { engine: 'kling' },
       variant: 'secondary',
     },
     {

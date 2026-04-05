@@ -30,6 +30,8 @@ export interface SeedanceGenerateInput {
   resolution?: '720p'
   imageUrl?: string           // 图生视频的首帧图
   endImageUrl?: string        // 尾帧图
+  /** 产品参考图列表，通过 multimodal2video 传入保证产品一致性 */
+  productImages?: string[]
 }
 
 export interface SeedanceResult {
@@ -47,6 +49,11 @@ interface CLIOutput {
   credit_count?: number
   fail_reason?: string
   queue_info?: { queue_idx: number; queue_length: number }
+  // CLI 直接返回格式
+  result_json?: {
+    videos?: Array<{ video_url: string; duration?: number }>
+  }
+  // query_result 返回格式
   item_list?: Array<{
     video?: {
       video_url?: string
@@ -62,14 +69,30 @@ function parseCLIOutput(stdout: string): CLIOutput {
   return JSON.parse(stdout.substring(jsonStart)) as CLIOutput
 }
 
-/** 提交文生视频任务 */
+/** 提交文生视频任务（有产品图时自动走 multimodal2video） */
 export async function submitText2Video(input: SeedanceGenerateInput): Promise<SeedanceResult> {
-  const args = [
-    'text2video',
-    `--prompt="${input.prompt.replace(/"/g, '\\"')}"`,
-    `--model_version=${input.model ?? 'seedance2.0'}`,
-    `--duration=${Math.max(4, Math.min(input.duration ?? 5, 15))}`,
-  ]
+  const hasProductImages = input.productImages && input.productImages.length > 0
+
+  let args: string[]
+
+  if (hasProductImages) {
+    // 有产品图：用 multimodal2video 传入所有产品图作为参考
+    args = [
+      'multimodal2video',
+      `--prompt="${input.prompt.replace(/"/g, '\\"')}"`,
+      `--model_version=${input.model ?? 'seedance2.0'}`,
+      `--duration=${Math.max(4, Math.min(input.duration ?? 5, 15))}`,
+      ...input.productImages!.map(p => `--image="${p}"`),
+    ]
+    if (input.imageUrl) args.push(`--image="${input.imageUrl}"`)
+  } else {
+    args = [
+      'text2video',
+      `--prompt="${input.prompt.replace(/"/g, '\\"')}"`,
+      `--model_version=${input.model ?? 'seedance2.0'}`,
+      `--duration=${Math.max(4, Math.min(input.duration ?? 5, 15))}`,
+    ]
+  }
 
   if (input.ratio) args.push(`--ratio=${input.ratio}`)
   if (input.resolution) args.push(`--video_resolution=${input.resolution}`)
@@ -117,11 +140,14 @@ export async function queryResult(submitId: string): Promise<SeedanceResult> {
   )
   const data = parseCLIOutput(stdout)
 
-  const video = data.item_list?.[0]?.video
+  // 优先从 result_json 提取，兜底 item_list
+  const videoUrl = data.result_json?.videos?.[0]?.video_url
+    ?? data.item_list?.[0]?.video?.origin_video_url
+    ?? data.item_list?.[0]?.video?.video_url
   return {
     submitId: data.submit_id,
     status: data.gen_status,
-    videoUrl: video?.origin_video_url ?? video?.video_url,
+    videoUrl,
     creditCount: data.credit_count,
     failReason: data.fail_reason,
     queueIdx: data.queue_info?.queue_idx,

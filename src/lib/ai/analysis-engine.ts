@@ -4,6 +4,7 @@
  */
 import { generateJSON } from './claude'
 import { extractFrames, getVideoInfo } from '../video/ffmpeg-utils'
+import { transcribeVideoSpeech, formatTranscription } from '../video/speech-to-text'
 import type {
   VideoAnalysis,
   VideoElement,
@@ -18,6 +19,7 @@ import fs from 'fs/promises'
 const ANALYSIS_SYSTEM_PROMPT = `你是一位专业的视频分析师和内容策略专家，能够：
 - 深度分析视频中的所有视觉元素（角色、场景、物品、文字、特效）
 - 识别音频元素（配乐风格、音效、人声）
+- **理解视频口播内容**：结合画面和语音文字理解视频核心主题和要点
 - 判断视频风格、情绪基调、叙事结构
 - 提出具体的二创方向和改编建议
 请用中文回答所有分析内容。`
@@ -53,12 +55,30 @@ export async function analyzeVideo(videoPath: string): Promise<VideoAnalysis> {
     })
   )
 
+  // 🎤 提取语音文字（自动选择可用的ASR引擎）
+  let transcription: string | null = null
+  try {
+    console.log('[视频分析] 开始语音识别...')
+    const result = await transcribeVideoSpeech(videoPath)
+    transcription = formatTranscription(result)
+    console.log('[视频分析] 语音识别成功，使用引擎:', result.engine, '文字长度:', transcription.length)
+  } catch (err) {
+    console.warn('[视频分析] 语音识别失败（将仅分析画面）:', err)
+  }
+
   const prompt = `请分析以下视频（已提取 ${frameImages.length} 个关键帧）：
 
 视频信息：
 - 时长：${info.duration.toFixed(1)} 秒
 - 分辨率：${info.width}x${info.height}
-- 帧率：${info.fps.toFixed(0)}fps
+- 帧率：${info.fps.toFixed(0)}fps${transcription ? `
+
+**视频口播内容（语音转文字）**：
+\`\`\`
+${transcription}
+\`\`\`
+
+⚠️ **重要**：请结合画面和口播内容进行综合分析，口播是理解视频核心主题的关键。` : ''}
 
 请提取所有视觉和叙事元素，并给出二创建议。
 

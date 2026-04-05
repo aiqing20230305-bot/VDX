@@ -1,8 +1,11 @@
 /**
- * 即梦图片生成 & 风格转换
- * 用于：
- *   1. 分镜图生成（text2image）
- *   2. 人物形象转线稿/风格化（image2image）— 保留人物特征供视频生成参考
+ * 即梦图片生成 & 风格转换 & 图片处理
+ *
+ * 能力：
+ *   1. text2image  — 文生图（分镜图）
+ *   2. image2image — 图生图（风格转换、分镜参考、人物线稿化）
+ *   3. 图片格式转换 — 不支持的格式自动转为 PNG/JPG
+ *   4. 图片分析    — 用 Claude 分析上传图片的内容和特征
  *
  * 依赖 dreamina CLI（需已登录）
  */
@@ -15,17 +18,18 @@ import { v4 as uuid } from 'uuid'
 const execAsync = promisify(exec)
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads')
 
-interface DreaminaResult {
-  submitId: string
-  status: 'querying' | 'success' | 'fail'
-  imageUrls?: string[]
-  failReason?: string
-}
+// ─── CLI 解析 ───────────────────────────────────────────────
 
 interface CLIOutput {
   submit_id: string
   gen_status: 'querying' | 'success' | 'fail'
   fail_reason?: string
+  // dreamina CLI 直接返回格式
+  result_json?: {
+    images?: Array<{ image_url: string; width?: number; height?: number }>
+    videos?: Array<{ video_url: string }>
+  }
+  // jimeng-mcp 格式（轮询 query_result 时）
   item_list?: Array<{
     image?: {
       large_images?: Array<{ image_url: string }>
@@ -41,10 +45,17 @@ function parseCLI(stdout: string): CLIOutput {
 }
 
 function extractImageUrls(data: CLIOutput): string[] {
-  if (!data.item_list) return []
-  return data.item_list
-    .map(item => item.image?.large_images?.[0]?.image_url ?? item.common_attr?.cover_url)
-    .filter(Boolean) as string[]
+  // 优先从 result_json 提取（CLI 直接返回的格式）
+  if (data.result_json?.images?.length) {
+    return data.result_json.images.map(img => img.image_url).filter(Boolean)
+  }
+  // 兜底：从 item_list 提取（query_result 返回的格式）
+  if (data.item_list?.length) {
+    return data.item_list
+      .map(item => item.image?.large_images?.[0]?.image_url ?? item.common_attr?.cover_url)
+      .filter(Boolean) as string[]
+  }
+  return []
 }
 
 async function queryUntilDone(submitId: string, maxWaitMs = 120_000): Promise<string[]> {
@@ -52,19 +63,73 @@ async function queryUntilDone(submitId: string, maxWaitMs = 120_000): Promise<st
   while (Date.now() - start < maxWaitMs) {
     const { stdout } = await execAsync(`dreamina query_result --submit_id=${submitId}`, { timeout: 15_000 })
     const data = parseCLI(stdout)
-
-    if (data.gen_status === 'success') {
-      return extractImageUrls(data)
-    }
-    if (data.gen_status === 'fail') {
-      throw new Error(`生成失败: ${data.fail_reason ?? '未知错误'}`)
-    }
+    if (data.gen_status === 'success') return extractImageUrls(data)
+    if (data.gen_status === 'fail') throw new Error(`生成失败: ${data.fail_reason ?? '未知'}`)
     await new Promise(r => setTimeout(r, 3000))
   }
   throw new Error('图片生成超时')
 }
 
-// ─── 分镜图生成 ─────────────────────────────────────────────
+// ─── 图片格式转换 ────────────────────────────────────────────
+
+/** dreamina 支持的图片格式 */
+const SUPPORTED_FORMATS = new Set(['.jpg', '.jpeg', '.png', '.webp'])
+
+/**
+ * 确保图片格式被 dreamina 支持
+ * 不支持的格式（HEIC、BMP、TIFF、AVIF 等）自动转为 PNG
+ */
+export async function ensureSupportedFormat(imagePath: string): Promise<string> {
+  const ext = path.extname(imagePath).toLowerCase()
+  if (SUPPORTED_FORMATS.has(ext)) return imagePath
+
+  // 用 sips（macOS 内置）转换格式
+  await fs.mkdir(UPLOAD_DIR, { recursive: true })
+  const outputPath = path.join(UPLOAD_DIR, `${uuid()}.png`)
+
+  try {
+    await execAsync(`sips -s format png "${imagePath}" --out "${outputPath}"`, { timeout: 30_000 })
+    return outputPath
+  } catch {
+    // sips 失败时尝试 ffmpeg
+    try {
+      await execAsync(`ffmpeg -i "${imagePath}" "${outputPath}" -y`, { timeout: 30_000 })
+      return outputPath
+    } catch {
+      throw new Error(`不支持的图片格式 ${ext}，转换失败。请使用 JPG/PNG/WebP 格式。`)
+    }
+  }
+}
+
+/**
+ * 下载远程图片到本地（绝对路径，供 CLI 工具使用）
+ */
+export async function downloadImage(url: string): Promise<string> {
+  await fs.mkdir(UPLOAD_DIR, { recursive: true })
+  const ext = url.match(/\.(jpg|jpeg|png|webp|heic|bmp|tiff|avif)/i)?.[1] ?? 'png'
+  const localPath = path.join(UPLOAD_DIR, `${uuid()}.${ext}`)
+
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`下载图片失败: ${res.status}`)
+  const buffer = Buffer.from(await res.arrayBuffer())
+  await fs.writeFile(localPath, buffer)
+
+  return ensureSupportedFormat(localPath)
+}
+
+/**
+ * 处理上传的文件 — 保存到本地并确保格式支持
+ */
+export async function saveUploadedImage(file: File): Promise<string> {
+  await fs.mkdir(UPLOAD_DIR, { recursive: true })
+  const ext = file.name.split('.').pop() ?? 'jpg'
+  const localPath = path.join(UPLOAD_DIR, `${uuid()}.${ext}`)
+  const buffer = Buffer.from(await file.arrayBuffer())
+  await fs.writeFile(localPath, buffer)
+  return ensureSupportedFormat(localPath)
+}
+
+// ─── 文生图 ─────────────────────────────────────────────────
 
 export type ImageRatio = '21:9' | '16:9' | '3:2' | '4:3' | '1:1' | '3:4' | '2:3' | '9:16'
 export type ImageModel = '3.0' | '3.1' | '4.0' | '4.1' | '4.5' | '4.6' | '5.0' | 'lab'
@@ -78,7 +143,6 @@ export interface Text2ImageInput {
 
 /**
  * 文生图 — 用于分镜图生成
- * 返回图片 URL 列表
  */
 export async function text2Image(input: Text2ImageInput): Promise<string[]> {
   const args = [
@@ -93,133 +157,168 @@ export async function text2Image(input: Text2ImageInput): Promise<string[]> {
   const { stdout } = await execAsync(`dreamina ${args.join(' ')}`, { timeout: 90_000 })
   const data = parseCLI(stdout)
 
-  if (data.gen_status === 'success') {
-    return extractImageUrls(data)
-  }
-
-  // 还在生成中，轮询
+  if (data.gen_status === 'success') return extractImageUrls(data)
   return queryUntilDone(data.submit_id)
 }
 
-// ─── 人物形象转风格 ─────────────────────────────────────────
+// ─── 图生图 ─────────────────────────────────────────────────
 
-/**
- * 人物线稿化风格列表
- * 这些提示词可将真人照片转为保留特征的风格化图片
- * 转换后的图片可作为视频生成的参考，绕过"不支持真人参考"的限制
- */
-export const CHARACTER_STYLE_PROMPTS = {
-  /** 线稿 — 保留轮廓和五官特征，去除真实肤色 */
-  lineart: 'Convert to clean line art drawing, preserve facial features and body proportions, black lines on white background, detailed contour drawing, manga style outline',
-
-  /** 动漫风 — 保留人物特征的动漫化 */
-  anime: 'Convert to high quality anime style illustration, preserve character facial features and proportions, anime art style, detailed character design, vibrant colors',
-
-  /** 3D 卡通 — 保留特征的 Pixar 风 */
-  cartoon3d: 'Convert to 3D cartoon character style like Pixar, preserve facial features and body proportions, smooth rendering, stylized 3D character',
-
-  /** 水彩速写 — 艺术化但保留特征 */
-  watercolor: 'Convert to watercolor sketch style, preserve character features and proportions, artistic watercolor painting, soft brush strokes, character portrait',
-
-  /** 赛博朋克 — 科幻风格化 */
-  cyberpunk: 'Convert to cyberpunk style character illustration, preserve facial features, neon lighting, futuristic outfit, detailed sci-fi character design',
-
-  /** CG 写实 — 接近真人但过滤为 CG 风格 */
-  cg_realistic: 'Convert to photorealistic CG rendering, preserve all facial features and proportions exactly, ultra detailed CG character, subtle stylization, movie quality character render',
-} as const
-
-export type CharacterStyle = keyof typeof CHARACTER_STYLE_PROMPTS
-
-export interface CharacterStyleInput {
-  /** 人物照片本地路径 */
+export interface Image2ImageInput {
+  /** 本地图片路径（会自动转换不支持的格式） */
   imagePath: string
-  /** 风格类型 */
-  style: CharacterStyle
-  /** 额外提示词（叠加在风格提示词之后） */
-  additionalPrompt?: string
-  /** 输出比例 */
+  /** 编辑/风格提示词 */
+  prompt: string
   ratio?: ImageRatio
-  /** 模型版本 */
   model?: ImageModel
+  resolution?: '2k' | '4k'
 }
 
 /**
- * 人物形象风格转换
- * 真人照片 → 线稿/动漫/3D 等风格 → 保留人物特征
- * 转换后的图片可安全用于视频生成参考
+ * 图生图 — 用于：
+ *   - 参考图片生成分镜（保留构图和内容方向）
+ *   - 人物照片风格转换
+ *   - 图片风格统一
  */
-export async function convertCharacterStyle(input: CharacterStyleInput): Promise<string[]> {
-  const stylePrompt = CHARACTER_STYLE_PROMPTS[input.style]
-  const prompt = input.additionalPrompt
-    ? `${stylePrompt}, ${input.additionalPrompt}`
-    : stylePrompt
+export async function image2Image(input: Image2ImageInput): Promise<string[]> {
+  // 确保图片格式支持
+  const safePath = await ensureSupportedFormat(input.imagePath)
 
   const args = [
     'image2image',
-    `--images="${input.imagePath}"`,
-    `--prompt="${prompt.replace(/"/g, '\\"')}"`,
+    `--images="${safePath}"`,
+    `--prompt="${input.prompt.replace(/"/g, '\\"')}"`,
     `--model_version=${input.model ?? '5.0'}`,
     `--ratio=${input.ratio ?? '1:1'}`,
-    '--resolution_type=2k',
+    `--resolution_type=${input.resolution ?? '2k'}`,
     '--poll=60',
   ]
 
   const { stdout } = await execAsync(`dreamina ${args.join(' ')}`, { timeout: 90_000 })
   const data = parseCLI(stdout)
 
-  if (data.gen_status === 'success') {
-    return extractImageUrls(data)
-  }
-
+  if (data.gen_status === 'success') return extractImageUrls(data)
   return queryUntilDone(data.submit_id)
 }
 
-/**
- * 下载远程图片到本地（供 image2image 使用）
- */
-export async function downloadImage(url: string): Promise<string> {
-  await fs.mkdir(UPLOAD_DIR, { recursive: true })
-  const ext = url.match(/\.(jpg|jpeg|png|webp)/i)?.[1] ?? 'jpg'
-  const localPath = path.join(UPLOAD_DIR, `${uuid()}.${ext}`)
+// ─── 人物风格转换 ────────────────────────────────────────────
 
-  const res = await fetch(url)
-  const buffer = Buffer.from(await res.arrayBuffer())
-  await fs.writeFile(localPath, buffer)
-  return localPath
+export const CHARACTER_STYLE_PROMPTS = {
+  lineart: 'Convert to clean line art drawing, preserve facial features and body proportions, black lines on white background, detailed contour drawing, manga style outline',
+  anime: 'Convert to high quality anime style illustration, preserve character facial features and proportions, anime art style, detailed character design, vibrant colors',
+  cartoon3d: 'Convert to 3D cartoon character style like Pixar, preserve facial features and body proportions, smooth rendering, stylized 3D character',
+  watercolor: 'Convert to watercolor sketch style, preserve character features and proportions, artistic watercolor painting, soft brush strokes, character portrait',
+  cyberpunk: 'Convert to cyberpunk style character illustration, preserve facial features, neon lighting, futuristic outfit, detailed sci-fi character design',
+  cg_realistic: 'Convert to photorealistic CG rendering, preserve all facial features and proportions exactly, ultra detailed CG character, subtle stylization, movie quality character render',
+} as const
+
+export type CharacterStyle = keyof typeof CHARACTER_STYLE_PROMPTS
+
+/**
+ * 人物形象风格转换
+ * 真人照片 → 线稿/动漫/CG → 保留特征 → 可作为视频生成参考
+ */
+export async function convertCharacterStyle(input: {
+  imagePath: string
+  style: CharacterStyle
+  additionalPrompt?: string
+  ratio?: ImageRatio
+}): Promise<string[]> {
+  const prompt = input.additionalPrompt
+    ? `${CHARACTER_STYLE_PROMPTS[input.style]}, ${input.additionalPrompt}`
+    : CHARACTER_STYLE_PROMPTS[input.style]
+
+  return image2Image({
+    imagePath: input.imagePath,
+    prompt,
+    ratio: input.ratio ?? '9:16',  // 人物默认竖版
+    model: '5.0',
+  })
 }
 
-// ─── 批量分镜图生成 ─────────────────────────────────────────
+// ─── 分镜图批量生成 ──────────────────────────────────────────
 
-export interface StoryboardImageInput {
-  /** 每帧的图片生成提示词 */
-  framePrompts: string[]
-  /** 统一比例 */
+export interface StoryboardFrameInput {
+  /** 帧索引 */
+  index: number
+  /** 图片生成提示词 */
+  imagePrompt: string
+  /** 参考图片本地路径（有则用图生图，无则用文生图） */
+  referenceImagePath?: string
+  /** 图生图时的额外引导词 */
+  referenceEditPrompt?: string
+}
+
+export interface BatchStoryboardInput {
+  frames: StoryboardFrameInput[]
   ratio?: ImageRatio
-  /** 角色一致性参考（风格化后的角色图） */
-  characterRef?: string
+  /** 逐帧回调 */
+  onFrameDone?: (index: number, imageUrl: string) => void
 }
 
 /**
  * 批量生成分镜图
- * 逐帧生成，返回图片 URL 数组（与 framePrompts 一一对应）
+ * 每帧自动判断：有参考图 → image2image，无参考图 → text2image
  */
-export async function generateStoryboardImages(input: StoryboardImageInput): Promise<string[]> {
+export async function generateStoryboardImages(input: BatchStoryboardInput): Promise<string[]> {
   const results: string[] = []
 
-  for (const prompt of input.framePrompts) {
-    const fullPrompt = input.characterRef
-      ? `${prompt}, consistent character design`
-      : prompt
+  for (const frame of input.frames) {
+    try {
+      let urls: string[]
 
-    const urls = await text2Image({
-      prompt: fullPrompt,
-      ratio: input.ratio ?? '16:9',
-      model: '5.0',
-      resolution: '2k',
-    })
+      if (frame.referenceImagePath) {
+        // 图生图：基于参考图片生成分镜
+        urls = await image2Image({
+          imagePath: frame.referenceImagePath,
+          prompt: frame.referenceEditPrompt ?? frame.imagePrompt,
+          ratio: input.ratio ?? '16:9',
+        })
+      } else {
+        // 文生图：纯提示词生成
+        urls = await text2Image({
+          prompt: frame.imagePrompt,
+          ratio: input.ratio ?? '16:9',
+          model: '5.0',
+          resolution: '2k',
+        })
+      }
 
-    results.push(urls[0] ?? '')
+      const url = urls[0] ?? ''
+      results.push(url)
+      if (url) input.onFrameDone?.(frame.index, url)
+    } catch (err) {
+      console.error(`分镜帧 ${frame.index} 图片生成失败:`, err)
+      results.push('') // 失败帧留空
+    }
   }
 
   return results
+}
+
+// ─── 图片本地化（远程URL → 本地可访问路径）──────────────────
+
+/**
+ * 将远程图片 URL 下载到 public/uploads/，返回浏览器可访问的路径
+ * 即梦返回的图片是带签名的临时 CDN 链接，会过期，必须下载到本地
+ */
+export async function localizeImageUrl(remoteUrl: string): Promise<string> {
+  if (!remoteUrl || !remoteUrl.startsWith('http')) return remoteUrl
+
+  await fs.mkdir(UPLOAD_DIR, { recursive: true })
+  const filename = `${uuid()}.png`
+  const localPath = path.join(UPLOAD_DIR, filename)
+
+  const res = await fetch(remoteUrl)
+  if (!res.ok) throw new Error(`下载图片失败: ${res.status}`)
+  const buffer = Buffer.from(await res.arrayBuffer())
+  await fs.writeFile(localPath, buffer)
+
+  return `/uploads/${filename}`
+}
+
+/**
+ * 批量本地化图片 URL
+ */
+export async function localizeImageUrls(urls: string[]): Promise<string[]> {
+  return Promise.all(urls.map(url => url ? localizeImageUrl(url) : Promise.resolve('')))
 }

@@ -3,8 +3,10 @@
 import { motion } from 'framer-motion'
 import type { ChatMessage as ChatMessageType } from '@/types'
 import { QuickActions } from './QuickActions'
+import { GenerationProgress, type GenerationStage } from './GenerationProgress'
 import { ScriptCard } from '../storyboard/ScriptCard'
 import { StoryboardGrid } from '../storyboard/StoryboardGrid'
+import { FrameSelector } from '../storyboard/FrameSelector'
 import { VideoProgress } from '../video/VideoProgress'
 import { cn } from '@/lib/utils/cn'
 
@@ -53,17 +55,54 @@ export function ChatMessage({ message, onAction }: Props) {
         )}
 
         {/* Storyboard grid */}
-        {message.metadata?.storyboard && (
-          <StoryboardGrid storyboard={message.metadata.storyboard} />
+        {message.metadata?.storyboard && message.type !== 'frame_selector' && (
+          <StoryboardGrid
+            storyboard={message.metadata.storyboard}
+            aspectRatio={message.metadata.aspectRatio ?? '9:16'}
+            onRegenerate={() => onAction?.('regenerate_storyboard')}
+            onRegenerateFrame={(frame) => onAction?.('regenerate_frame', { frameIndex: frame.index, frame })}
+            onBatchRegenerate={(frameIndices) => onAction?.('batch_regenerate_frames', { frameIndices })}
+          />
+        )}
+
+        {/* Frame Selector */}
+        {message.type === 'frame_selector' && message.metadata?.storyboard && (
+          <FrameSelector
+            storyboard={message.metadata.storyboard}
+            aspectRatio={message.metadata.aspectRatio ?? '9:16'}
+            onConfirm={(frameIndices, engine) => onAction?.('generate_video_with_frames', { frameIndices, engine })}
+            onCancel={() => onAction?.('cancel_frame_selection')}
+          />
         )}
 
         {/* Video progress */}
         {message.metadata?.videoJob && (
-          <VideoProgress job={message.metadata.videoJob} />
+          <VideoProgress
+            job={message.metadata.videoJob}
+            onExtractFrames={() => onAction?.('extract_video_frames', { videoJob: message.metadata?.videoJob })}
+          />
         )}
 
-        {/* Progress bar */}
-        {message.metadata?.progress && (
+        {/* Video Frame Extractor */}
+        {message.type === 'video_frame_extractor' && message.metadata?.videoJob && (
+          <div className="space-y-2">
+            {/* VideoFrameExtractor 组件会在这里渲染，但需要在 page.tsx 中处理 */}
+          </div>
+        )}
+
+        {/* Generation progress */}
+        {message.metadata?.generation && (
+          <GenerationProgress
+            stage={message.metadata.generation.stage as GenerationStage}
+            current={message.metadata.generation.current}
+            total={message.metadata.generation.total}
+            detail={message.metadata.generation.detail}
+            startedAt={message.metadata.generation.startedAt}
+          />
+        )}
+
+        {/* Legacy progress bar */}
+        {message.metadata?.progress && !message.metadata?.generation && (
           <div className="w-full bg-zinc-700 rounded-full h-1.5">
             <div
               className="bg-violet-500 h-1.5 rounded-full transition-all duration-300"

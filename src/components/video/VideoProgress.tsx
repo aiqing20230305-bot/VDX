@@ -1,10 +1,11 @@
 'use client'
 
 import type { VideoJob } from '@/types'
-import { Loader2, CheckCircle, XCircle, Play } from 'lucide-react'
+import { Loader2, CheckCircle, XCircle, Play, Film } from 'lucide-react'
 
 interface Props {
   job: VideoJob
+  onExtractFrames?: () => void
 }
 
 const statusConfig = {
@@ -15,7 +16,7 @@ const statusConfig = {
   cancelled: { icon: XCircle, color: 'text-zinc-500', label: '已取消', spin: false },
 }
 
-export function VideoProgress({ job }: Props) {
+export function VideoProgress({ job, onExtractFrames }: Props) {
   const config = statusConfig[job.status]
   const Icon = config.icon
 
@@ -57,18 +58,28 @@ export function VideoProgress({ job }: Props) {
             className="w-full rounded-lg"
             poster={job.thumbnailUrl}
           />
-          <div className="flex gap-2 mt-2">
-            <a
-              href={job.outputUrl}
-              download
-              className="flex-1 text-center py-2 bg-violet-600 hover:bg-violet-500 text-white text-xs rounded-lg font-medium transition-colors"
-            >
-              下载视频
-            </a>
-            <button className="flex items-center gap-1 px-3 py-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-xs rounded-lg transition-colors">
-              <Play size={12} />
-              预览
-            </button>
+          <div className="space-y-2 mt-2">
+            <div className="flex gap-2">
+              <a
+                href={job.outputUrl}
+                download
+                className="flex-1 text-center py-2 bg-violet-600 hover:bg-violet-500 text-white text-xs rounded-lg font-medium transition-colors"
+              >
+                下载视频
+              </a>
+              {onExtractFrames && (
+                <button
+                  onClick={onExtractFrames}
+                  className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg font-medium transition-colors"
+                >
+                  <Film size={12} />
+                  提取关键帧
+                </button>
+              )}
+            </div>
+            <div className="text-[10px] text-zinc-600 px-1">
+              💡 提取关键帧后可作为后续分镜的参考，保持角色/场景一致
+            </div>
           </div>
         </div>
       )}
