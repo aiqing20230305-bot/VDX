@@ -59,14 +59,15 @@ export const Title: React.FC<TitleProps> = ({
   const totalFrames = Math.round(duration * fps)
 
   // 计算进入动画进度
+  const duration = animConfig.duration ?? 30
   const enterProgress = animConfig.delay
     ? interpolate(
         relativeFrame,
-        [animConfig.delay, animConfig.delay + animConfig.duration],
+        [animConfig.delay, animConfig.delay + duration],
         [0, 1],
         { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
       )
-    : interpolate(relativeFrame, [0, animConfig.duration], [0, 1], {
+    : interpolate(relativeFrame, [0, duration], [0, 1], {
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       })
