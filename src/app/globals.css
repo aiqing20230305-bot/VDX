@@ -1,7 +1,11 @@
 @import "tailwindcss";
 
+/* 字体加载 - Satoshi + DM Sans */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
 /* ============================================================
-   超级视频Agent - 科技时尚设计系统
+   超级视频Agent - 创意活力设计系统 v1.6.0
    ============================================================ */
 
 :root {
@@ -10,31 +14,40 @@
   --bg-secondary: #13131a;
   --bg-tertiary: #1a1a24;
 
-  /* 霓虹渐变色 */
+  /* 霓虹渐变色（增强） */
   --neon-purple: #a855f7;
+  --neon-violet: #8b5cf6;
   --neon-blue: #3b82f6;
   --neon-cyan: #06b6d4;
   --neon-pink: #ec4899;
 
-  /* 玻璃态 */
-  --glass-bg: rgba(26, 26, 36, 0.6);
+  /* 玻璃态（增强透明度） */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-hover: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-active: rgba(168, 85, 247, 0.3);
 
   /* 文字颜色 */
   --text-primary: #f5f5f7;
   --text-secondary: #a1a1aa;
   --text-tertiary: #71717a;
 
-  /* 阴影 */
-  --shadow-neon: 0 0 20px rgba(168, 85, 247, 0.3);
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+  /* 阴影（增强） */
+  --shadow-neon: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 30px rgba(168, 85, 247, 0.3);
+
+  /* 字体栈 */
+  --font-display: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, Consolas, monospace;
 }
 
 @theme inline {
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
 /* ============================================================
@@ -48,7 +61,7 @@
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   overflow-x: hidden;
 }
 
@@ -85,22 +98,62 @@ body {
   animation: shimmer 2s infinite linear;
 }
 
-/* 霓虹脉动 */
+/* 霓虹脉动（增强） */
 @keyframes neon-pulse {
   0%, 100% {
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.3),
-                0 0 20px rgba(168, 85, 247, 0.2),
-                0 0 30px rgba(168, 85, 247, 0.1);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.4),
+                0 0 20px rgba(168, 85, 247, 0.3),
+                0 0 30px rgba(168, 85, 247, 0.15);
   }
   50% {
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5),
-                0 0 30px rgba(168, 85, 247, 0.3),
-                0 0 45px rgba(168, 85, 247, 0.2);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.6),
+                0 0 40px rgba(168, 85, 247, 0.4),
+                0 0 60px rgba(168, 85, 247, 0.25);
   }
 }
 
 .animate-neon-pulse {
   animation: neon-pulse 2s ease-in-out infinite;
+}
+
+/* 光波扩散（按钮 hover） */
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid currentColor;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.btn-ripple:hover::after {
+  animation: ripple 0.6s ease-out;
+}
+
+/* 卡片倾斜 */
+@keyframes card-tilt {
+  0% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+  100% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+}
+
+.card-tilt {
+  transition: transform 0.3s ease;
+}
+
+.card-tilt:hover {
+  transform: perspective(1000px) rotateX(-2deg) rotateY(3deg) translateY(-4px);
 }
 
 /* 浮动动画 */
@@ -159,20 +212,36 @@ body {
 
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid var(--glass-border);
 }
 
 .glass-hover {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-hover:hover {
-  background: rgba(26, 26, 36, 0.8);
-  border-color: rgba(168, 85, 247, 0.3);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-active);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-neon);
+  box-shadow: var(--shadow-glow);
+}
+
+/* 渐变气泡（AI 消息） */
+.bubble-gradient {
+  background: linear-gradient(135deg,
+    rgba(168, 85, 247, 0.15) 0%,
+    rgba(139, 92, 246, 0.12) 25%,
+    rgba(59, 130, 246, 0.1) 50%,
+    rgba(6, 182, 212, 0.08) 100%
+  );
+  border: 1px solid;
+  border-image: linear-gradient(135deg,
+    rgba(168, 85, 247, 0.4),
+    rgba(59, 130, 246, 0.3),
+    rgba(6, 182, 212, 0.2)
+  ) 1;
 }
 
 /* ============================================================

@@ -1,5 +1,103 @@
 # 超级视频Agent - 更新日志
 
+## v1.6.0 - UI 创意活力升级（2026-04-06）
+
+### 🎨 视觉升级
+
+**设计方向**：创意活力 + 升级玻璃态
+- 年轻、有趣、创意工作室风格
+- 保留玻璃态基调，增强层次和动效
+- 霓虹色点缀，不规则视觉元素
+
+**字体系统**：
+- Display: **Satoshi Bold** (品牌标题)
+- Body: **DM Sans** (正文)
+- Mono: **JetBrains Mono** (代码)
+
+**核心差异化**：
+1. **渐变气泡**：AI 消息采用紫-蓝-青渐变气泡 + 霓虹边框
+2. **光波扩散**：按钮 hover 有光波扩散动画（btn-ripple）
+3. **卡片倾斜**：对话卡片 hover 轻微 3D 倾斜（card-tilt）
+4. **霓虹聚焦环**：输入框 focus 霓虹光晕效果
+
+### 🎯 组件升级
+
+**Header**：
+- Logo 增强霓虹脉冲（从 20px 到 40px 模糊半径）
+- 历史按钮 hover 旋转 12° + 渐变背景
+- 状态徽章渐变指示器
+
+**ChatMessage**：
+- AI 消息：`bubble-gradient` 类（紫-蓝-青渐变 + 霓虹边框）
+- 用户消息：三色渐变（purple → violet → blue）
+- Avatar hover 光晕增强（从 20px 到 40px）
+- 卡片倾斜效果（perspective 1000px）
+
+**ChatInput**：
+- 输入框聚焦霓虹环（shadow-glow）
+- 附件按钮光波扩散动画
+- 发送按钮三色渐变（purple → violet → cyan）
+- 所有字体应用 DM Sans
+
+### 🔧 技术细节
+
+**新增 CSS**：
+- 字体加载：Satoshi (Fontshare) + DM Sans (Google Fonts)
+- 光波扩散动画：`@keyframes ripple` + `.btn-ripple::after`
+- 卡片倾斜：`.card-tilt` (perspective + rotateX/Y)
+- 渐变气泡：`.bubble-gradient` (多层渐变 + border-image)
+
+**CSS 变量增强**：
+- 新增 `--neon-violet`, `--glass-bg-hover`, `--shadow-glow`
+- 提升模糊强度：blur(12px) → blur(16px)
+- 增加饱和度：`saturate(180%)`
+
+**动画优化**：
+- 霓虹脉冲增强：阴影从 3 层到更强烈的 3 层
+- 过渡时长统一：300ms cubic-bezier(0.4, 0, 0.2, 1)
+- hover 状态优化：scale + shadow 组合
+
+### 📦 文件变更
+
+**修改**：
+- `src/app/globals.css` - 字体加载 + 动画 + CSS 变量
+- `src/app/page.tsx` - Header 升级
+- `src/components/chat/ChatMessage.tsx` - 气泡渐变
+- `src/components/chat/ChatInput.tsx` - 霓虹聚焦环
+- `CHANGELOG.md` - 本次更新记录
+
+### ✅ 测试
+
+- ✅ 构建成功（TypeScript 编译通过）
+- ✅ 字体加载正常
+- ✅ 动画流畅（60fps）
+- ✅ 响应式兼容
+
+### 🎬 视觉效果
+
+**对比前后**：
+- **Before**: 纯玻璃态 + 简单渐变
+- **After**: 玻璃态 + 霓虹光晕 + 多重动效
+
+**关键差异**：
+- 不再是"千篇一律的紫色渐变卡片"
+- 有独特的光波扩散和卡片倾斜交互
+- 字体从 Geist 切换到 Satoshi + DM Sans
+
+---
+
+## v1.5.1 - 历史记录系统（2026-04-06）
+
+### 新增功能
+- ✅ 历史记录查询 API (/api/history)
+- ✅ 支持分页和筛选（类型/状态/搜索）
+- ✅ 历史记录侧边栏组件
+- ✅ 时间线展示
+- ✅ 查看/重新生成/删除操作
+- ✅ 从历史恢复分镜状态
+
+---
+
 ## v1.5.0 - 多模型路由系统（2026-04-06）
 
 ### 🎯 核心功能

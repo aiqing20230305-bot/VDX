@@ -71,23 +71,23 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
         </div>
       )}
 
-      {/* Input row - 玻璃态设计 */}
+      {/* Input row - 创意活力设计 v1.6.0 */}
       <div className={cn(
         'relative flex items-end gap-3 glass rounded-2xl px-4 py-3 border border-white/10',
-        'focus-within:border-purple-500/50 focus-within:shadow-[0_0_20px_rgba(168,85,247,0.2)]',
+        'focus-within:border-purple-400/50 focus-within:shadow-glow',
         'transition-all duration-300',
         disabled && 'opacity-50 pointer-events-none'
       )}>
-        {/* 发光边框效果 */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/20 via-transparent to-cyan-500/20 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+        {/* 霓虹聚焦环 */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-blue-500/10 opacity-0 focus-within:opacity-100 transition-opacity pointer-events-none" />
 
-        {/* Attach image */}
+        {/* Attach image - 增强 hover */}
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex-shrink-0 p-2 text-zinc-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-xl transition-all"
+          className="relative flex-shrink-0 p-2 text-zinc-400 hover:text-purple-400 hover:bg-purple-500/15 rounded-xl transition-all btn-ripple overflow-hidden"
           title="上传图片"
         >
-          <Paperclip size={20} />
+          <Paperclip size={20} className="relative z-10" />
         </button>
         <input
           ref={fileInputRef}
@@ -98,13 +98,13 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
           onChange={e => addFiles(e.target.files, 'image')}
         />
 
-        {/* Attach video */}
+        {/* Attach video - 增强 hover */}
         <button
           onClick={() => videoInputRef.current?.click()}
-          className="flex-shrink-0 p-2 text-zinc-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-xl transition-all"
+          className="relative flex-shrink-0 p-2 text-zinc-400 hover:text-cyan-400 hover:bg-cyan-500/15 rounded-xl transition-all btn-ripple overflow-hidden"
           title="上传视频（二创）"
         >
-          <Video size={20} />
+          <Video size={20} className="relative z-10" />
         </button>
         <input
           ref={videoInputRef}
@@ -114,7 +114,7 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
           onChange={e => addFiles(e.target.files, 'video')}
         />
 
-        {/* Textarea */}
+        {/* Textarea - DM Sans 字体 */}
         <textarea
           ref={textareaRef}
           value={text}
@@ -127,26 +127,27 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
             'resize-none outline-none leading-relaxed py-1',
             'min-h-[28px] max-h-[200px]'
           )}
+          style={{ fontFamily: 'DM Sans, sans-serif' }}
         />
 
-        {/* Send button - 渐变设计 */}
+        {/* Send button - 光波扩散效果 */}
         <button
           onClick={handleSend}
           disabled={!text.trim() && files.length === 0}
           className={cn(
-            'flex-shrink-0 p-2 rounded-xl transition-all relative overflow-hidden',
+            'flex-shrink-0 p-2.5 rounded-xl transition-all relative overflow-hidden btn-ripple',
             (text.trim() || files.length > 0)
-              ? 'bg-gradient-to-r from-purple-500 to-cyan-500 text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:scale-105'
+              ? 'bg-gradient-to-br from-purple-500 via-violet-500 to-cyan-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:scale-105 active:scale-95'
               : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
           )}
         >
-          <Send size={20} />
+          <Send size={18} className="relative z-10" />
         </button>
       </div>
 
-      <p className="text-xs text-zinc-500 text-center font-medium">
-        <kbd className="px-2 py-0.5 bg-zinc-800/50 rounded border border-zinc-700/50">Enter</kbd> 发送 ·
-        <kbd className="px-2 py-0.5 bg-zinc-800/50 rounded border border-zinc-700/50 mx-1">Shift+Enter</kbd> 换行 ·
+      <p className="text-xs text-zinc-500 text-center font-medium" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+        <kbd className="px-2 py-0.5 glass rounded border border-white/10">Enter</kbd> 发送 ·
+        <kbd className="px-2 py-0.5 glass rounded border border-white/10 mx-1">Shift+Enter</kbd> 换行 ·
         支持上传图片和视频
       </p>
     </div>

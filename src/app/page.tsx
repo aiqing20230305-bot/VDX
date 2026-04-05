@@ -1426,42 +1426,50 @@ ${parts.join('\n\n')}
       <div className="absolute inset-0 bg-grid opacity-30 pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
 
-      {/* Header - 玻璃态设计 */}
+      {/* Header - 创意活力设计 v1.6.0 */}
       <header className="relative flex-shrink-0 px-6 py-4 glass border-b border-white/10 flex items-center gap-4 z-10">
-        {/* Logo */}
+        {/* Logo - 增强霓虹效果 */}
         <div className="relative group">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-neon animate-neon-pulse">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 flex items-center justify-center text-white text-xl shadow-neon animate-neon-pulse">
             ✦
           </div>
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 opacity-0 group-hover:opacity-50 blur-xl transition-opacity" />
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500 to-cyan-400 opacity-0 group-hover:opacity-60 blur-2xl transition-all duration-500" />
         </div>
 
-        {/* 品牌信息 */}
+        {/* 品牌信息 - Satoshi 字体 */}
         <div className="flex flex-col">
-          <h1 className="text-base font-bold text-gradient">超级视频Agent</h1>
-          <p className="text-xs text-zinc-400">AI视频生产力OS</p>
+          <h1 className="text-base font-bold text-gradient" style={{ fontFamily: 'Satoshi, sans-serif' }}>
+            超级视频Agent
+          </h1>
+          <p className="text-xs text-zinc-400" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+            AI视频生产力OS
+          </p>
         </div>
 
         {/* 状态指示器 */}
         <div className="ml-auto flex items-center gap-3">
-          {/* 历史记录按钮 */}
+          {/* 历史记录按钮 - 增强 hover */}
           <button
             onClick={() => setShowHistory(true)}
-            className="glass px-3 py-1.5 rounded-full flex items-center gap-2 hover:bg-white/5 transition-all group"
+            className="glass px-3 py-1.5 rounded-full flex items-center gap-2 hover:bg-white/8 hover:border-purple-400/30 transition-all group relative overflow-hidden"
           >
-            <Clock size={14} className="text-purple-400 group-hover:scale-110 transition-transform" />
-            <span className="text-xs font-medium text-zinc-300">历史</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Clock size={14} className="relative z-10 text-purple-400 group-hover:scale-110 group-hover:rotate-12 transition-all" />
+            <span className="relative z-10 text-xs font-medium text-zinc-300">历史</span>
           </button>
 
-          <div className="glass px-3 py-1.5 rounded-full flex items-center gap-2">
+          {/* 状态徽章 - 渐变背景 */}
+          <div className={`glass px-3 py-1.5 rounded-full flex items-center gap-2 transition-all ${
+            isLoading ? 'border-purple-400/30' : 'border-emerald-400/30'
+          }`}>
             <div
               className={`w-2 h-2 rounded-full ${
                 isLoading
-                  ? 'bg-purple-400 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]'
-                  : 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]'
+                  ? 'bg-gradient-to-br from-purple-400 to-pink-400 animate-pulse shadow-[0_0_12px_rgba(168,85,247,0.6)]'
+                  : 'bg-gradient-to-br from-emerald-400 to-cyan-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]'
               }`}
             />
-            <span className="text-xs font-medium text-zinc-300">
+            <span className="text-xs font-semibold text-zinc-200" style={{ fontFamily: 'DM Sans, sans-serif' }}>
               {isLoading ? '生成中…' : '就绪'}
             </span>
           </div>

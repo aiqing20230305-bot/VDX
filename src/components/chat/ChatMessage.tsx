@@ -25,7 +25,7 @@ export function ChatMessage({ message, onAction }: Props) {
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={cn('flex gap-4', isAssistant ? 'flex-row' : 'flex-row-reverse')}
     >
-      {/* Avatar */}
+      {/* Avatar - 增强 */}
       <div className={cn(
         'relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold group',
         isAssistant
@@ -33,21 +33,26 @@ export function ChatMessage({ message, onAction }: Props) {
           : 'glass border border-white/10 text-zinc-200'
       )}>
         {isAssistant && (
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 opacity-0 group-hover:opacity-50 blur-xl transition-opacity" />
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-400 to-cyan-400 opacity-0 group-hover:opacity-70 blur-2xl transition-all duration-500" />
         )}
-        <span className="relative z-10">{isAssistant ? '✦' : 'U'}</span>
+        <span className="relative z-10" style={{ fontFamily: 'Satoshi, sans-serif' }}>
+          {isAssistant ? '✦' : 'U'}
+        </span>
       </div>
 
       {/* Content */}
       <div className={cn('flex flex-col gap-3 max-w-[85%]', isAssistant ? 'items-start' : 'items-end')}>
-        {/* Text bubble - 玻璃态设计 */}
+        {/* Text bubble - 创意活力风格 v1.6.0 */}
         {message.content && (
-          <div className={cn(
-            'px-5 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap transition-all',
-            isAssistant
-              ? 'glass border border-white/10 text-zinc-100 rounded-tl-sm hover:border-purple-500/30'
-              : 'bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-tr-sm shadow-[0_4px_20px_rgba(168,85,247,0.3)]'
-          )}>
+          <div
+            className={cn(
+              'px-5 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap transition-all duration-300',
+              isAssistant
+                ? 'bubble-gradient backdrop-blur-xl rounded-tl-sm hover:shadow-glow card-tilt'
+                : 'bg-gradient-to-br from-purple-500 via-violet-600 to-blue-600 text-white rounded-tr-sm shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_8px_30px_rgba(168,85,247,0.5)] hover:-translate-y-0.5'
+            )}
+            style={{ fontFamily: 'DM Sans, sans-serif' }}
+          >
             <MarkdownText text={message.content} />
           </div>
         )}
