@@ -3,10 +3,11 @@
  * 快速渲染单帧用于预览，无需完整视频编码
  */
 import 'server-only'
-import { renderFrame, selectComposition } from '@remotion/renderer'
+import { renderStill, selectComposition } from '@remotion/renderer'
 import { bundle } from '@remotion/bundler'
 import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
+import fs from 'fs/promises'
 import type { Storyboard, AspectRatio } from '@/types'
 
 export const runtime = 'nodejs'
@@ -111,9 +112,11 @@ export async function POST(req: NextRequest) {
       inputProps: { storyboard, fps },
     })
 
-    // 渲染单帧
+    // 渲染单帧（使用 renderStill）
     const startTime = Date.now()
-    const frameBuffer = await renderFrame({
+    const outputPath = path.join('/tmp', `preview-${Date.now()}.png`)
+
+    await renderStill({
       composition: {
         ...composition,
         fps,
@@ -121,13 +124,20 @@ export async function POST(req: NextRequest) {
         height: dimensions.height,
       },
       serveUrl: bundleLocation,
-      frameNumber,
+      frame: frameNumber,
       inputProps: { storyboard, fps },
+      output: outputPath,
       imageFormat: 'png',
     })
 
     const renderTime = Date.now() - startTime
     console.log(`[Preview] 渲染完成，耗时 ${renderTime}ms`)
+
+    // 读取渲染的图片
+    const frameBuffer = await fs.readFile(outputPath)
+
+    // 删除临时文件
+    await fs.unlink(outputPath).catch(() => {})
 
     // 返回 PNG 图片
     return new NextResponse(frameBuffer, {
