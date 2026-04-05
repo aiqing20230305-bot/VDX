@@ -131,7 +131,6 @@ export function generateTextStyle(style: SubtitleStyle): React.CSSProperties {
   // 描边
   if (style.stroke) {
     cssStyle.WebkitTextStroke = `${style.stroke.width}px ${style.stroke.color}`
-    cssStyle.textStroke = `${style.stroke.width}px ${style.stroke.color}`
   }
 
   // 阴影
