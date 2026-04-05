@@ -73,10 +73,11 @@ export const Title: React.FC<TitleProps> = ({
       })
 
   // 计算退出动画进度
+  const exitDuration = animConfig.exitDuration ?? 20
   const exitProgress = animConfig.exitAnimation
     ? interpolate(
         relativeFrame,
-        [totalFrames - animConfig.exitDuration, totalFrames],
+        [totalFrames - exitDuration, totalFrames],
         [0, 1],
         { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
       )
