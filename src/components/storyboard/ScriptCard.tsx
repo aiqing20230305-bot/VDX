@@ -16,10 +16,10 @@ export function ScriptCard({ script, selected, onSelect }: Props) {
   return (
     <div
       className={`
-        w-full rounded-xl border transition-all duration-200 overflow-hidden
+        w-full rounded-xl border transition-smooth overflow-hidden
         ${selected
-          ? 'border-violet-500 bg-violet-500/10'
-          : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+          ? 'border-[var(--accent-primary)] bg-[var(--accent-subtle)]'
+          : 'border-[var(--border-medium)] bg-[var(--bg-secondary)] hover:border-[var(--border-strong)]'
         }
       `}
     >
@@ -27,7 +27,7 @@ export function ScriptCard({ script, selected, onSelect }: Props) {
       <div className="p-3 flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <Film size={14} className="text-violet-400 flex-shrink-0" />
+            <Film size={14} className="text-[var(--accent-primary)] flex-shrink-0" />
             <h3 className="text-sm font-semibold text-zinc-100 truncate">{script.title}</h3>
           </div>
           <p className="text-xs text-zinc-400 line-clamp-2">{script.logline}</p>
@@ -51,10 +51,10 @@ export function ScriptCard({ script, selected, onSelect }: Props) {
             <button
               onClick={onSelect}
               className={`
-                px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+                px-3 py-1.5 rounded-lg text-xs font-medium transition-smooth
                 ${selected
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                  ? 'bg-[var(--accent-primary)] text-white'
+                  : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]'
                 }
               `}
             >
@@ -85,7 +85,7 @@ export function ScriptCard({ script, selected, onSelect }: Props) {
                 )}
                 <div className="flex gap-2 mt-1">
                   {scene.emotion && (
-                    <span className="text-xs text-violet-400">{scene.emotion}</span>
+                    <span className="text-xs text-[var(--accent-primary)]">{scene.emotion}</span>
                   )}
                   {scene.cameraMove && (
                     <span className="text-xs text-zinc-500">{scene.cameraMove}</span>
