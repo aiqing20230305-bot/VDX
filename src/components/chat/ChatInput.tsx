@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useCallback } from 'react'
-import { Send, Paperclip, Video, X } from 'lucide-react'
+import { Send, Paperclip, Video, Music, X } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 interface Props {
@@ -16,6 +16,7 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
+  const audioInputRef = useRef<HTMLInputElement>(null)
 
   const handleSend = useCallback(() => {
     const trimmed = text.trim()
@@ -43,10 +44,11 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`
   }
 
-  const addFiles = (newFiles: FileList | null, type: 'image' | 'video') => {
+  const addFiles = (newFiles: FileList | null, type: 'image' | 'video' | 'audio') => {
     if (!newFiles) return
     const arr = Array.from(newFiles)
-    setFiles(prev => [...prev, ...arr].slice(0, type === 'image' ? 10 : 1))
+    const maxFiles = type === 'image' ? 10 : 1 // 图片最多10个，视频/音频最多1个
+    setFiles(prev => [...prev, ...arr].slice(0, maxFiles))
   }
 
   return (
@@ -111,6 +113,22 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
           onChange={e => addFiles(e.target.files, 'video')}
         />
 
+        {/* Attach audio */}
+        <button
+          onClick={() => audioInputRef.current?.click()}
+          className="flex-shrink-0 p-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-subtle)] rounded-xl transition-smooth"
+          title="上传音频（音乐视频）"
+        >
+          <Music size={20} />
+        </button>
+        <input
+          ref={audioInputRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={e => addFiles(e.target.files, 'audio')}
+        />
+
         {/* Textarea */}
         <textarea
           ref={textareaRef}
@@ -145,7 +163,7 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
       <p className="text-xs text-[var(--text-tertiary)] text-center font-medium" style={{ fontFamily: 'var(--font-body)' }}>
         <kbd className="px-2 py-0.5 glass rounded border border-white/10">Enter</kbd> 发送 ·
         <kbd className="px-2 py-0.5 glass rounded border border-white/10 mx-1">Shift+Enter</kbd> 换行 ·
-        支持上传图片和视频
+        支持上传图片、视频、音频
       </p>
     </div>
   )
