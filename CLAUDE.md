@@ -211,3 +211,24 @@ contextState: {
    - 60fps 高性能渲染
    - 与 Remotion 无缝集成
 6. 异步任务队列（BullMQ，长视频）
+
+
+## 设计系统 (Design System)
+**Always read DESIGN.md before making any visual or UI decisions.**
+
+All font choices, colors, spacing, and aesthetic direction are defined in DESIGN.md.
+Do not deviate without explicit user approval. In QA mode, flag any code that doesn't match DESIGN.md.
+
+### 核心原则
+- **Industrial Minimalism**: 工业极简，功能优先
+- **Cyan Accent**: 使用 `#06b6d4` (cyan) 作为主色调，not purple
+- **No Glass/Neon**: 禁止使用 backdrop-filter blur 和霓虹效果
+- **High Contrast**: 深色背景 + 高对比度文字
+- **Instrument Serif + DM Sans**: 品牌用 serif，UI 用 sans
+
+### 实现优先级
+1. **Phase 1 (Critical)**: 更新 globals.css CSS 变量，移除 glass/neon 效果
+2. **Phase 2 (High)**: 将主色调从紫色改为 cyan
+3. **Phase 3 (Medium)**: Logo/品牌字体更新为 Instrument Serif
+4. **Phase 4 (Low)**: 优化间距，提高信息密度
+
