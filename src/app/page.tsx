@@ -1694,14 +1694,17 @@ ${parts.join('\n\n')}
             <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
               ✦
             </div>
-            <div className="glass rounded-2xl rounded-tl-sm px-5 py-3 flex gap-1.5 items-center border border-white/10">
-              {[0, 1, 2].map(i => (
-                <div
-                  key={i}
-                  className="w-2 h-2 bg-[var(--accent-primary)] rounded-full animate-bounce"
-                  style={{ animationDelay: `${i * 0.15}s` }}
-                />
-              ))}
+            <div className="glass rounded-2xl rounded-tl-sm px-5 py-3 flex gap-3 items-center border border-white/10">
+              <div className="flex gap-1.5">
+                {[0, 1, 2].map(i => (
+                  <div
+                    key={i}
+                    className="w-2 h-2 bg-[var(--accent-primary)] rounded-full animate-bounce"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-[var(--text-secondary)] animate-pulse">正在思考...</span>
             </div>
           </div>
         )}

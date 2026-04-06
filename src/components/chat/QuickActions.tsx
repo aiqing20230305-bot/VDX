@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import type { QuickAction } from '@/types'
 import { cn } from '@/lib/utils/cn'
 
@@ -10,10 +11,26 @@ interface Props {
 
 export function QuickActions({ actions, onAction }: Props) {
   return (
-    <div className="flex flex-wrap gap-2 mt-1">
-      {actions.map(action => (
-        <button
+    <motion.div
+      className="flex flex-wrap gap-2 mt-1"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        visible: {
+          transition: {
+            staggerChildren: 0.08,
+          },
+        },
+      }}
+    >
+      {actions.map((action, index) => (
+        <motion.button
           key={action.id}
+          variants={{
+            hidden: { opacity: 0, y: 10, scale: 0.95 },
+            visible: { opacity: 1, y: 0, scale: 1 },
+          }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
           onClick={() => onAction?.(action.action, action.params)}
           title={action.description}
           className={cn(
@@ -26,8 +43,8 @@ export function QuickActions({ actions, onAction }: Props) {
           )}
         >
           {action.label}
-        </button>
+        </motion.button>
       ))}
-    </div>
+    </motion.div>
   )
 }

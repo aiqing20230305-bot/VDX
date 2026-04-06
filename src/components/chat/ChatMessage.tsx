@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { Lightbulb, Info, Sparkles } from 'lucide-react'
 import type { ChatMessage as ChatMessageType } from '@/types'
 import { QuickActions } from './QuickActions'
 import { GenerationProgress, type GenerationStage } from './GenerationProgress'
@@ -17,6 +18,8 @@ interface Props {
 
 export function ChatMessage({ message, onAction }: Props) {
   const isAssistant = message.role === 'assistant'
+  const isSystemGuidance = isAssistant && message.type === 'action' && !message.metadata?.script && !message.metadata?.storyboard
+  const isGeneratedContent = message.metadata?.script || message.metadata?.storyboard || message.metadata?.videoJob
 
   return (
     <motion.div
@@ -41,17 +44,27 @@ export function ChatMessage({ message, onAction }: Props) {
       <div className={cn('flex flex-col gap-3 max-w-[85%]', isAssistant ? 'items-start' : 'items-end')}>
         {/* Text bubble - Industrial Minimalism v1.8.0 */}
         {message.content && (
-          <div
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
             className={cn(
-              'px-5 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap transition-smooth',
-              isAssistant
-                ? 'glass border border-[var(--border-subtle)] rounded-tl-sm hover:border-[var(--accent-border)]'
-                : 'bg-[var(--accent-primary)] text-white rounded-tr-sm hover:bg-[var(--accent-hover)]'
+              'rounded-2xl text-sm leading-relaxed whitespace-pre-wrap transition-smooth',
+              isSystemGuidance && isAssistant
+                ? 'bg-white/5 border border-white/10 px-5 py-3 rounded-tl-sm flex items-start gap-3'
+                : isAssistant
+                  ? 'glass border border-[var(--border-subtle)] px-5 py-3 rounded-tl-sm hover:border-[var(--accent-border)]'
+                  : 'bg-[var(--accent-primary)] text-white px-5 py-3 rounded-tr-sm hover:bg-[var(--accent-hover)]'
             )}
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            <MarkdownText text={message.content} />
-          </div>
+            {isSystemGuidance && isAssistant && (
+              <Lightbulb className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+            )}
+            <div className="flex-1">
+              <MarkdownText text={message.content} />
+            </div>
+          </motion.div>
         )}
 
         {/* Script cards */}

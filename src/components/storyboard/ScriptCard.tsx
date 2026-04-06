@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import type { Script } from '@/types'
 import { ChevronDown, ChevronUp, Clock, Film } from 'lucide-react'
 
@@ -14,7 +15,10 @@ export function ScriptCard({ script, selected, onSelect }: Props) {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
       className={`
         w-full rounded-xl border transition-smooth overflow-hidden
         ${selected
@@ -97,6 +101,6 @@ export function ScriptCard({ script, selected, onSelect }: Props) {
           ))}
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }
