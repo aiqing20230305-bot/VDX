@@ -82,41 +82,89 @@ export function applyStyleToPrompt(framePrompt: string, style: StylePreset): str
 /**
  * 简化提示词以符合平台规范
  * 用于生成失败后的重试或主动简化
+ *
+ * ⚠️ 激进模式：移除所有可能违反平台规则的技术化描述
  */
 export function simplifyPrompt(prompt: string): string {
-  // 移除冗余词汇和过长描述
   let simplified = prompt
 
-  // 移除相机技术参数
-  simplified = simplified.replace(/shot on [^,]+,\s*/gi, '')
-  simplified = simplified.replace(/\d+mm\s+f\/[\d.]+\s+lens,?\s*/gi, '')
-  simplified = simplified.replace(/ISO\s+\d+,?\s*/gi, '')
-  simplified = simplified.replace(/\d+K resolution,?\s*/gi, '')
-  simplified = simplified.replace(/RAW photo quality,?\s*/gi, '')
+  // ===== 第1步：移除相机品牌和型号 =====
+  simplified = simplified.replace(/shot on (Canon|Nikon|Sony|Fujifilm|Leica|Hasselblad|Pentax|Panasonic)\s+[A-Za-z0-9\-]+/gi, '')
+  simplified = simplified.replace(/\b(Canon|Nikon|Sony|Fujifilm|Leica|Hasselblad)\s+[A-Za-z]*\d+[A-Za-z]*/gi, '')
 
-  // 移除过度具体的技术术语
-  simplified = simplified.replace(/subsurface scattering,?\s*/gi, '')
-  simplified = simplified.replace(/global illumination,?\s*/gi, '')
-  simplified = simplified.replace(/Blender Cycles render,?\s*/gi, '')
-  simplified = simplified.replace(/Kodak film stock look,?\s*/gi, '')
-  simplified = simplified.replace(/anamorphic lens,?\s*/gi, '')
+  // ===== 第2步：移除镜头参数 =====
+  simplified = simplified.replace(/with\s+\d+mm\s+f\/[\d.]+\s+lens/gi, '')
+  simplified = simplified.replace(/\d+mm\s+f\/[\d.]+\s*(lens)?/gi, '')
+  simplified = simplified.replace(/\b(prime|zoom|telephoto|wide[-\s]?angle|macro|fisheye)\s+lens\b/gi, '')
 
-  // 移除多余的形容词
-  simplified = simplified.replace(/professional\s+/gi, '')
-  simplified = simplified.replace(/high quality\s+/gi, '')
-  simplified = simplified.replace(/detailed\s+/gi, '')
+  // ===== 第3步：移除技术参数 =====
+  simplified = simplified.replace(/\b(4K|8K|12K|16K)\s+(resolution|quality|video|footage)/gi, 'high quality')
+  simplified = simplified.replace(/\bRAW\s+(photo|image|format|quality)/gi, 'photo')
+  simplified = simplified.replace(/ISO\s+\d+/gi, '')
+  simplified = simplified.replace(/\bDSLR\s+camera\b/gi, 'camera')
+  simplified = simplified.replace(/\bmirrorless\s+camera\b/gi, 'camera')
 
-  // 合并多个逗号和空格
-  simplified = simplified.replace(/,\s*,/g, ',')
-  simplified = simplified.replace(/,\s+/g, ', ')
-  simplified = simplified.replace(/\s+/g, ' ')
+  // ===== 第4步：移除专业摄影术语 =====
+  simplified = simplified.replace(/\bshallow\s+depth\s+of\s+field\b/gi, 'blurred background')
+  simplified = simplified.replace(/\bdeep\s+depth\s+of\s+field\b/gi, '')
+  simplified = simplified.replace(/\bbokeh\s+(effect|background)/gi, 'soft background')
+  simplified = simplified.replace(/\bfilm\s+grain\b/gi, '')
+  simplified = simplified.replace(/\bchromatic\s+aberration\b/gi, '')
+  simplified = simplified.replace(/\bvignette\s+effect\b/gi, '')
+  simplified = simplified.replace(/\banamorphic\s+lens\b/gi, '')
+
+  // ===== 第5步：移除后期和调色术语 =====
+  simplified = simplified.replace(/\b(natural|cinematic)\s+color\s+grading\b/gi, '')
+  simplified = simplified.replace(/\bcolor\s+grading\b/gi, '')
+  simplified = simplified.replace(/\bLUT\s+(applied|preset)/gi, '')
+  simplified = simplified.replace(/\bKodak\s+film\s+stock/gi, '')
+
+  // ===== 第6步：移除光线专业术语 =====
+  simplified = simplified.replace(/\bgolden\s+hour\s+lighting\b/gi, 'warm light')
+  simplified = simplified.replace(/\bblue\s+hour\s+lighting\b/gi, 'twilight')
+  simplified = simplified.replace(/\b(Rembrandt|butterfly|loop|split)\s+lighting\b/gi, '')
+
+  // ===== 第7步：移除质感和渲染术语 =====
+  simplified = simplified.replace(/\brealistic\s+skin\s+texture\b/gi, '')
+  simplified = simplified.replace(/\bphotorealistic\s+skin\b/gi, '')
+  simplified = simplified.replace(/\bsubsurface\s+scattering\b/gi, '')
+  simplified = simplified.replace(/\bglobal\s+illumination\b/gi, '')
+  simplified = simplified.replace(/\bBlender\s+Cycles\s+render\b/gi, '')
+
+  // ===== 第8步：移除文件格式 =====
+  simplified = simplified.replace(/\b(RAW|DNG|CR2|NEF|ARW)\s+file\b/gi, '')
+
+  // ===== 第9步：移除冗余形容词 =====
+  simplified = simplified.replace(/\bprofessional\s+/gi, '')
+  simplified = simplified.replace(/\bhigh\s+quality\s+/gi, '')
+  simplified = simplified.replace(/\bhighly\s+detailed\s+/gi, '')
+  simplified = simplified.replace(/\bextremely\s+detailed\s+/gi, '')
+  simplified = simplified.replace(/\bultra\s+(detailed|realistic|high\s+quality)/gi, '')
+
+  // ===== 第10步：清理格式 =====
+  // 移除多余的逗号、空格和连续标点
+  simplified = simplified.replace(/,\s*,+/g, ',')
+  simplified = simplified.replace(/,\s+,/g, ',')
+  simplified = simplified.replace(/\s*,\s*/g, ', ')
+  simplified = simplified.replace(/\s{2,}/g, ' ')
+  simplified = simplified.replace(/^,\s*/, '') // 开头逗号
+  simplified = simplified.replace(/,\s*$/, '') // 结尾逗号
   simplified = simplified.trim()
 
-  // 如果仍然过长（超过200字符），截断保留核心部分
-  if (simplified.length > 200) {
-    const parts = simplified.split(',').map(p => p.trim())
-    // 保留前8个最重要的部分
-    simplified = parts.slice(0, 8).join(', ')
+  // ===== 第11步：长度控制 =====
+  // 如果仍然过长（超过180字符），智能截断
+  if (simplified.length > 180) {
+    const parts = simplified.split(',').map(p => p.trim()).filter(p => p.length > 0)
+
+    // 优先保留：主体、动作、场景、光线、基础风格
+    // 去除：重复的风格词、冗余形容词
+    const priorityWords = ['character', 'person', 'object', 'scene', 'background', 'light', 'color']
+    const important = parts.filter(p => priorityWords.some(w => p.toLowerCase().includes(w)))
+    const others = parts.filter(p => !important.includes(p))
+
+    // 重组：重要部分 + 其他部分（总共不超过10个）
+    const final = [...important, ...others].slice(0, 10)
+    simplified = final.join(', ')
   }
 
   return simplified

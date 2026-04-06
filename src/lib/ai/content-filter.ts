@@ -80,6 +80,50 @@ const FILTER_RULES: FilterRule[] = [
   { pattern: /\bcigarette\b/gi, replacement: 'item', category: 'sensitive', description: '香烟' },
   { pattern: /毒品/g, replacement: '物品', category: 'sensitive', description: '毒品' },
   { pattern: /香烟/g, replacement: '物品', category: 'sensitive', description: '香烟' },
+
+  // ===== 过度技术化描述（即梦/可灵平台不允许） =====
+  // 相机品牌和型号
+  { pattern: /shot on (Canon|Nikon|Sony|Fujifilm|Leica|Hasselblad|Pentax)\s+[A-Z0-9]+/gi, replacement: 'professional camera', category: 'brand', description: '相机型号' },
+  { pattern: /\bCanon\s+[A-Z0-9]+/gi, replacement: 'DSLR camera', category: 'brand', description: '佳能相机' },
+  { pattern: /\bSony\s+A[0-9]+[A-Z]*/gi, replacement: 'mirrorless camera', category: 'brand', description: '索尼相机' },
+  { pattern: /\bNikon\s+[A-Z]*[0-9]+/gi, replacement: 'professional camera', category: 'brand', description: '尼康相机' },
+
+  // 镜头参数
+  { pattern: /with\s+\d+mm\s+f\/[\d.]+\s+lens/gi, replacement: '', category: 'brand', description: '镜头参数' },
+  { pattern: /\d+mm\s+f\/[\d.]+/g, replacement: 'lens', category: 'brand', description: '焦距光圈' },
+  { pattern: /\b(prime|zoom|telephoto|wide[-\s]?angle|macro)\s+lens\b/gi, replacement: '', category: 'brand', description: '镜头类型' },
+
+  // 分辨率和技术参数
+  { pattern: /\b(4K|8K|12K|16K)\s+(resolution|quality|video|footage)/gi, replacement: 'high resolution', category: 'brand', description: '分辨率' },
+  { pattern: /\bRAW\s+(photo|image|format|quality)/gi, replacement: 'high quality', category: 'brand', description: 'RAW格式' },
+  { pattern: /\b(DSLR|mirrorless)\s+camera\b/gi, replacement: 'camera', category: 'brand', description: '相机类型' },
+
+  // 专业摄影术语
+  { pattern: /\bshallow\s+depth\s+of\s+field\b/gi, replacement: 'blurred background', category: 'brand', description: '浅景深' },
+  { pattern: /\bdeep\s+depth\s+of\s+field\b/gi, replacement: 'sharp focus', category: 'brand', description: '深景深' },
+  { pattern: /\bbokeh\s+(effect|background)/gi, replacement: 'soft background', category: 'brand', description: '焦外虚化' },
+  { pattern: /\bfilm\s+grain\b/gi, replacement: 'texture', category: 'brand', description: '胶片颗粒' },
+  { pattern: /\bchromatic\s+aberration\b/gi, replacement: '', category: 'brand', description: '色差' },
+  { pattern: /\bvignette\s+effect\b/gi, replacement: 'darkened edges', category: 'brand', description: '暗角' },
+
+  // 色彩和后期术语
+  { pattern: /\bcolor\s+grading\b/gi, replacement: 'color tone', category: 'brand', description: '调色' },
+  { pattern: /\bnatural\s+color\s+grading\b/gi, replacement: 'natural colors', category: 'brand', description: '自然调色' },
+  { pattern: /\bcinematic\s+color\s+grading\b/gi, replacement: 'rich colors', category: 'brand', description: '电影调色' },
+  { pattern: /\bLUT\s+(applied|preset)/gi, replacement: 'color style', category: 'brand', description: 'LUT' },
+
+  // 光线术语（过度专业化）
+  { pattern: /\bgolden\s+hour\s+lighting\b/gi, replacement: 'warm sunset light', category: 'brand', description: '黄金时刻' },
+  { pattern: /\bblue\s+hour\s+lighting\b/gi, replacement: 'twilight', category: 'brand', description: '蓝色时刻' },
+  { pattern: /\bRembrandt\s+lighting\b/gi, replacement: 'dramatic lighting', category: 'brand', description: '伦勃朗光' },
+  { pattern: /\bbutterfly\s+lighting\b/gi, replacement: 'front lighting', category: 'brand', description: '蝴蝶光' },
+
+  // 皮肤和质感术语
+  { pattern: /\brealistic\s+skin\s+texture\b/gi, replacement: 'natural skin', category: 'brand', description: '真实皮肤质感' },
+  { pattern: /\bphotorealistic\s+skin\b/gi, replacement: 'realistic portrait', category: 'brand', description: '照片级皮肤' },
+
+  // 文件格式
+  { pattern: /\b(RAW|DNG|CR2|NEF|ARW)\s+file\b/gi, replacement: 'image', category: 'brand', description: '文件格式' },
 ]
 
 /**
