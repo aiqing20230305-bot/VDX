@@ -5,6 +5,7 @@ import { ChatMessage } from '@/components/chat/ChatMessage'
 import { ChatInput } from '@/components/chat/ChatInput'
 import { RemotionPreview } from '@/components/video/RemotionPreview'
 import { HistorySidebar } from '@/components/history/HistorySidebar'
+import { CharacterLibrary } from '@/components/character'
 import { Clock } from 'lucide-react'
 import {
   buildWelcomeMessage,
@@ -20,6 +21,7 @@ import type {
   VideoJob,
   VideoAnalysis,
   GenerationMode,
+  Character,
 } from '@/types'
 import { v4 as uuid } from 'uuid'
 
@@ -32,6 +34,8 @@ export default function HomePage() {
   const [mode, setMode] = useState<GenerationMode>('step-by-step')
   const [showPreview, setShowPreview] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [showCharacterLibrary, setShowCharacterLibrary] = useState(false)
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   /** 上下文状态：记录当前等待的回答类型 */
   const [contextState, setContextState] = useState<{
     type: 'waiting_image_confirmation' | 'waiting_style' | 'waiting_duration' | 'waiting_text_effects' | null
@@ -211,7 +215,7 @@ export default function HomePage() {
   )
 
   const generateStoryboard = useCallback(
-    async (script: Script, currentMode: GenerationMode) => {
+    async (script: Script, currentMode: GenerationMode, characterId?: string) => {
       const totalFrames = Math.max(3, Math.round(script.duration / 3.5))
       const progressId = addMessage({
         role: 'assistant',
@@ -221,7 +225,7 @@ export default function HomePage() {
             stage: 'storyboarding',
             total: totalFrames,
             current: 0,
-            detail: `《${script.title}》 · ${totalFrames} 帧`,
+            detail: `《${script.title}》 · ${totalFrames} 帧${characterId ? ' · 使用角色一致性' : ''}`,
             startedAt: Date.now(),
           },
         },
@@ -236,7 +240,7 @@ export default function HomePage() {
               stage: 'generating_images',
               total: totalFrames,
               current: 0,
-              detail: `正在用即梦生成 ${totalFrames} 帧分镜图…`,
+              detail: `正在用即梦生成 ${totalFrames} 帧分镜图…${characterId ? '（角色一致性）' : ''}`,
               startedAt: Date.now(),
             },
           },
@@ -255,6 +259,7 @@ export default function HomePage() {
             characterDescriptions: uploadedRefs.characters.map(c => c.description),
             productDescriptions: uploadedRefs.products.map(p => p.description),
             productAnalysis: productAnalysis ?? undefined,
+            characterId, // 新增：角色库角色ID
           }),
         })
 
@@ -367,14 +372,86 @@ export default function HomePage() {
             role: 'user',
             content: newMode === 'auto' ? '全自动模式' : '步骤审核模式',
           })
+
+          // 询问是否使用角色一致性
+          addMessage({
+            role: 'assistant',
+            type: 'action',
+            content:
+              newMode === 'auto'
+                ? '全自动模式开启！是否使用角色一致性？'
+                : '步骤审核模式，是否使用角色一致性？',
+            metadata: {
+              actions: [
+                {
+                  id: 'open_character_library',
+                  label: '👤 选择角色',
+                  description: '从角色库选择角色',
+                  action: 'open_character_library',
+                  variant: 'secondary',
+                },
+                {
+                  id: 'skip_character',
+                  label: '跳过',
+                  description: '不使用角色一致性',
+                  action: 'skip_character_selection',
+                  params: { mode: newMode },
+                  variant: 'outline',
+                },
+              ],
+            },
+          })
+          break
+        }
+
+        case 'open_character_library': {
+          setShowCharacterLibrary(true)
+          break
+        }
+
+        case 'skip_character_selection': {
+          const newMode = (params?.mode as GenerationMode) ?? 'step-by-step'
+          const script = selectedScriptRef.current
+          if (!script) return
+          addMessage({
+            role: 'user',
+            content: '跳过角色选择',
+          })
           addMessage({
             role: 'assistant',
             content:
               newMode === 'auto'
-                ? '全自动模式开启！将自动完成：分镜 → 视频生成。我来搞定！'
-                : '步骤审核模式，每个环节我都会等你确认。先来生成分镜图：',
+                ? '好的，开始自动生成分镜！'
+                : '好的，开始生成分镜图：',
           })
           generateStoryboardRef.current(script, newMode)
+          break
+        }
+
+        case 'confirm_character': {
+          const characterId = params?.characterId as string | undefined
+          const characterName = params?.characterName as string | undefined
+          const newMode = (params?.mode as GenerationMode) ?? mode
+          const script = selectedScriptRef.current
+          if (!script) return
+
+          if (characterId) {
+            addMessage({
+              role: 'user',
+              content: `选择角色：${characterName || '未命名'}`,
+            })
+            addMessage({
+              role: 'assistant',
+              content: `好的！使用角色"${characterName}"来生成分镜，将保持角色在所有帧中的一致性。`,
+            })
+            generateStoryboardRef.current(script, newMode, characterId)
+          } else {
+            addMessage({
+              role: 'user',
+              content: '跳过角色选择',
+            })
+            generateStoryboardRef.current(script, newMode)
+          }
           break
         }
 
@@ -1565,6 +1642,55 @@ ${parts.join('\n\n')}
           }
         }}
       />
+
+      {/* Character Library Modal */}
+      {showCharacterLibrary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-6xl h-[85vh] rounded-xl border border-white/18 bg-[#1a1a24] shadow-2xl flex flex-col">
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between border-b border-white/12 p-6">
+              <h2 className="font-['Instrument_Serif'] text-2xl font-bold text-[#f5f5f7]">
+                选择角色
+              </h2>
+              <button
+                onClick={() => setShowCharacterLibrary(false)}
+                className="rounded-lg p-2 text-[#a1a1aa] transition-colors hover:bg-white/5 hover:text-[#f5f5f7]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 角色库内容 */}
+            <div className="flex-1 overflow-hidden">
+              <CharacterLibrary
+                onSelect={(character) => {
+                  setSelectedCharacter(character)
+                  setShowCharacterLibrary(false)
+                  handleAction('confirm_character', {
+                    characterId: character.id,
+                    characterName: character.name,
+                    mode,
+                  })
+                }}
+                showCreateButton={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
