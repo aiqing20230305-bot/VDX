@@ -111,16 +111,16 @@ export function GenerationProgress({ stage, current, total, detail, startedAt }:
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
-          {stage !== 'error' && <Loader2 size={12} className="animate-spin text-violet-400" />}
+        <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+          {stage !== 'error' && <Loader2 size={12} className="animate-spin text-[var(--accent-primary)]" />}
           <span>{formatTime(elapsed)}</span>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="relative w-full h-2 bg-zinc-700 rounded-full overflow-hidden">
+      <div className="relative w-full h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
         <motion.div
-          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-violet-600 to-blue-500"
+          className="absolute inset-y-0 left-0 rounded-full bg-[var(--accent-primary)]"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}

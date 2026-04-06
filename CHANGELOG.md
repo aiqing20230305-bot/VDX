@@ -1,5 +1,162 @@
 # 超级视频Agent - 更新日志
 
+## v1.8.0 - Industrial Minimalism 设计系统（2026-04-06）
+
+### 🎨 视觉革新
+
+**设计方向**：从创意活力风格转向 Industrial Minimalism（工业极简）
+- 专业视频工具美学：功能优先，无装饰
+- Cyan accent (#06b6d4) 取代 purple：差异化于 AI 工具紫色潮流
+- 移除所有玻璃态模糊效果：扁平实色设计
+- 移除霓虹动画：光晕、脉冲、光波扩散全部去除
+- 高信息密度：专业工具级别的内容可见度
+
+**字体系统升级**：
+- Display: **Instrument Serif** (品牌/标题) - 打破几何无衬线趋势
+- Body: **DM Sans** (UI/正文) - 保留现有
+- Mono: **JetBrains Mono** (代码) - 保留现有
+
+**配色方案**：
+- 主色调：Cyan (#06b6d4) - 技术感 + 视频软件色系
+- 背景：深色四层（#0a0a0f → #1f1f2a）
+- 文字：高对比度三层（#f5f5f7 → #71717a）
+- 边框：精细三层（rgba 0.08 → 0.18）
+
+### 🔧 技术实现
+
+**Phase 1 - CSS 变量和全局样式**：
+- `src/app/globals.css` 完全重构（350行）
+  - 新增 CSS 变量系统（--accent-primary, --bg-*, --text-*, --border-*）
+  - 字体加载：Instrument Serif + DM Sans + JetBrains Mono
+  - 移除动画：neon-pulse, ripple, card-tilt, gradient-shift
+  - 简化组件类：.glass, .btn-primary, .card, .progress-bar
+  - 过渡统一：--transition-micro (150ms ease-out)
+
+**Phase 2 - 核心组件更新**：
+- `src/app/page.tsx` - Header 组件
+  - Logo：从紫色渐变改为 cyan 实色
+  - 字体：从 Satoshi 改为 Instrument Serif
+  - 移除：霓虹脉冲、blur 光晕、旋转动画
+  - 状态指示器：cyan + 扁平设计
+  - Loading indicator：从紫色渐变改为 cyan
+
+- `src/components/chat/ChatMessage.tsx`
+  - Avatar：从紫色渐变改为 cyan 实色，移除霓虹光晕
+  - 文字气泡：移除 bubble-gradient、card-tilt、blur 效果
+  - 用户消息：从紫色渐变改为 cyan
+  - 进度条：从 violet 改为 cyan
+
+- `src/components/chat/ChatInput.tsx`
+  - 移除霓虹聚焦环（gradient overlay）
+  - 移除光波扩散动画（btn-ripple）
+  - 附件按钮：简化 hover 状态，统一 cyan
+  - 发送按钮：从紫色渐变改为 cyan 实色
+  - Focus 状态：简单 cyan 边框
+
+- `src/components/chat/QuickActions.tsx`
+  - 所有按钮从 violet 改为 cyan accent
+  - 统一使用 CSS 变量
+
+- `src/components/storyboard/StoryboardGrid.tsx`
+  - 批量操作按钮：violet → cyan
+  - 选中状态：border + ring 改为 cyan
+  - Checkbox 图标：violet → cyan
+  - 帧详情文本：紫色改为 cyan
+  - Hover 状态简化
+
+- `src/components/chat/GenerationProgress.tsx`
+  - Loader 图标：violet → cyan
+  - 进度条：从渐变改为纯 cyan
+
+### 📦 文件变更
+
+**新增**：
+- `DESIGN.md` (224行) - 完整设计系统文档
+  - 产品定位、审美方向、设计原理
+  - 字体、颜色、间距、圆角、动效规范
+  - Anti-patterns（禁用列表）
+  - CSS 变量参考
+  - 实施优先级
+
+**修改**：
+- `CLAUDE.md` - 添加设计系统引用
+- `src/app/globals.css` - 完全重构
+- `src/app/page.tsx` - Header + loading
+- `src/components/chat/ChatMessage.tsx`
+- `src/components/chat/ChatInput.tsx`
+- `src/components/chat/QuickActions.tsx`
+- `src/components/storyboard/StoryboardGrid.tsx`
+- `src/components/chat/GenerationProgress.tsx`
+- `CHANGELOG.md` - 本次更新记录
+
+### ✅ 测试验证
+
+- ✅ TypeScript 编译通过（零错误）
+- ✅ 构建成功（webpack 模式）
+- ✅ 所有 18 个路由正常生成
+- ✅ 字体加载正常（Instrument Serif + DM Sans）
+- ✅ CSS 变量覆盖率 100%
+- ✅ 响应式兼容
+
+### 🎬 视觉效果
+
+**对比前后**：
+- **Before (v1.6.0)**: 玻璃态 + 霓虹光晕 + 紫色渐变 + 多重动效
+- **After (v1.8.0)**: 扁平实色 + cyan accent + 极简过渡
+
+**关键差异**：
+- 不再是"千篇一律的 AI 工具紫色"
+- 专业视频工具美学（Adobe/Linear/GitHub Dark）
+- 内容优先，装饰最少
+- 功能性过渡，零浮夸动画
+
+### 📊 设计原理
+
+**为什么 Cyan vs Purple？**
+- 每个 AI 工具都用紫色（ChatGPT, Claude, Midjourney）
+- Cyan：技术感（终端）+ 创意感（视频软件）
+- 定位转变："专业视频工具 + AI" 而非 "AI 套壳工具"
+
+**为什么 Instrument Serif？**
+- 90% AI 工具用几何无衬线（Inter, Satoshi）
+- 精致衬线：差异化 + 设计工作室感
+- 品牌记忆点
+
+**为什么无装饰？**
+- 视频内容是视觉焦点，UI 不抢戏
+- 专业工具用户重视效率和密度
+- 性能优化：无 blur 和重动画
+
+**为什么高密度？**
+- 专业用户日生成数十视频，需要效率
+- 一屏可见更多上下文（脚本 + 分镜 + 进度）
+- 信号："专业工具"而非"消费级应用"
+
+### 🚀 影响
+
+**开发体验**：
+- 统一 CSS 变量，未来主题切换更容易
+- 去除复杂动画，代码更简洁
+- 设计系统文档化，新功能有明确规范
+
+**用户体验**：
+- 视觉差异化，品牌识别度提升
+- 扁平设计，性能更好（无 blur 计算）
+- 专业感增强，匹配目标用户心智
+
+**产品定位**：
+- 从"AI 工具"转向"专业视频生产力工具"
+- 视觉语言接近 Adobe/Final Cut/DaVinci Resolve
+- 避免与 ChatGPT/Claude/Midjourney 视觉雷同
+
+### 📝 后续计划
+
+- Phase 3（可选）：间距密度微调
+- Phase 4（可选）：响应式优化
+- 未完成组件：HistorySidebar, TextEffectsEditor, RemotionPreview, VideoProgress, VideoFrameExtractor, FrameSelector, ScriptCard（根据需要逐步更新）
+
+---
+
 ## v1.7.0 - Remotion 预览系统（2026-04-06）
 
 ### 🎯 核心功能
