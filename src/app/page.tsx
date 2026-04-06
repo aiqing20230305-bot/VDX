@@ -6,6 +6,7 @@ import { ChatInput } from '@/components/chat/ChatInput'
 import { RemotionPreview } from '@/components/video/RemotionPreview'
 import { HistorySidebar } from '@/components/history/HistorySidebar'
 import { CharacterLibrary } from '@/components/character'
+import { WorkflowStepper, type WorkflowStage } from '@/components/progress'
 import { Clock } from 'lucide-react'
 import {
   buildWelcomeMessage,
@@ -36,6 +37,7 @@ export default function HomePage() {
   const [showHistory, setShowHistory] = useState(false)
   const [showCharacterLibrary, setShowCharacterLibrary] = useState(false)
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
+  const [currentStage, setCurrentStage] = useState<WorkflowStage>('start')
   /** 上下文状态：记录当前等待的回答类型 */
   const [contextState, setContextState] = useState<{
     type: 'waiting_image_confirmation' | 'waiting_style' | 'waiting_duration' | 'waiting_text_effects' | null
@@ -318,6 +320,7 @@ export default function HomePage() {
     async (action: string, params?: Record<string, unknown>) => {
       switch (action) {
         case 'start_from_topic':
+          setCurrentStage('topic')
           addMessage({
             role: 'assistant',
             content:
@@ -326,6 +329,7 @@ export default function HomePage() {
           break
 
         case 'start_from_images':
+          setCurrentStage('topic')
           addMessage({
             role: 'assistant',
             content:
@@ -342,6 +346,7 @@ export default function HomePage() {
           break
 
         case 'suggest_topics': {
+          setCurrentStage('topic')
           addMessage({
             role: 'user',
             content: '帮我想个选题',
@@ -440,6 +445,7 @@ export default function HomePage() {
         }
 
         case 'select_topic': {
+          setCurrentStage('script')
           const topic = params?.topic as string
           const duration = params?.duration as number
           const style = params?.style as string
@@ -529,6 +535,7 @@ export default function HomePage() {
         }
 
         case 'skip_character_selection': {
+          setCurrentStage('storyboard')
           const newMode = (params?.mode as GenerationMode) ?? 'step-by-step'
           const script = selectedScriptRef.current
           if (!script) return
@@ -548,6 +555,7 @@ export default function HomePage() {
         }
 
         case 'confirm_character': {
+          setCurrentStage('storyboard')
           const characterId = params?.characterId as string | undefined
           const characterName = params?.characterName as string | undefined
           const newMode = (params?.mode as GenerationMode) ?? mode
@@ -597,6 +605,7 @@ export default function HomePage() {
         }
 
         case 'generate_video_with_frames': {
+          setCurrentStage('video')
           // 使用选中的帧生成视频
           const frameIndices = (params?.frameIndices as number[]) ?? []
           const sb = storyboardRef.current
@@ -671,11 +680,12 @@ export default function HomePage() {
             metadata: { videoJob: job },
           })
 
-          simulateVideoProgress(msgId, job, selectedFrames.length, updateMessage)
+          simulateVideoProgress(msgId, job, selectedFrames.length, updateMessage, setCurrentStage)
           break
         }
 
         case 'generate_video': {
+          setCurrentStage('video')
           const sb = storyboardRef.current
           if (!sb) return
 
@@ -745,7 +755,7 @@ export default function HomePage() {
           })
 
           // Simulate progress updates (real pipeline would use job polling)
-          simulateVideoProgress(msgId, job, sb.totalFrames, updateMessage)
+          simulateVideoProgress(msgId, job, sb.totalFrames, updateMessage, setCurrentStage)
           break
         }
 
@@ -1670,6 +1680,9 @@ ${parts.join('\n\n')}
         </div>
       </header>
 
+      {/* Workflow Progress Stepper */}
+      <WorkflowStepper currentStage={currentStage} />
+
       {/* Messages */}
       <div className="relative flex-1 overflow-y-auto px-6 py-8 space-y-6">
         {messages.map(msg => (
@@ -1819,7 +1832,8 @@ function simulateVideoProgress(
   msgId: string,
   job: VideoJob,
   totalFrames: number,
-  updateMessage: (id: string, update: Partial<ChatMessageType>) => void
+  updateMessage: (id: string, update: Partial<ChatMessageType>) => void,
+  setCurrentStage: (stage: WorkflowStage) => void
 ) {
   let progress = 0
   let frame = 0
@@ -1831,6 +1845,7 @@ function simulateVideoProgress(
     if (progress >= 100) {
       progress = 100
       clearInterval(interval)
+      setCurrentStage('complete')
 
       // ⚠️ 注意：这只是进度条模拟，不代表真实视频已生成
       // 真实场景下需要等待服务端返回真实的视频URL
