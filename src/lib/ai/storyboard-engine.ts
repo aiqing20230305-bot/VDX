@@ -53,7 +53,8 @@ interface StoryboardResult {
 
 export async function generateStoryboard(
   script: Script,
-  productAnalysis?: ProductAnalysis
+  productAnalysis?: ProductAnalysis,
+  characterId?: string
 ): Promise<Storyboard> {
   const totalFrames = calculateFrameCount(script.duration)
   const stylePreset = getStylePreset(script.style)
@@ -62,6 +63,28 @@ export async function generateStoryboard(
   const productConstraint = productAnalysis
     ? buildProductConstraint(productAnalysis)
     : undefined
+
+  // 角色一致性约束
+  let characterConstraint: { description: string; features: any } | undefined
+  if (characterId) {
+    const { db } = await import('@/lib/db/client')
+    const character = await db.character.findUnique({
+      where: { id: characterId },
+      include: { features: true },
+    })
+    if (character && character.features) {
+      const features = {
+        face: JSON.parse(character.features.faceFeatures),
+        body: JSON.parse(character.features.bodyFeatures),
+        style: JSON.parse(character.features.styleFeatures),
+      }
+      characterConstraint = {
+        description: character.features.detailedDescription,
+        features,
+      }
+      console.log('[Storyboard] 应用角色一致性约束:', character.name)
+    }
+  }
 
   const prompt = `请将以下视频脚本转化为 ${totalFrames} 帧分镜图：
 
@@ -84,7 +107,19 @@ ${productAnalysis!.visualPrompt}
 关键特征（绝不能出错）：
 ${productAnalysis!.criticalFeatures.map((f, i) => `${i + 1}. ${f}`).join('\n')}
 
-禁止出现：${productConstraint.negativeConstraint}` : ''}
+禁止出现：${productConstraint.negativeConstraint}` : ''}${characterConstraint ? `
+
+**重要：角色一致性约束**
+视频中的主要角色必须严格符合以下描述：
+${characterConstraint.description}
+
+关键特征：
+- 面部：${characterConstraint.features.face.hair}、${characterConstraint.features.face.shape}、${characterConstraint.features.face.eyes}
+- 体型：${characterConstraint.features.body.build}
+- 服装：${characterConstraint.features.style.clothing}
+- 配色：${characterConstraint.features.style.colors.join('、')}
+
+请在所有出现该角色的帧中保持这些特征的一致性。` : ''}
 
 场景列表：
 ${script.scenes.map(s => `
