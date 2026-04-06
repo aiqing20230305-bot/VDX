@@ -435,3 +435,50 @@ export interface ModelRoutingResult {
   }
   createdAt: Date
 }
+
+// ─── Character Consistency / 角色一致性 ─────────────────────
+export interface CharacterFeatures {
+  // 视觉特征
+  face: {
+    shape: string    // 脸型
+    eyes: string     // 眼睛特征
+    hair: string     // 发型发色
+    skin: string     // 肤色
+  }
+  body: {
+    build: string    // 体型
+    height: string   // 相对高度
+    pose: string     // 典型姿态
+  }
+  style: {
+    clothing: string     // 服装风格
+    colors: string[]     // 主要配色
+    accessories: string  // 配饰
+  }
+
+  // 语义特征
+  detailedDescription: string
+  promptKeywords: string[]
+
+  // 特征向量（用于相似度搜索）
+  embedding: number[]
+}
+
+export interface Character {
+  id: string
+  name: string
+  description?: string         // 用户输入的描述
+  referenceImageUrl: string    // 参考图 URL
+  thumbnailUrl?: string        // 缩略图 URL
+  features: CharacterFeatures  // 提取的特征
+  tags: string[]               // 标签（风格、类型）
+  usageCount: number           // 使用次数
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface CharacterConsistencyOptions {
+  characterId: string          // 使用的角色 ID
+  enableVerification: boolean  // 是否启用一致性验证
+  referenceStrength: number    // 参考强度 0-1
+}
