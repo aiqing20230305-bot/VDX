@@ -105,7 +105,7 @@ export function StoryboardGrid({ storyboard, aspectRatio = '9:16', onFrameClick,
               <button
                 onClick={handleBatchRegenerate}
                 disabled={selectedFrames.size === 0}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs bg-violet-600 text-white hover:bg-violet-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-hover)] transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RefreshCw size={11} />
                 重新生成选中
@@ -134,10 +134,10 @@ export function StoryboardGrid({ storyboard, aspectRatio = '9:16', onFrameClick,
               setSelectionMode(!selectionMode)
               if (selectionMode) clearSelection()
             }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-smooth ${
               selectionMode
-                ? 'bg-violet-600 text-white hover:bg-violet-500'
-                : 'text-zinc-400 hover:text-violet-400 hover:bg-zinc-700'
+                ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-hover)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)]'
             }`}
             title={selectionMode ? '退出批量选择' : '批量选择重新生成'}
           >
@@ -148,7 +148,7 @@ export function StoryboardGrid({ storyboard, aspectRatio = '9:16', onFrameClick,
           {!selectionMode && onRegenerate && (
             <button
               onClick={onRegenerate}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-zinc-400 hover:text-violet-400 hover:bg-zinc-700 transition-all"
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-smooth"
               title="重新生成全部分镜图"
             >
               <RefreshCw size={11} />
@@ -193,14 +193,14 @@ export function StoryboardGrid({ storyboard, aspectRatio = '9:16', onFrameClick,
               }
             }}
             className={`
-              relative rounded-lg overflow-hidden bg-zinc-900
-              border-2 transition-all duration-150
+              relative rounded-lg overflow-hidden bg-[var(--bg-secondary)]
+              border-2 transition-smooth
               ${isVertical ? 'aspect-[9/16]' : 'aspect-video'}
               ${selectionMode && selectedFrames.has(frame.index)
-                ? 'border-violet-500 ring-2 ring-violet-400'
+                ? 'border-[var(--accent-primary)] ring-2 ring-[var(--accent-border)]'
                 : frame.index === selected && !selectionMode
-                ? 'border-violet-500'
-                : 'border-transparent hover:border-zinc-600'
+                ? 'border-[var(--accent-primary)]'
+                : 'border-transparent hover:border-[var(--border-medium)]'
               }
             `}
           >
@@ -233,9 +233,9 @@ export function StoryboardGrid({ storyboard, aspectRatio = '9:16', onFrameClick,
             {selectionMode && (
               <div className="absolute top-1 right-1">
                 {selectedFrames.has(frame.index) ? (
-                  <CheckSquare size={16} className="text-violet-400" />
+                  <CheckSquare size={16} className="text-[var(--accent-primary)]" />
                 ) : (
-                  <Square size={16} className="text-zinc-400" />
+                  <Square size={16} className="text-[var(--text-secondary)]" />
                 )}
               </div>
             )}
@@ -253,14 +253,14 @@ export function StoryboardGrid({ storyboard, aspectRatio = '9:16', onFrameClick,
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-violet-400">帧 {frame.index + 1}</span>
-                    <span className="text-xs text-zinc-500">{frame.cameraAngle}</span>
-                    <span className="text-xs text-zinc-600">{frame.duration}s</span>
+                    <span className="text-xs font-medium text-[var(--accent-primary)]">帧 {frame.index + 1}</span>
+                    <span className="text-xs text-[var(--text-secondary)]">{frame.cameraAngle}</span>
+                    <span className="text-xs text-[var(--text-tertiary)]">{frame.duration}s</span>
                   </div>
                   {onRegenerateFrame && (
                     <button
                       onClick={() => onRegenerateFrame(frame)}
-                      className="flex items-center gap-1 px-2 py-1 rounded text-xs text-zinc-500 hover:text-violet-400 hover:bg-zinc-800 transition-all"
+                      className="flex items-center gap-1 px-2 py-1 rounded text-xs text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-smooth"
                     >
                       <RefreshCw size={10} />
                       重新生成此帧
