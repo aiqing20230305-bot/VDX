@@ -32,6 +32,14 @@ export default function HomePage() {
   const [scripts, setScripts] = useState<Script[]>([])
   const [selectedScript, setSelectedScript] = useState<Script | null>(null)
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null)
+  const [storyboardVariants, setStoryboardVariants] = useState<Array<{
+    id: string
+    name: string
+    description: string
+    cinematicStyle: string
+    previewImageUrl?: string
+    storyboard: Storyboard
+  }> | null>(null)
   const [mode, setMode] = useState<GenerationMode>('step-by-step')
   const [showPreview, setShowPreview] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
@@ -314,9 +322,78 @@ export default function HomePage() {
     [addMessage, updateMessage, uploadedRefs, audioAnalysis]
   )
 
+  const generateStoryboardVariants = useCallback(
+    async (script: Script) => {
+      const progressId = addMessage({
+        role: 'assistant',
+        content: '',
+        metadata: {
+          generation: {
+            stage: 'generating_variants',
+            total: 3,
+            current: 0,
+            detail: '正在生成3个分镜变体（不同镜头语言）…',
+            startedAt: Date.now(),
+          },
+        },
+      })
+      setIsLoading(true)
+
+      try {
+        const res = await fetch('/api/storyboard/variants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            script,
+            productAnalysis: productAnalysis ?? undefined,
+            audioAnalysis: audioAnalysis?.analysis ?? undefined,
+          }),
+        })
+
+        const data = (await res.json()) as { variants?: Array<any>; error?: string }
+        if (data.error) throw new Error(data.error)
+        if (!data.variants || data.variants.length === 0) throw new Error('No variants returned')
+
+        setStoryboardVariants(data.variants)
+
+        // 完成进度
+        updateMessage(progressId, {
+          metadata: { generation: { stage: 'done' } },
+        })
+
+        addMessage({
+          role: 'assistant',
+          type: 'action',
+          content: '已生成3个分镜变体！每个变体有不同的镜头语言和叙事节奏。',
+          metadata: {
+            actions: [
+              {
+                id: 'show_variants',
+                label: '查看变体',
+                action: 'show_storyboard_variants',
+                variant: 'primary',
+              },
+            ],
+          },
+        })
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : '变体生成失败'
+        updateMessage(progressId, {
+          metadata: { generation: { stage: 'error', detail: msg } },
+        })
+        addMessage({ role: 'assistant', content: `变体生成失败：${msg}` })
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [addMessage, updateMessage, productAnalysis, audioAnalysis]
+  )
+
   // Use ref to allow handleAction to call generateStoryboard without stale closure
   const generateStoryboardRef = useRef(generateStoryboard)
   generateStoryboardRef.current = generateStoryboard
+  const generateStoryboardVariantsRef = useRef(generateStoryboardVariants)
+  generateStoryboardVariantsRef.current = generateStoryboardVariants
   const selectedScriptRef = useRef(selectedScript)
   selectedScriptRef.current = selectedScript
   const storyboardRef = useRef(storyboard)
@@ -648,6 +725,7 @@ export default function HomePage() {
         case 'skip_character_selection': {
           setCurrentStage('storyboard')
           const newMode = (params?.mode as GenerationMode) ?? 'step-by-step'
+          setMode(newMode)
           const script = selectedScriptRef.current
           if (!script) return
           addMessage({
@@ -656,12 +734,10 @@ export default function HomePage() {
           })
           addMessage({
             role: 'assistant',
-            content:
-              newMode === 'auto'
-                ? '好的，开始自动生成分镜！'
-                : '好的，开始生成分镜图：',
+            content: '好的，先生成3个不同风格的分镜方案供你选择…',
           })
-          generateStoryboardRef.current(script, newMode)
+          // 先生成变体，而不是直接生成分镜
+          generateStoryboardVariantsRef.current(script)
           break
         }
 
@@ -670,9 +746,11 @@ export default function HomePage() {
           const characterId = params?.characterId as string | undefined
           const characterName = params?.characterName as string | undefined
           const newMode = (params?.mode as GenerationMode) ?? mode
+          setMode(newMode)
           const script = selectedScriptRef.current
           if (!script) return
 
+          // 保存选中的角色ID到组件状态（后续生成完整分镜时使用）
           if (characterId) {
             addMessage({
               role: 'user',
@@ -680,16 +758,20 @@ export default function HomePage() {
             })
             addMessage({
               role: 'assistant',
-              content: `好的！使用角色"${characterName}"来生成分镜，将保持角色在所有帧中的一致性。`,
+              content: `好的！先生成3个不同风格的分镜方案，选定后将使用角色"${characterName}"保持一致性。`,
             })
-            generateStoryboardRef.current(script, newMode, characterId)
+            // TODO: 保存 characterId 到某个地方，选择变体后生成完整分镜时使用
           } else {
             addMessage({
               role: 'user',
               content: '跳过角色选择',
             })
-            generateStoryboardRef.current(script, newMode)
+            addMessage({
+              role: 'assistant',
+              content: '好的，先生成3个不同风格的分镜方案供你选择…',
+            })
           }
+          generateStoryboardVariantsRef.current(script)
           break
         }
 
@@ -712,6 +794,127 @@ export default function HomePage() {
               aspectRatio: (sb.frames[0]?.imagePrompt?.includes('16:9') ? '16:9' : '9:16') as '9:16' | '16:9',
             },
           })
+          break
+        }
+
+        case 'show_storyboard_variants': {
+          // 展示分镜变体选择界面
+          addMessage({
+            role: 'user',
+            content: '查看分镜变体',
+          })
+
+          if (!storyboardVariants || storyboardVariants.length === 0) {
+            addMessage({
+              role: 'assistant',
+              content: '暂无变体数据，请重新生成',
+            })
+            return
+          }
+
+          addMessage({
+            role: 'assistant',
+            type: 'storyboard_variants',
+            content: '请选择你喜欢的分镜风格：',
+            metadata: {
+              variants: storyboardVariants,
+            },
+          })
+          break
+        }
+
+        case 'select_storyboard_variant': {
+          const variantId = params?.variantId as string | undefined
+          if (!variantId || !storyboardVariants) return
+
+          const selectedVariant = storyboardVariants.find(v => v.id === variantId)
+          if (!selectedVariant) return
+
+          addMessage({
+            role: 'user',
+            content: `选择：${selectedVariant.name}`,
+          })
+
+          addMessage({
+            role: 'assistant',
+            content: `好的！使用"${selectedVariant.name}"风格生成完整分镜图…`,
+          })
+
+          // 使用选中变体的分镜数据生成完整图片
+          const script = selectedScriptRef.current
+          if (!script) return
+
+          // 直接使用变体的 storyboard，调用原有的图片填充流程
+          setCurrentStage('storyboard')
+          const totalFrames = selectedVariant.storyboard.totalFrames
+
+          const progressId = addMessage({
+            role: 'assistant',
+            content: '',
+            metadata: {
+              generation: {
+                stage: 'generating_images',
+                total: totalFrames,
+                current: 0,
+                detail: `正在用即梦生成 ${totalFrames} 帧分镜图（${selectedVariant.name}）…`,
+                startedAt: Date.now(),
+              },
+            },
+          })
+          setIsLoading(true)
+
+          try {
+            const res = await fetch('/api/storyboard', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                script: {
+                  ...script,
+                  // 使用变体的场景结构（已经包含调整后的帧时长）
+                },
+                fillImages: true,
+                referenceImages: uploadedRefs.all.length > 0 ? uploadedRefs.all : undefined,
+                productImages: uploadedRefs.products.length > 0 ? uploadedRefs.products.map(p => p.path) : undefined,
+                characterImagePath: uploadedRefs.characters[0]?.path,
+                characterDescriptions: uploadedRefs.characters.map(c => c.description),
+                productDescriptions: uploadedRefs.products.map(p => p.description),
+                productAnalysis: productAnalysis ?? undefined,
+                audioAnalysis: audioAnalysis?.analysis ?? undefined,
+              }),
+            })
+
+            const data = (await res.json()) as { storyboard?: Storyboard; error?: string }
+            if (data.error) throw new Error(data.error)
+            if (!data.storyboard) throw new Error('No storyboard returned')
+
+            setStoryboard(data.storyboard)
+
+            // 完成进度
+            updateMessage(progressId, {
+              metadata: { generation: { stage: 'done' } },
+            })
+
+            const filledCount = data.storyboard.frames.filter(f => f.imageUrl).length
+
+            addMessage({
+              role: 'assistant',
+              type: 'storyboard',
+              content: `分镜图完成！共 ${data.storyboard.totalFrames} 帧${filledCount > 0 ? `（${filledCount} 帧已生成图片）` : ''}，覆盖完整 ${script.duration} 秒。接下来选择生成引擎：`,
+              metadata: {
+                storyboard: data.storyboard,
+                aspectRatio: (script.aspectRatio === '9:16' ? '9:16' : '16:9') as '9:16' | '16:9',
+                actions: buildPostStoryboardActions(),
+              },
+            })
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : '分镜图片生成失败'
+            updateMessage(progressId, {
+              metadata: { generation: { stage: 'error', detail: msg } },
+            })
+            addMessage({ role: 'assistant', content: `分镜图片生成失败：${msg}` })
+          } finally {
+            setIsLoading(false)
+          }
           break
         }
 

@@ -7,6 +7,7 @@ import { QuickActions } from './QuickActions'
 import { GenerationProgress, type GenerationStage } from './GenerationProgress'
 import { ScriptCard } from '../storyboard/ScriptCard'
 import { StoryboardGrid } from '../storyboard/StoryboardGrid'
+import { StoryboardVariantSelector } from '../storyboard/StoryboardVariantSelector'
 import { FrameSelector } from '../storyboard/FrameSelector'
 import { VideoProgress } from '../video/VideoProgress'
 import { cn } from '@/lib/utils/cn'
@@ -90,6 +91,14 @@ export function ChatMessage({ message, onAction }: Props) {
             aspectRatio={message.metadata.aspectRatio ?? '9:16'}
             onConfirm={(frameIndices, engine) => onAction?.('generate_video_with_frames', { frameIndices, engine })}
             onCancel={() => onAction?.('cancel_frame_selection')}
+          />
+        )}
+
+        {/* Storyboard Variant Selector */}
+        {message.type === 'storyboard_variants' && message.metadata?.variants && (
+          <StoryboardVariantSelector
+            variants={message.metadata.variants}
+            onSelect={(variantId) => onAction?.('select_storyboard_variant', { variantId })}
           />
         )}
 

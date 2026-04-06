@@ -340,7 +340,7 @@ export interface ElementModification {
 
 // ─── Chat / 对话 ────────────────────────────────────────────
 export type MessageRole = 'user' | 'assistant' | 'system'
-export type MessageType = 'text' | 'script' | 'storyboard' | 'video' | 'action' | 'progress' | 'frame_selector' | 'video_frame_extractor'
+export type MessageType = 'text' | 'script' | 'storyboard' | 'storyboard_variants' | 'video' | 'action' | 'progress' | 'frame_selector' | 'video_frame_extractor'
 
 export interface ChatMessage {
   id: string
@@ -350,6 +350,14 @@ export interface ChatMessage {
   metadata?: {
     script?: Script
     storyboard?: Storyboard
+    variants?: Array<{
+      id: string
+      name: string
+      description: string
+      cinematicStyle: string
+      previewImageUrl?: string
+      storyboard: Storyboard
+    }>
     aspectRatio?: '9:16' | '16:9'
     videoJob?: VideoJob
     analysis?: VideoAnalysis
