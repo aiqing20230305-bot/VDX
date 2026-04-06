@@ -59,6 +59,11 @@ export default function HomePage() {
     suggestions?: string[]
     renderingRules?: string
   } | null>(null)
+  /** 音频分析结果（用于音乐视频同步） ⭐ v1.11.0 新增 */
+  const [audioAnalysis, setAudioAnalysis] = useState<{
+    audioPath: string
+    analysis: any // AudioAnalysisResult
+  } | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Initialize with welcome message
@@ -155,6 +160,8 @@ export default function HomePage() {
       count?: number
       images?: string[]
       style?: string
+      audioPath?: string
+      audioAnalysis?: any
     }) => {
       const progressId = addMessage({
         role: 'assistant',
@@ -176,6 +183,8 @@ export default function HomePage() {
             count: params.count ?? 3,
             images: params.images ?? [],
             style: params.style,
+            audioPath: params.audioPath,
+            audioAnalysis: params.audioAnalysis,
           }),
         })
 
@@ -344,6 +353,107 @@ export default function HomePage() {
               '请上传你想二创的视频文件，我会深度分析所有元素，然后问你想怎么改。',
           })
           break
+
+        case 'generate_with_audio': {
+          setCurrentStage('topic')
+          const audioPath = params?.audioPath as string
+          const analysis = params?.analysis as any
+
+          if (audioPath && analysis) {
+            // 保存音频分析结果
+            setAudioAnalysis({ audioPath, analysis })
+
+            addMessage({
+              role: 'user',
+              content: '使用音频节奏生成视频',
+            })
+
+            const msg = [
+              `太好了！音频已分析完成（${analysis.duration.toFixed(1)}秒，${analysis.beat.bpm} BPM）`,
+              '',
+              '现在告诉我视频的主题是什么？',
+              '或者选择一个推荐主题：',
+            ].join('\n')
+
+            addMessage({
+              role: 'assistant',
+              type: 'action',
+              content: msg,
+              metadata: {
+                actions: [
+                  {
+                    id: 'mv_style',
+                    label: '🎵 音乐MV',
+                    description: '歌词驱动画面，跟随节奏',
+                    action: 'select_audio_theme',
+                    params: { theme: '音乐MV', audioPath, analysis },
+                    variant: 'primary',
+                  },
+                  {
+                    id: 'vlog_style',
+                    label: '📹 节奏Vlog',
+                    description: '旅行或生活片段，跟随音乐节奏',
+                    action: 'select_audio_theme',
+                    params: { theme: '节奏Vlog', audioPath, analysis },
+                    variant: 'secondary',
+                  },
+                  {
+                    id: 'product_style',
+                    label: '🎬 产品宣传片',
+                    description: '产品展示，配合音乐高潮',
+                    action: 'select_audio_theme',
+                    params: { theme: '产品宣传片', audioPath, analysis },
+                    variant: 'secondary',
+                  },
+                ],
+              },
+            })
+          }
+          break
+        }
+
+        case 'skip_audio': {
+          addMessage({
+            role: 'user',
+            content: '跳过音频同步',
+          })
+          setAudioAnalysis(null)
+          addMessage({
+            role: 'assistant',
+            content: '好的，继续其他创作流程。你可以描述选题或上传图片。',
+          })
+          break
+        }
+
+        case 'select_audio_theme': {
+          setCurrentStage('script')
+          const theme = params?.theme as string
+          const audioPath = params?.audioPath as string
+          const analysis = params?.analysis as any
+
+          addMessage({
+            role: 'user',
+            content: `主题：${theme}`,
+          })
+
+          addMessage({
+            role: 'assistant',
+            content: `收到！我会根据音频节奏生成《${theme}》脚本（${analysis.duration.toFixed(1)}秒）。
+
+正在分析音频段落和情绪，生成匹配的脚本…`,
+          })
+
+          // 直接生成脚本（传入音频信息）
+          generateScriptsRef.current({
+            topic: theme,
+            duration: analysis.duration,
+            aspectRatio: '9:16',
+            count: 3,
+            audioPath,
+            audioAnalysis: analysis,
+          })
+          break
+        }
 
         case 'suggest_topics': {
           setCurrentStage('topic')
@@ -1259,6 +1369,74 @@ ${a.suggestedEdits
           }
         } catch {
           addMessage({ role: 'assistant', content: '视频分析失败，请确认视频格式正确' })
+        } finally {
+          setIsLoading(false)
+        }
+        return
+      }
+
+      // Audio upload → analysis
+      const audioFile = files?.find(f => f.type.startsWith('audio/'))
+      if (audioFile) {
+        addMessage({
+          role: 'assistant',
+          content: `正在分析音频《${audioFile.name}》，检测节拍和情绪…`,
+          metadata: { progress: { value: 10, label: '分析中…' } },
+        })
+        setIsLoading(true)
+
+        const formData = new FormData()
+        formData.append('audio', audioFile)
+
+        try {
+          const res = await fetch('/api/audio-analyze', { method: 'POST', body: formData })
+          const data = (await res.json()) as {
+            success?: boolean
+            audioPath?: string
+            analysis?: any
+            error?: string
+          }
+
+          if (data.success && data.analysis) {
+            const analysis = data.analysis
+            addMessage({
+              role: 'assistant',
+              type: 'action',
+              content: `🎵 音频分析完成！
+
+**时长**：${analysis.duration.toFixed(1)}秒
+**节拍**：${analysis.beat.bpm} BPM (${analysis.mood[0]?.tempo || 'medium'} tempo)
+**段落**：${analysis.segments.length}个（${analysis.segments.map((s: any) => s.type).join(' → ')}）
+**能量曲线**：${analysis.mood.map((m: any) => m.intensity).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i).join(' → ')}
+
+是否使用此音频的节奏来生成视频？`,
+              metadata: {
+                actions: [
+                  {
+                    id: 'use_audio_sync',
+                    label: '🎬 音乐视频（节奏同步）',
+                    description: '分镜将根据音频节拍和段落自动调整',
+                    action: 'generate_with_audio',
+                    params: { audioPath: data.audioPath, analysis },
+                    variant: 'primary',
+                  },
+                  {
+                    id: 'skip_audio',
+                    label: '⏭️ 跳过音频',
+                    description: '不使用音频同步',
+                    action: 'skip_audio',
+                    variant: 'outline',
+                  },
+                ],
+              },
+            })
+          }
+        } catch (error) {
+          console.error('[Audio Upload] Error:', error)
+          addMessage({
+            role: 'assistant',
+            content: '音频分析失败，请确认音频格式正确（支持MP3/WAV/OGG/M4A）',
+          })
         } finally {
           setIsLoading(false)
         }
