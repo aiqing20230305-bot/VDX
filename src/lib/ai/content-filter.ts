@@ -83,15 +83,18 @@ const FILTER_RULES: FilterRule[] = [
 
   // ===== 过度技术化描述（即梦/可灵平台不允许） =====
   // 相机品牌和型号
-  { pattern: /shot on (Canon|Nikon|Sony|Fujifilm|Leica|Hasselblad|Pentax)\s+[A-Z0-9]+/gi, replacement: 'professional camera', category: 'brand', description: '相机型号' },
-  { pattern: /\bCanon\s+[A-Z0-9]+/gi, replacement: 'DSLR camera', category: 'brand', description: '佳能相机' },
-  { pattern: /\bSony\s+A[0-9]+[A-Z]*/gi, replacement: 'mirrorless camera', category: 'brand', description: '索尼相机' },
-  { pattern: /\bNikon\s+[A-Z]*[0-9]+/gi, replacement: 'professional camera', category: 'brand', description: '尼康相机' },
+  { pattern: /shot on (Canon|Nikon|Sony|Fujifilm|Leica|Hasselblad|Pentax)\s+[A-Z0-9]+/gi, replacement: '', category: 'brand', description: '相机型号' },
+  { pattern: /\b(Canon|Nikon|Sony|Fujifilm|Leica|Hasselblad|Pentax)\s+[A-Z0-9]+\s+(camera|DSLR|mirrorless)?/gi, replacement: '', category: 'brand', description: '相机品牌型号' },
+  { pattern: /\bCanon\s+EOS\s+[A-Z0-9]+/gi, replacement: '', category: 'brand', description: '佳能相机' },
+  { pattern: /\bSony\s+A[0-9]+[A-Z]*/gi, replacement: '', category: 'brand', description: '索尼相机' },
+  { pattern: /\bNikon\s+D[0-9]+/gi, replacement: '', category: 'brand', description: '尼康相机' },
 
   // 镜头参数
   { pattern: /with\s+\d+mm\s+f\/[\d.]+\s+lens/gi, replacement: '', category: 'brand', description: '镜头参数' },
-  { pattern: /\d+mm\s+f\/[\d.]+/g, replacement: 'lens', category: 'brand', description: '焦距光圈' },
-  { pattern: /\b(prime|zoom|telephoto|wide[-\s]?angle|macro)\s+lens\b/gi, replacement: '', category: 'brand', description: '镜头类型' },
+  { pattern: /\d+mm\s+f\/[\d.]+\s+lens/gi, replacement: '', category: 'brand', description: '焦距光圈镜头' },
+  { pattern: /\d+mm\s+f\/[\d.]+/g, replacement: '', category: 'brand', description: '焦距光圈' },
+  { pattern: /\b(prime|zoom|telephoto|wide[-\s]?angle|macro|anamorphic)\s+lens\b/gi, replacement: '', category: 'brand', description: '镜头类型' },
+  { pattern: /\b\d+mm\s+lens\b/gi, replacement: '', category: 'brand', description: '镜头焦距' },
 
   // 分辨率和技术参数
   { pattern: /\b(4K|8K|12K|16K)\s+(resolution|quality|video|footage)/gi, replacement: 'high resolution', category: 'brand', description: '分辨率' },

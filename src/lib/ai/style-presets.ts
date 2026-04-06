@@ -134,12 +134,17 @@ export function simplifyPrompt(prompt: string): string {
   // ===== 第8步：移除文件格式 =====
   simplified = simplified.replace(/\b(RAW|DNG|CR2|NEF|ARW)\s+file\b/gi, '')
 
-  // ===== 第9步：移除冗余形容词 =====
+  // ===== 第9步：移除冗余形容词和残留相机名称 =====
   simplified = simplified.replace(/\bprofessional\s+/gi, '')
   simplified = simplified.replace(/\bhigh\s+quality\s+/gi, '')
   simplified = simplified.replace(/\bhighly\s+detailed\s+/gi, '')
   simplified = simplified.replace(/\bextremely\s+detailed\s+/gi, '')
   simplified = simplified.replace(/\bultra\s+(detailed|realistic|high\s+quality)/gi, '')
+
+  // 移除残留的相机型号片段（如 "R5 camera", "D850 camera"）
+  simplified = simplified.replace(/\b[A-Z][0-9]+[A-Z]?\s+camera\b/gi, '')
+  simplified = simplified.replace(/\b[A-Z]{2,}\s+camera\b/gi, '')  // EOS camera 等
+  simplified = simplified.replace(/\blook\b/gi, '')  // 移除无意义的 "look"
 
   // ===== 第10步：清理格式 =====
   // 移除多余的逗号、空格和连续标点
@@ -150,6 +155,11 @@ export function simplifyPrompt(prompt: string): string {
   simplified = simplified.replace(/^,\s*/, '') // 开头逗号
   simplified = simplified.replace(/,\s*$/, '') // 结尾逗号
   simplified = simplified.trim()
+
+  // ===== 第10.5步：去重（移除重复的词组） =====
+  const parts = simplified.split(',').map(p => p.trim()).filter(p => p.length > 0)
+  const uniqueParts = [...new Set(parts)]
+  simplified = uniqueParts.join(', ')
 
   // ===== 第11步：长度控制 =====
   // 如果仍然过长（超过180字符），智能截断
