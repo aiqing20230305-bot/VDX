@@ -62,7 +62,7 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
               <span className="font-medium">{file.name.length > 20 ? file.name.slice(0, 18) + '…' : file.name}</span>
               <button
                 onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))}
-                className="text-zinc-400 hover:text-purple-400 transition-colors"
+                className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-smooth"
               >
                 <X size={14} />
               </button>
@@ -71,23 +71,20 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
         </div>
       )}
 
-      {/* Input row - 创意活力设计 v1.6.0 */}
+      {/* Input row - Industrial Minimalism v1.8.0 */}
       <div className={cn(
         'relative flex items-end gap-3 glass rounded-2xl px-4 py-3 border border-white/10',
-        'focus-within:border-purple-400/50 focus-within:shadow-glow',
-        'transition-all duration-300',
+        'focus-within:border-[var(--accent-border)]',
+        'transition-smooth',
         disabled && 'opacity-50 pointer-events-none'
       )}>
-        {/* 霓虹聚焦环 */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-blue-500/10 opacity-0 focus-within:opacity-100 transition-opacity pointer-events-none" />
-
-        {/* Attach image - 增强 hover */}
+        {/* Attach image */}
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="relative flex-shrink-0 p-2 text-zinc-400 hover:text-purple-400 hover:bg-purple-500/15 rounded-xl transition-all btn-ripple overflow-hidden"
+          className="flex-shrink-0 p-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-subtle)] rounded-xl transition-smooth"
           title="上传图片"
         >
-          <Paperclip size={20} className="relative z-10" />
+          <Paperclip size={20} />
         </button>
         <input
           ref={fileInputRef}
@@ -98,13 +95,13 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
           onChange={e => addFiles(e.target.files, 'image')}
         />
 
-        {/* Attach video - 增强 hover */}
+        {/* Attach video */}
         <button
           onClick={() => videoInputRef.current?.click()}
-          className="relative flex-shrink-0 p-2 text-zinc-400 hover:text-cyan-400 hover:bg-cyan-500/15 rounded-xl transition-all btn-ripple overflow-hidden"
+          className="flex-shrink-0 p-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-subtle)] rounded-xl transition-smooth"
           title="上传视频（二创）"
         >
-          <Video size={20} className="relative z-10" />
+          <Video size={20} />
         </button>
         <input
           ref={videoInputRef}
@@ -114,7 +111,7 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
           onChange={e => addFiles(e.target.files, 'video')}
         />
 
-        {/* Textarea - DM Sans 字体 */}
+        {/* Textarea */}
         <textarea
           ref={textareaRef}
           value={text}
@@ -123,29 +120,29 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
           placeholder={placeholder ?? '告诉我你想做什么视频…'}
           rows={1}
           className={cn(
-            'flex-1 bg-transparent text-sm text-zinc-100 placeholder-zinc-500',
+            'flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]',
             'resize-none outline-none leading-relaxed py-1',
             'min-h-[28px] max-h-[200px]'
           )}
-          style={{ fontFamily: 'DM Sans, sans-serif' }}
+          style={{ fontFamily: 'var(--font-body)' }}
         />
 
-        {/* Send button - 光波扩散效果 */}
+        {/* Send button */}
         <button
           onClick={handleSend}
           disabled={!text.trim() && files.length === 0}
           className={cn(
-            'flex-shrink-0 p-2.5 rounded-xl transition-all relative overflow-hidden btn-ripple',
+            'flex-shrink-0 p-2.5 rounded-xl transition-smooth',
             (text.trim() || files.length > 0)
-              ? 'bg-gradient-to-br from-purple-500 via-violet-500 to-cyan-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:scale-105 active:scale-95'
-              : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+              ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-hover)] hover:scale-105 active:scale-95'
+              : 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'
           )}
         >
-          <Send size={18} className="relative z-10" />
+          <Send size={18} />
         </button>
       </div>
 
-      <p className="text-xs text-zinc-500 text-center font-medium" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <p className="text-xs text-[var(--text-tertiary)] text-center font-medium" style={{ fontFamily: 'var(--font-body)' }}>
         <kbd className="px-2 py-0.5 glass rounded border border-white/10">Enter</kbd> 发送 ·
         <kbd className="px-2 py-0.5 glass rounded border border-white/10 mx-1">Shift+Enter</kbd> 换行 ·
         支持上传图片和视频

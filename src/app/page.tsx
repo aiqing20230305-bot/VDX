@@ -1426,50 +1426,48 @@ ${parts.join('\n\n')}
       <div className="absolute inset-0 bg-grid opacity-30 pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
 
-      {/* Header - 创意活力设计 v1.6.0 */}
+      {/* Header - Industrial Minimalism v1.8.0 */}
       <header className="relative flex-shrink-0 px-6 py-4 glass border-b border-white/10 flex items-center gap-4 z-10">
-        {/* Logo - 增强霓虹效果 */}
+        {/* Logo - Clean flat design */}
         <div className="relative group">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 flex items-center justify-center text-white text-xl shadow-neon animate-neon-pulse">
+          <div className="w-11 h-11 rounded-lg bg-[var(--accent-primary)] flex items-center justify-center text-white text-xl transition-transform hover:scale-105">
             ✦
           </div>
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500 to-cyan-400 opacity-0 group-hover:opacity-60 blur-2xl transition-all duration-500" />
         </div>
 
-        {/* 品牌信息 - Satoshi 字体 */}
+        {/* 品牌信息 - Instrument Serif for logo */}
         <div className="flex flex-col">
-          <h1 className="text-base font-bold text-gradient" style={{ fontFamily: 'Satoshi, sans-serif' }}>
+          <h1 className="text-base font-bold text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
             超级视频Agent
           </h1>
-          <p className="text-xs text-zinc-400" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          <p className="text-xs text-[var(--text-secondary)]" style={{ fontFamily: 'var(--font-body)' }}>
             AI视频生产力OS
           </p>
         </div>
 
         {/* 状态指示器 */}
         <div className="ml-auto flex items-center gap-3">
-          {/* 历史记录按钮 - 增强 hover */}
+          {/* 历史记录按钮 - Simple hover */}
           <button
             onClick={() => setShowHistory(true)}
-            className="glass px-3 py-1.5 rounded-full flex items-center gap-2 hover:bg-white/8 hover:border-purple-400/30 transition-all group relative overflow-hidden"
+            className="glass px-3 py-1.5 rounded-full flex items-center gap-2 hover:bg-white/8 hover:border-[var(--accent-border)] transition-smooth"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Clock size={14} className="relative z-10 text-purple-400 group-hover:scale-110 group-hover:rotate-12 transition-all" />
-            <span className="relative z-10 text-xs font-medium text-zinc-300">历史</span>
+            <Clock size={14} className="text-[var(--accent-primary)]" />
+            <span className="text-xs font-medium text-[var(--text-secondary)]">历史</span>
           </button>
 
-          {/* 状态徽章 - 渐变背景 */}
-          <div className={`glass px-3 py-1.5 rounded-full flex items-center gap-2 transition-all ${
-            isLoading ? 'border-purple-400/30' : 'border-emerald-400/30'
+          {/* 状态徽章 - Flat design */}
+          <div className={`glass px-3 py-1.5 rounded-full flex items-center gap-2 transition-smooth ${
+            isLoading ? 'border-[var(--accent-border)]' : 'border-[rgba(52,211,153,0.3)]'
           }`}>
             <div
               className={`w-2 h-2 rounded-full ${
                 isLoading
-                  ? 'bg-gradient-to-br from-purple-400 to-pink-400 animate-pulse shadow-[0_0_12px_rgba(168,85,247,0.6)]'
-                  : 'bg-gradient-to-br from-emerald-400 to-cyan-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]'
+                  ? 'bg-[var(--accent-primary)] animate-pulse'
+                  : 'bg-[var(--success)]'
               }`}
             />
-            <span className="text-xs font-semibold text-zinc-200" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+            <span className="text-xs font-semibold text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-body)' }}>
               {isLoading ? '生成中…' : '就绪'}
             </span>
           </div>
@@ -1484,14 +1482,14 @@ ${parts.join('\n\n')}
 
         {isLoading && messages[messages.length - 1]?.role === 'user' && (
           <div className="flex gap-4 animate-fade-in">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-neon">
+            <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
               ✦
             </div>
             <div className="glass rounded-2xl rounded-tl-sm px-5 py-3 flex gap-1.5 items-center border border-white/10">
               {[0, 1, 2].map(i => (
                 <div
                   key={i}
-                  className="w-2 h-2 bg-gradient-to-r from-purple-400 to-cyan-400 rounded-full animate-bounce"
+                  className="w-2 h-2 bg-[var(--accent-primary)] rounded-full animate-bounce"
                   style={{ animationDelay: `${i * 0.15}s` }}
                 />
               ))}

@@ -25,33 +25,30 @@ export function ChatMessage({ message, onAction }: Props) {
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={cn('flex gap-4', isAssistant ? 'flex-row' : 'flex-row-reverse')}
     >
-      {/* Avatar - 增强 */}
+      {/* Avatar - Industrial Minimalism */}
       <div className={cn(
-        'relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold group',
+        'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-smooth',
         isAssistant
-          ? 'bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 text-white shadow-neon'
-          : 'glass border border-white/10 text-zinc-200'
+          ? 'bg-[var(--accent-primary)] text-white'
+          : 'glass border border-white/10 text-[var(--text-primary)]'
       )}>
-        {isAssistant && (
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-400 to-cyan-400 opacity-0 group-hover:opacity-70 blur-2xl transition-all duration-500" />
-        )}
-        <span className="relative z-10" style={{ fontFamily: 'Satoshi, sans-serif' }}>
+        <span style={{ fontFamily: 'var(--font-body)' }}>
           {isAssistant ? '✦' : 'U'}
         </span>
       </div>
 
       {/* Content */}
       <div className={cn('flex flex-col gap-3 max-w-[85%]', isAssistant ? 'items-start' : 'items-end')}>
-        {/* Text bubble - 创意活力风格 v1.6.0 */}
+        {/* Text bubble - Industrial Minimalism v1.8.0 */}
         {message.content && (
           <div
             className={cn(
-              'px-5 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap transition-all duration-300',
+              'px-5 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap transition-smooth',
               isAssistant
-                ? 'bubble-gradient backdrop-blur-xl rounded-tl-sm hover:shadow-glow card-tilt'
-                : 'bg-gradient-to-br from-purple-500 via-violet-600 to-blue-600 text-white rounded-tr-sm shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_8px_30px_rgba(168,85,247,0.5)] hover:-translate-y-0.5'
+                ? 'glass border border-[var(--border-subtle)] rounded-tl-sm hover:border-[var(--accent-border)]'
+                : 'bg-[var(--accent-primary)] text-white rounded-tr-sm hover:bg-[var(--accent-hover)]'
             )}
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            style={{ fontFamily: 'var(--font-body)' }}
           >
             <MarkdownText text={message.content} />
           </div>
@@ -111,12 +108,12 @@ export function ChatMessage({ message, onAction }: Props) {
 
         {/* Legacy progress bar */}
         {message.metadata?.progress && !message.metadata?.generation && (
-          <div className="w-full bg-zinc-700 rounded-full h-1.5">
+          <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-1.5">
             <div
-              className="bg-violet-500 h-1.5 rounded-full transition-all duration-300"
+              className="bg-[var(--accent-primary)] h-1.5 rounded-full transition-smooth"
               style={{ width: `${message.metadata.progress.value}%` }}
             />
-            <p className="text-xs text-zinc-400 mt-1">{message.metadata.progress.label}</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-1">{message.metadata.progress.label}</p>
           </div>
         )}
 
