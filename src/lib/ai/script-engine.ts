@@ -33,22 +33,42 @@ interface RawScript {
 }
 
 export async function generateScripts(input: ScriptGenerationInput): Promise<Script[]> {
-  const { topic, images, duration, aspectRatio, count, style, additionalPrompt } = input
+  const { topic, images, duration, aspectRatio, count, style, additionalPrompt, audioAnalysis } = input
 
   const imageContext = images && images.length > 0
     ? `\n参考图片 ${images.length} 张`
     : ''
 
-  const sceneCount = Math.max(3, Math.round(duration / 3.5))
+  // 🎵 音频驱动的场景规划
+  let sceneCount = Math.max(3, Math.round(duration / 3.5))
+  let audioContext = ''
+
+  if (audioAnalysis) {
+    const analysis = audioAnalysis as any
+    // 根据音频段落计算场景数（每个segment对应多个场景）
+    const segmentsInfo = (analysis.segments || []).map((seg: any) => {
+      const segDuration = seg.endTime - seg.startTime
+      const segScenes = Math.round(segDuration / 3.5)
+      return `${seg.type}(${segScenes}个场景, ${seg.energy > 0.6 ? '高能量' : '平缓'})`
+    })
+
+    sceneCount = Math.round(duration / 3) // 音频驱动时稍微增加场景密度
+    audioContext = `
+音频信息：
+- BPM: ${analysis.beat.bpm}（${analysis.mood[0]?.tempo || 'medium'} tempo）
+- 段落结构：${segmentsInfo.join(' → ')}
+- 注意：Chorus段落需要快切和视觉冲击力，Intro/Outro需要慢节奏`
+  }
+
   // 限制生成数量，避免输出过长
   const safeCount = Math.min(count, 2)  // 最多2个脚本
 
   const prompt = `生成${safeCount}个${duration}秒视频脚本。
 
-主题：${topic || '创意'}${imageContext}
+主题：${topic || '创意'}${imageContext}${audioContext}
 风格：${style || 'cinematic'}
 比例：${aspectRatio}
-场景：${sceneCount}个，每个3-5秒
+场景：${sceneCount}个${audioAnalysis ? '（跟随音乐节奏）' : '，每个3-5秒'}
 
 JSON格式（保持简短）：
 {"scripts":[{"title":"标题≤15字","logline":"概括≤20字","theme":"主题≤10字","style":"${style || 'cinematic'}","scenes":[{"index":0,"duration":3,"visual":"画面≤40字","camera_move":"推/拉/摇/固定"}]}]}`
