@@ -103,3 +103,37 @@ model TokenUsage {
   outputTokens Int
   createdAt    DateTime @default(now())
 }
+
+// ─── Character Consistency / 角色一致性 ─────────────────────
+model Character {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  referenceImageUrl String
+  thumbnailUrl      String?
+  tags              String   @default("[]") // JSON array
+  usageCount        Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  features          CharacterFeatures?
+}
+
+model CharacterFeatures {
+  id                   String    @id @default(cuid())
+  characterId          String    @unique
+  character            Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  // 视觉特征（JSON）
+  faceFeatures         String    // JSON: { shape, eyes, hair, skin }
+  bodyFeatures         String    // JSON: { build, height, pose }
+  styleFeatures        String    // JSON: { clothing, colors[], accessories }
+
+  // 语义特征
+  detailedDescription  String
+  promptKeywords       String    // JSON array
+
+  // 特征向量（JSON 序列化的 number[]）
+  embedding            String    // JSON array (1536 dim)
+
+  createdAt            DateTime  @default(now())
+}
