@@ -236,7 +236,7 @@ export default function HomePage() {
             stage: 'storyboarding',
             total: totalFrames,
             current: 0,
-            detail: `《${script.title}》 · ${totalFrames} 帧${characterId ? ' · 使用角色一致性' : ''}`,
+            detail: `《${script.title}》 · ${totalFrames} 帧${characterId ? ' · 使用角色一致性' : ''}${audioAnalysis ? ' · 音乐节奏驱动' : ''}`,
             startedAt: Date.now(),
           },
         },
@@ -251,7 +251,7 @@ export default function HomePage() {
               stage: 'generating_images',
               total: totalFrames,
               current: 0,
-              detail: `正在用即梦生成 ${totalFrames} 帧分镜图…${characterId ? '（角色一致性）' : ''}`,
+              detail: `正在用即梦生成 ${totalFrames} 帧分镜图…${characterId ? '（角色一致性）' : ''}${audioAnalysis ? '（音乐节奏）' : ''}`,
               startedAt: Date.now(),
             },
           },
@@ -271,6 +271,7 @@ export default function HomePage() {
             productDescriptions: uploadedRefs.products.map(p => p.description),
             productAnalysis: productAnalysis ?? undefined,
             characterId, // 新增：角色库角色ID
+            audioAnalysis: audioAnalysis?.analysis ?? undefined, // 新增：音频分析结果
           }),
         })
 
@@ -310,7 +311,7 @@ export default function HomePage() {
         setIsLoading(false)
       }
     },
-    [addMessage, updateMessage, uploadedRefs]
+    [addMessage, updateMessage, uploadedRefs, audioAnalysis]
   )
 
   // Use ref to allow handleAction to call generateStoryboard without stale closure

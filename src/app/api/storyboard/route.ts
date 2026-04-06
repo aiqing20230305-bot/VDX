@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateStoryboard, fillStoryboardImages } from '@/lib/ai/storyboard-engine'
-import type { Script, ScriptScene } from '@/types'
+import type { Script, ScriptScene, AudioAnalysisResult } from '@/types'
 import type { CharacterStyle } from '@/lib/video/dreamina-image'
 import type { ProductAnalysis } from '@/lib/ai/product-consistency'
 
@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       characterDescriptions?: string[]
       productDescriptions?: string[]
       productAnalysis?: ProductAnalysis
+      audioAnalysis?: AudioAnalysisResult
     }
 
     const {
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
       characterDescriptions,
       productDescriptions,
       productAnalysis,
+      audioAnalysis,
     } = body
 
     if (!script?.scenes?.length) {
@@ -57,7 +59,8 @@ export async function POST(req: NextRequest) {
 
     // 1. 生成分镜提示词（Claude 会基于注入的参考信息生成更精准的提示词）
     // 如果有产品分析结果，传递给分镜引擎以注入产品一致性约束
-    let storyboard = await generateStoryboard(script, productAnalysis)
+    // 如果有音频分析结果，传递以调整帧时长（Chorus 快切，Intro/Outro 慢镜）
+    let storyboard = await generateStoryboard(script, productAnalysis, undefined, audioAnalysis)
 
     // 2. 生成分镜图片
     if (fillImages) {

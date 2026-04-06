@@ -4,8 +4,9 @@
  * 15秒 → 12帧；每多5秒 → 多4帧
  */
 import { generateJSON } from './claude'
-import type { Script, Storyboard, StoryboardFrame } from '@/types'
+import type { Script, Storyboard, StoryboardFrame, AudioAnalysisResult } from '@/types'
 import { calculateFrameCount } from './script-engine'
+import { adjustFrameDurations } from '../audio/audio-analyzer'
 import {
   text2Image,
   image2Image,
@@ -54,7 +55,8 @@ interface StoryboardResult {
 export async function generateStoryboard(
   script: Script,
   productAnalysis?: ProductAnalysis,
-  characterId?: string
+  characterId?: string,
+  audioAnalysis?: AudioAnalysisResult
 ): Promise<Storyboard> {
   const totalFrames = calculateFrameCount(script.duration)
   const stylePreset = getStylePreset(script.style)
@@ -195,6 +197,19 @@ ${script.scenes.map(s => `
       transition: f.transition,
     }
   })
+
+  // 🎵 音频驱动的帧时长调整
+  if (audioAnalysis) {
+    const adjustedDurations = adjustFrameDurations(
+      script.duration,
+      frames.length,
+      audioAnalysis
+    )
+    frames.forEach((frame, i) => {
+      frame.duration = adjustedDurations[i]
+    })
+    console.log('[Storyboard] 音频驱动: 帧时长已调整 (Chorus 1.5x, Intro/Outro 0.7x)')
+  }
 
   return {
     id: uuid(),
