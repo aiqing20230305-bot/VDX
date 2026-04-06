@@ -311,6 +311,8 @@ export default function HomePage() {
   storyboardRef.current = storyboard
   const scriptsRef = useRef(scripts)
   scriptsRef.current = scripts
+  const generateScriptsRef = useRef(generateScripts)
+  generateScriptsRef.current = generateScripts
 
   const handleAction = useCallback(
     async (action: string, params?: Record<string, unknown>) => {
@@ -339,11 +341,128 @@ export default function HomePage() {
           })
           break
 
-        case 'suggest_topics':
-          await streamChat(
-            '帮我推荐5个当前最有传播力的短视频选题，每个给出简单说明和适合的风格'
-          )
+        case 'suggest_topics': {
+          addMessage({
+            role: 'user',
+            content: '帮我想个选题',
+          })
+
+          const loadingId = addMessage({
+            role: 'assistant',
+            content: '正在分析当前热门趋势，为你推荐5个选题...',
+          })
+          setIsLoading(true)
+
+          try {
+            const res = await fetch('/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                message: '帮我推荐5个当前最有传播力的短视频选题，每个给出简单说明和适合的风格。请返回JSON格式。',
+                history: [],
+              }),
+            })
+
+            const reader = res.body?.getReader()
+            const decoder = new TextDecoder()
+            let accumulated = ''
+
+            while (reader) {
+              const { done, value } = await reader.read()
+              if (done) break
+
+              const chunk = decoder.decode(value)
+              const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
+
+              for (const line of lines) {
+                const data = line.slice(6)
+                if (data === '[DONE]') break
+                try {
+                  const parsed = JSON.parse(data) as { text?: string }
+                  if (parsed.text) {
+                    accumulated += parsed.text
+                  }
+                } catch {
+                  // skip
+                }
+              }
+            }
+
+            // 尝试解析 JSON
+            let topicsData
+            try {
+              // 提取 JSON 块
+              const jsonMatch = accumulated.match(/```json\s*(\{[\s\S]*?\})\s*```/) || accumulated.match(/(\{[\s\S]*"topics"[\s\S]*\})/)
+              if (jsonMatch) {
+                topicsData = JSON.parse(jsonMatch[1])
+              }
+            } catch (e) {
+              console.error('Failed to parse topics JSON:', e)
+            }
+
+            // 删除loading消息
+            setMessages(prev => prev.filter(m => m.id !== loadingId))
+
+            if (topicsData && topicsData.topics && Array.isArray(topicsData.topics)) {
+              // 渲染为选题卡片
+              addMessage({
+                role: 'assistant',
+                type: 'action',
+                content: '为你找到了5个热门选题，选择一个开始创作：',
+                metadata: {
+                  topics: topicsData.topics,
+                  actions: topicsData.topics.map((topic: any, i: number) => ({
+                    id: `select_topic_${i}`,
+                    label: topic.title,
+                    description: `${topic.description} · ${topic.style} · ${topic.duration}秒`,
+                    action: 'select_topic',
+                    params: { topic: topic.title, duration: topic.duration, style: topic.style },
+                    variant: 'secondary',
+                  })),
+                },
+              })
+            } else {
+              // 降级：显示文本
+              addMessage({
+                role: 'assistant',
+                content: accumulated || '推荐失败，请重试',
+              })
+            }
+          } catch (error) {
+            addMessage({
+              role: 'assistant',
+              content: '推荐选题失败，请稍后重试',
+            })
+          } finally {
+            setIsLoading(false)
+          }
           break
+        }
+
+        case 'select_topic': {
+          const topic = params?.topic as string
+          const duration = params?.duration as number
+          const style = params?.style as string
+
+          addMessage({
+            role: 'user',
+            content: `选择选题：${topic}`,
+          })
+
+          addMessage({
+            role: 'assistant',
+            content: `好的！我来为你生成《${topic}》的脚本（${duration}秒，${style}风格）`,
+          })
+
+          // 直接调用脚本生成
+          generateScriptsRef.current({
+            topic,
+            duration,
+            aspectRatio: '9:16',
+            count: 3,
+          })
+          break
+        }
 
         case 'select_script': {
           const idx = (params?.index as number) ?? 0

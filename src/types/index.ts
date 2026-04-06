@@ -322,6 +322,13 @@ export interface ChatMessage {
     videoJob?: VideoJob
     analysis?: VideoAnalysis
     actions?: QuickAction[]
+    topics?: Array<{
+      title: string
+      description: string
+      style: string
+      duration: number
+      tags: string[]
+    }>
     progress?: { value: number; label: string }
     generation?: {
       stage: string
