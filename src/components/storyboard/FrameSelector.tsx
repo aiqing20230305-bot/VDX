@@ -81,12 +81,12 @@ export function FrameSelector({ storyboard, aspectRatio = '9:16', onConfirm, onC
             key={i}
             onClick={() => toggleFrame(i)}
             className={`
-              relative rounded-lg overflow-hidden bg-zinc-900
-              border-2 transition-all duration-150
+              relative rounded-lg overflow-hidden bg-[var(--bg-secondary)]
+              border-2 transition-smooth
               ${isVertical ? 'aspect-[9/16]' : 'aspect-video'}
               ${selectedFrames.has(i)
-                ? 'border-violet-500 ring-2 ring-violet-400'
-                : 'border-zinc-700 hover:border-zinc-600'
+                ? 'border-[var(--accent-primary)] ring-2 ring-[var(--accent-border)]'
+                : 'border-[var(--border-medium)] hover:border-[var(--border-strong)]'
               }
             `}
           >
@@ -111,9 +111,9 @@ export function FrameSelector({ storyboard, aspectRatio = '9:16', onConfirm, onC
             {/* Checkbox */}
             <div className="absolute top-1 right-1">
               {selectedFrames.has(i) ? (
-                <CheckSquare size={16} className="text-violet-400" />
+                <CheckSquare size={16} className="text-[var(--accent-primary)]" />
               ) : (
-                <Square size={16} className="text-zinc-400" />
+                <Square size={16} className="text-[var(--text-secondary)]" />
               )}
             </div>
 
@@ -131,20 +131,20 @@ export function FrameSelector({ storyboard, aspectRatio = '9:16', onConfirm, onC
         <div className="flex gap-2">
           <button
             onClick={() => setEngine('seedance')}
-            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
+            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-smooth ${
               engine === 'seedance'
-                ? 'bg-violet-600 text-white'
-                : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                ? 'bg-[var(--accent-primary)] text-white'
+                : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]'
             }`}
           >
             🎬 Seedance 2.0
           </button>
           <button
             onClick={() => setEngine('kling')}
-            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
+            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-smooth ${
               engine === 'kling'
-                ? 'bg-violet-600 text-white'
-                : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                ? 'bg-[var(--accent-primary)] text-white'
+                : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]'
             }`}
           >
             🌟 可灵AI
@@ -157,7 +157,7 @@ export function FrameSelector({ storyboard, aspectRatio = '9:16', onConfirm, onC
         <button
           onClick={handleConfirm}
           disabled={selectedFrames.size === 0}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-hover)] transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Play size={14} />
           开始生成视频
