@@ -1,5 +1,131 @@
 # 超级视频Agent - 更新日志
 
+## v1.10.0 - 角色库管理界面（2026-04-06）
+
+### 🎯 核心功能
+
+**Phase 2 Part 1 完成** - 角色库 UI 集成
+- ✅ 角色库管理界面（网格布局 + 搜索筛选）
+- ✅ 角色创建表单（上传图片 + 自动特征提取）
+- ✅ 角色详情查看（特征展示 + 统计信息）
+- ✅ 分镜生成流程集成（可选角色）
+
+### 🔧 技术实现
+
+**新增组件**：
+- `CharacterCard.tsx` (150行) - 角色卡片
+  - 缩略图展示 + 名称标签
+  - 使用次数徽章
+  - 选中状态高亮（cyan边框）
+  - Hover动画（translate-y）
+
+- `CharacterLibrary.tsx` (200行) - 角色库列表
+  - 搜索框（实时搜索）
+  - 标签筛选（多选）
+  - 网格布局（响应式 2-5列）
+  - 加载/错误/空状态
+
+- `CharacterCreateModal.tsx` (300行) - 创建角色弹窗
+  - 图片上传（拖放 + 预览）
+  - 表单验证（名称必填、图片必传）
+  - 标签管理（动态添加/删除）
+  - 异步创建（自动特征提取）
+
+- `CharacterDetailModal.tsx` (250行) - 角色详情弹窗
+  - 参考图大图展示
+  - 面部/体型/风格特征详情
+  - 使用统计（使用次数、标签数）
+  - 快速使用按钮
+
+**主流程集成 (`page.tsx`)**：
+- 脚本选择后 → 模式选择后 → 角色选择
+- 新增动作：
+  - `open_character_library`: 打开角色库
+  - `skip_character_selection`: 跳过角色选择
+  - `confirm_character`: 确认选择角色
+- `generateStoryboard()` 新增 `characterId` 参数
+- 角色选择模态框（全屏 6xl）
+
+### 🎨 设计规范
+
+**遵循 Industrial Minimalism v1.8.0**：
+- 主色调：Cyan (#06b6d4)
+- 字体：Instrument Serif (标题) + DM Sans (正文)
+- 无玻璃态、无霓虹效果
+- 扁平实色设计 + 高对比度
+- 边框：rgba(255, 255, 255, 0.08/0.12/0.18)
+- 圆角：8px (卡片), 12px (面板)
+- 过渡：150ms ease-out
+
+### 📱 用户流程
+
+```
+1. 选择脚本 → 选择模式
+  ↓
+2. 提示：是否使用角色一致性？
+  ├─ 选择角色 → 打开角色库 → 选择/创建角色 → 生成分镜
+  └─ 跳过 → 直接生成分镜（无角色约束）
+  ↓
+3. 分镜生成时自动应用角色特征到提示词
+  ↓
+4. 所有帧保持角色一致性
+```
+
+### 📦 文件变更
+
+**新增**：
+- `src/components/character/CharacterCard.tsx`
+- `src/components/character/CharacterLibrary.tsx`
+- `src/components/character/CharacterCreateModal.tsx`
+- `src/components/character/CharacterDetailModal.tsx`
+- `src/components/character/index.ts`
+
+**修改**：
+- `src/app/page.tsx` - 集成角色选择流程
+- `src/types/index.ts` - Character.features 改为可选
+- `CHANGELOG.md` - 本次更新记录
+
+### ✅ 测试验证
+
+- ✅ TypeScript 编译通过
+- ✅ Next.js 构建成功（19个路由）
+- ✅ 符合 Industrial Minimalism 设计规范
+- ✅ 响应式布局正常（2-5列自适应）
+- ✅ 与角色一致性API集成正常
+
+### 🚀 影响
+
+**用户体验**：
+- 可视化管理角色库
+- 一键创建角色（自动特征提取）
+- 分镜生成时可选择角色
+- 所见即所得的角色一致性
+
+**开发体验**：
+- 组件化设计，易于复用
+- 符合设计系统，视觉统一
+- TypeScript 类型安全
+- 代码结构清晰
+
+**产品能力**：
+- 完成角色一致性 Phase 2 Part 1
+- 为 IP 视频生成奠定基础
+- 支持角色库扩展（批量导入、社区分享）
+
+### 📝 后续计划
+
+**Phase 2 - 扩展功能（待实现）**：
+- ⏸️ 批量导入角色
+- ⏸️ 角色版本管理
+- ⏸️ 角色使用历史记录
+
+**Phase 3 - 高级功能（未来）**：
+- ⏸️ 多角色管理（同一视频中多个角色）
+- ⏸️ 角色社区（用户分享角色）
+- ⏸️ 风格迁移（保持角色特征，改变艺术风格）
+
+---
+
 ## v1.9.0 - 角色一致性系统（2026-04-06）
 
 ### 🎯 核心功能
