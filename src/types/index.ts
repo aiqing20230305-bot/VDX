@@ -470,7 +470,7 @@ export interface Character {
   description?: string         // 用户输入的描述
   referenceImageUrl: string    // 参考图 URL
   thumbnailUrl?: string        // 缩略图 URL
-  features: CharacterFeatures  // 提取的特征
+  features?: CharacterFeatures // 提取的特征（可选，创建时可能还未提取）
   tags: string[]               // 标签（风格、类型）
   usageCount: number           // 使用次数
   createdAt: Date
