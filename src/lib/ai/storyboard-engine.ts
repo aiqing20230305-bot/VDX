@@ -478,3 +478,210 @@ export async function prepareCharacterForVideo(
   const urls = await convertCharacterStyle({ imagePath: safePath, style })
   return { originalPath: imagePath, stylizedUrls: urls, style }
 }
+
+// ─── 分镜变体生成（3个不同走向） ───────────────────────────
+
+export interface StoryboardVariant {
+  id: string
+  name: string
+  description: string
+  cinematicStyle: string  // 镜头语言描述
+  storyboard: Storyboard
+}
+
+/**
+ * 生成3个完全不同的分镜演绎方案
+ * 同一个脚本，3种完全不同的镜头语言和叙事节奏
+ *
+ * @param script 脚本
+ * @param productAnalysis 产品分析结果（可选）
+ * @param audioAnalysis 音频分析结果（可选）
+ * @returns 3个分镜变体
+ */
+export async function generateStoryboardVariants(
+  script: Script,
+  productAnalysis?: ProductAnalysis,
+  audioAnalysis?: AudioAnalysisResult
+): Promise<StoryboardVariant[]> {
+  const totalFrames = calculateFrameCount(script.duration)
+  const stylePreset = getStylePreset(script.style)
+
+  // 定义3种完全不同的镜头语言
+  const variantStyles = [
+    {
+      name: '特写情绪版',
+      description: '近景人物特写，强烈情绪表达，快速切换',
+      cinematicGuidance: `
+你是特写派导演，擅长用近景和特写捕捉情绪细节：
+- 60%的镜头使用特写（close-up）和极近景（extreme close-up）
+- 强调人物表情、眼神、手部动作等细节
+- 使用快速切换（每帧2-3秒）营造紧张感
+- 镜头运动：手持晃动、快速推进、突然拉远
+- 光线：强对比、侧光、逆光突出轮廓
+- 适合：情感叙事、人物故事、产品特写展示`,
+    },
+    {
+      name: '全景叙事版',
+      description: '远景主导，环境氛围优先，慢镜头叙事',
+      cinematicGuidance: `
+你是全景派导演，擅长用大场景和环境叙事：
+- 60%的镜头使用全景（wide shot）和远景（long shot）
+- 强调环境氛围、空间关系、人物与场景的互动
+- 使用慢镜头（每帧4-5秒）营造史诗感
+- 镜头运动：缓慢横摇、航拍俯视、稳定推进
+- 光线：自然光、黄金时刻、柔和过渡
+- 适合：风景展示、环境叙事、品牌大片`,
+    },
+    {
+      name: '运镜跟随版',
+      description: '中景平衡，流畅运镜，沉浸式体验',
+      cinematicGuidance: `
+你是运镜派导演，擅长用流畅的相机运动讲故事：
+- 50%中景（medium shot），30%近景，20%全景，保持平衡
+- 强调连贯的镜头运动和流畅的转场
+- 使用适中节奏（每帧3-4秒）
+- 镜头运动：跟随拍摄、环绕运动、升降镜头、轨道推拉
+- 光线：均匀柔光、三点布光、自然过渡
+- 适合：产品演示、教程讲解、通用叙事`,
+    },
+  ]
+
+  const variants: StoryboardVariant[] = []
+
+  // 并行生成3个变体（每个用不同的镜头语言引导）
+  for (const style of variantStyles) {
+    const productConstraint = productAnalysis
+      ? buildProductConstraint(productAnalysis)
+      : undefined
+
+    // 修改后的提示词，注入镜头语言引导
+    const prompt = `请将以下视频脚本转化为 ${totalFrames} 帧分镜图：
+
+脚本信息：
+- 标题：${script.title}
+- 风格：${script.style}（${stylePreset.claudeGuidance}）
+- 总时长：${script.duration} 秒
+- 画面比例：${script.aspectRatio}
+- 主题：${script.theme}
+
+**镜头语言指导（关键）：**
+${style.cinematicGuidance}
+
+风格要求：
+- 风格基础提示词参考：${stylePreset.styleBase}
+- 请在每帧的 image_prompt 中融入上述风格特征
+- 避免出现：${stylePreset.negativePrompt}${productConstraint ? `
+
+**重要：产品一致性约束**
+视频中出现的产品必须严格符合以下描述：
+${productAnalysis!.visualPrompt}
+
+关键特征（绝不能出错）：
+${productAnalysis!.criticalFeatures.map((f, i) => `${i + 1}. ${f}`).join('\n')}
+
+禁止出现：${productConstraint.negativeConstraint}` : ''}
+
+场景列表：
+${script.scenes.map(s => `
+场景 ${s.index}（${s.duration}秒）：
+  画面：${s.visual}
+  运镜：${s.cameraMove || '固定'}
+  情绪：${s.emotion || ''}
+  解说：${s.narration || ''}
+`).join('\n')}
+
+请将场景合理分配到 ${totalFrames} 帧（按时长比例分配）。
+
+**重要提示**：
+- image_prompt 要简洁精准，控制在50-80词
+- 只包含核心要素：主体、动作、场景、光线、基础风格
+- 避免冗余的技术细节和重复描述
+- **严格遵守镜头语言指导**
+
+返回 JSON 格式：
+{
+  "style_base": "统一风格基础词（英文，5-8词即可）",
+  "character_description": "主角核心外观（英文，如有，10词内）",
+  "frames": [
+    {
+      "index": 0,
+      "scene_index": 0,
+      "duration": 1.5,
+      "description": "画面描述（中文）",
+      "camera_angle": "镜头角度",
+      "image_prompt": "简洁精准的英文提示词（50-80词，主体+场景+光线+动作）",
+      "transition": "转场方式（可选）"
+    }
+  ]
+}`
+
+    const result = await generateJSON<StoryboardResult>(SYSTEM_PROMPT, prompt, {
+      maxTokens: 6000,
+      source: 'storyboard-variants',
+    })
+
+    const frames: StoryboardFrame[] = result.frames.map((f): StoryboardFrame => {
+      let fullPrompt = f.image_prompt
+
+      if (result.character_description) {
+        fullPrompt = `${result.character_description}, ${fullPrompt}`
+      }
+
+      if (productConstraint) {
+        fullPrompt = `${fullPrompt}, ${productConstraint.positiveConstraint}`
+      }
+
+      fullPrompt = applyStyleToPrompt(fullPrompt, stylePreset)
+
+      // 🛡️ 智能过滤违禁词
+      const filtered = filterPrompt(fullPrompt)
+      if (filtered.hasChanges) {
+        console.log(`[Variant ${style.name}] Frame ${f.index} 违禁词过滤: ${filtered.replacements.length} 处替换`)
+      }
+
+      // ✂️ 简化提示词
+      const finalPrompt = simplifyPrompt(filtered.filtered)
+
+      return {
+        index: f.index,
+        scriptSceneIndex: f.scene_index,
+        duration: f.duration,
+        description: f.description,
+        cameraAngle: f.camera_angle,
+        imagePrompt: finalPrompt,
+        transition: f.transition,
+      }
+    })
+
+    // 🎵 音频驱动的帧时长调整（如果有）
+    if (audioAnalysis) {
+      const adjustedDurations = adjustFrameDurations(
+        script.duration,
+        frames.length,
+        audioAnalysis
+      )
+      frames.forEach((frame, i) => {
+        frame.duration = adjustedDurations[i]
+      })
+    }
+
+    const storyboard: Storyboard = {
+      id: uuid(),
+      scriptId: script.id,
+      totalFrames,
+      frames,
+      coverPrompt: frames[0]?.imagePrompt,
+      createdAt: new Date(),
+    }
+
+    variants.push({
+      id: uuid(),
+      name: style.name,
+      description: style.description,
+      cinematicStyle: style.cinematicGuidance,
+      storyboard,
+    })
+  }
+
+  return variants
+}
