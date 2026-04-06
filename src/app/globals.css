@@ -1,6 +1,7 @@
-/* 字体加载 - Satoshi + DM Sans（必须在 @import "tailwindcss" 之前） */
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap');
+/* 字体加载 - Instrument Serif + DM Sans + JetBrains Mono（必须在 @import "tailwindcss" 之前） */
+@import url('https://fonts.cdnfonts.com/css/instrument-serif');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
 @import "tailwindcss";
 
@@ -9,38 +10,57 @@
    ============================================================ */
 
 :root {
-  /* 深色主题配色 */
+  /* Industrial Minimalism - 深色主题 */
   --bg-primary: #0a0a0f;
   --bg-secondary: #13131a;
   --bg-tertiary: #1a1a24;
+  --bg-elevated: #1f1f2a;
 
-  /* 霓虹渐变色（增强） */
-  --neon-purple: #a855f7;
-  --neon-violet: #8b5cf6;
-  --neon-blue: #3b82f6;
-  --neon-cyan: #06b6d4;
-  --neon-pink: #ec4899;
+  /* Cyan accent (NOT purple) */
+  --accent-primary: #06b6d4;
+  --accent-hover: #0891b2;
+  --accent-subtle: rgba(6, 182, 212, 0.1);
+  --accent-border: rgba(6, 182, 212, 0.3);
 
-  /* 玻璃态（增强透明度） */
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-bg-hover: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-border-active: rgba(168, 85, 247, 0.3);
-
-  /* 文字颜色 */
+  /* 文字颜色 - 高对比度 */
   --text-primary: #f5f5f7;
   --text-secondary: #a1a1aa;
   --text-tertiary: #71717a;
 
-  /* 阴影（增强） */
-  --shadow-neon: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 30px rgba(168, 85, 247, 0.3);
+  /* 边框 - 简洁扁平 */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.18);
 
-  /* 字体栈 */
-  --font-display: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* 语义颜色 */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+
+  /* 字体栈 - Instrument Serif + DM Sans */
+  --font-display: 'Instrument Serif', Georgia, serif;
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, Consolas, monospace;
+
+  /* 间距 - 8px 基准 */
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* 过渡 - 极简功能性 */
+  --transition-micro: 150ms ease-out;
+  --transition-short: 250ms ease-in-out;
 }
 
 @theme inline {
@@ -98,63 +118,11 @@ body {
   animation: shimmer 2s infinite linear;
 }
 
-/* 霓虹脉动（增强） */
-@keyframes neon-pulse {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.4),
-                0 0 20px rgba(168, 85, 247, 0.3),
-                0 0 30px rgba(168, 85, 247, 0.15);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.6),
-                0 0 40px rgba(168, 85, 247, 0.4),
-                0 0 60px rgba(168, 85, 247, 0.25);
-  }
-}
+/* Removed: neon-pulse animation (not needed in Industrial Minimalism) */
 
-.animate-neon-pulse {
-  animation: neon-pulse 2s ease-in-out infinite;
-}
+/* Removed: ripple animation (not needed in Industrial Minimalism) */
 
-/* 光波扩散（按钮 hover） */
-@keyframes ripple {
-  0% {
-    transform: scale(0.8);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(2);
-    opacity: 0;
-  }
-}
-
-.btn-ripple::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 2px solid currentColor;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.btn-ripple:hover::after {
-  animation: ripple 0.6s ease-out;
-}
-
-/* 卡片倾斜 */
-@keyframes card-tilt {
-  0% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
-  100% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
-}
-
-.card-tilt {
-  transition: transform 0.3s ease;
-}
-
-.card-tilt:hover {
-  transform: perspective(1000px) rotateX(-2deg) rotateY(3deg) translateY(-4px);
-}
+/* Removed: card-tilt animation (not needed in Industrial Minimalism) */
 
 /* 浮动动画 */
 @keyframes float {
@@ -190,12 +158,10 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan), var(--neon-pink));
-  background-size: 200% auto;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: gradient-shift 3s ease infinite;
 }
 
 /* 网格背景 */
@@ -207,41 +173,28 @@ body {
 }
 
 /* ============================================================
-   玻璃态效果
+   卡片效果 - Industrial Minimalism（NO glass blur）
    ============================================================ */
 
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
 }
 
 .glass-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-micro);
 }
 
 .glass-hover:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-active);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow);
+  background: var(--bg-tertiary);
+  border-color: var(--accent-border);
+  transform: translateY(-1px);
 }
 
-/* 渐变气泡（AI 消息） */
+/* AI 消息气泡 - Industrial Minimalism */
 .bubble-gradient {
-  background: linear-gradient(135deg,
-    rgba(168, 85, 247, 0.15) 0%,
-    rgba(139, 92, 246, 0.12) 25%,
-    rgba(59, 130, 246, 0.1) 50%,
-    rgba(6, 182, 212, 0.08) 100%
-  );
-  border: 1px solid;
-  border-image: linear-gradient(135deg,
-    rgba(168, 85, 247, 0.4),
-    rgba(59, 130, 246, 0.3),
-    rgba(6, 182, 212, 0.2)
-  ) 1;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-border);
 }
 
 /* ============================================================
@@ -249,54 +202,38 @@ body {
    ============================================================ */
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+  background: var(--accent-primary);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.btn-primary:hover::before {
-  left: 100%;
+  transition: all var(--transition-micro);
+  font-family: var(--font-body);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+  background: var(--accent-hover);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--border-medium);
   padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-micro);
+  font-family: var(--font-body);
 }
 
 .btn-secondary:hover {
-  border-color: var(--neon-purple);
-  background: rgba(168, 85, 247, 0.1);
-  transform: translateY(-2px);
+  border-color: var(--accent-border);
+  background: var(--accent-subtle);
+  transform: translateY(-1px);
 }
 
 /* ============================================================
@@ -304,17 +241,15 @@ body {
    ============================================================ */
 
 .card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: all var(--transition-micro);
 }
 
 .card:hover {
-  border-color: rgba(168, 85, 247, 0.3);
-  box-shadow: var(--shadow-glass);
+  border-color: var(--accent-border);
 }
 
 /* ============================================================
@@ -322,20 +257,20 @@ body {
    ============================================================ */
 
 .input-field {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   padding: 0.75rem 1rem;
   color: var(--text-primary);
-  transition: all 0.3s ease;
+  transition: all var(--transition-micro);
   width: 100%;
+  font-family: var(--font-body);
 }
 
 .input-field:focus {
   outline: none;
-  border-color: var(--neon-purple);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+  border-color: var(--accent-border);
+  background: var(--bg-primary);
 }
 
 .input-field::placeholder {
@@ -357,9 +292,9 @@ body {
 }
 
 .badge-primary {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(59, 130, 246, 0.2));
-  color: var(--neon-purple);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-border);
 }
 
 .badge-success {
@@ -382,22 +317,9 @@ body {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
-  border-radius: 9999px;
-  transition: width 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  animation: shimmer 2s infinite linear;
+  background: var(--accent-primary);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-short);
 }
 
 /* ============================================================
@@ -420,19 +342,8 @@ body {
    辅助类
    ============================================================ */
 
-.blur-sm { backdrop-filter: blur(4px); }
-.blur-md { backdrop-filter: blur(8px); }
-.blur-lg { backdrop-filter: blur(12px); }
-.blur-xl { backdrop-filter: blur(16px); }
+/* Removed: blur utilities (no backdrop-filter in Industrial Minimalism) */
 
 .transition-smooth {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.shadow-neon {
-  box-shadow: var(--shadow-neon);
-}
-
-.shadow-glass {
-  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-micro);
 }
