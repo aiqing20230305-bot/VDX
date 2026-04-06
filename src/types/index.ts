@@ -29,10 +29,42 @@ export interface Project {
   videos: VideoJob[]
 }
 
+// ─── Audio / 音频 ──────────────────────────────────────────
+export interface AudioAnalysisResult {
+  duration: number
+  beat: {
+    bpm: number
+    beats: number[]
+    bars: number[]
+    timeSignature: string
+  }
+  lyrics: Array<{
+    startTime: number
+    endTime: number
+    text: string
+    keywords: string[]
+  }>
+  mood: Array<{
+    timestamp: number
+    energy: number
+    valence: number
+    tempo: 'slow' | 'medium' | 'fast'
+    intensity: 'low' | 'medium' | 'high'
+  }>
+  segments: Array<{
+    type: 'intro' | 'verse' | 'chorus' | 'bridge' | 'outro'
+    startTime: number
+    endTime: number
+    energy: number
+  }>
+}
+
 // ─── Script / 脚本 ──────────────────────────────────────────
 export interface ScriptGenerationInput {
   topic?: string          // 选题描述
   images?: string[]       // 上传图片 URL 列表
+  audioPath?: string      // 音频文件路径 ⭐ 新增
+  audioAnalysis?: AudioAnalysisResult // 音频分析结果 ⭐ 新增
   duration: number        // 视频时长 (秒)
   aspectRatio: AspectRatio
   count: number           // 生成脚本数量
