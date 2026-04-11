@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { extractKeyFrames, type KeyFrameExtractionOptions } from '@/lib/video/frame-extraction'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('ExtractFramesAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -50,7 +53,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Frame extraction failed'
-    console.error('[Extract Frames API]', err)
+    log.error('Frame extraction failed', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

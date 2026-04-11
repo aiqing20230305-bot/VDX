@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateScripts } from '@/lib/ai/script-engine'
 import type { ScriptGenerationInput } from '@/types'
+import { logger } from '@/lib/utils/logger'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ scripts })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Script generation failed'
-    console.error('[Script API]', err)
+    logger.error('[Script API] Request failed', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

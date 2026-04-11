@@ -216,8 +216,11 @@ export interface SubtitleEntry {
 
 export interface SubtitleTrack {
   id: string
+  name?: string                // 轨道名称（UI 显示用）
+  language?: string            // 语言代码（如 'zh', 'en'）
   entries: SubtitleEntry[]
   defaultStyle?: SubtitleStyle // 默认样式
+  style?: SubtitleStyle        // 向后兼容（同 defaultStyle）
   enabled?: boolean            // 是否启用（默认 true）
 }
 
@@ -347,6 +350,8 @@ export interface ChatMessage {
   role: MessageRole
   type: MessageType
   content: string
+  streaming?: boolean    // NEW: 是否正在流式生成/AI思考中
+  tempId?: string        // NEW: 临时ID，用于乐观UI更新和替换
   metadata?: {
     script?: Script
     storyboard?: Storyboard
@@ -377,6 +382,9 @@ export interface ChatMessage {
       detail?: string
       startedAt?: number
     }
+    // 双Agent系统相关
+    agent?: 'content-director' | 'technical-executor'
+    stage?: string
   }
   createdAt: Date
 }

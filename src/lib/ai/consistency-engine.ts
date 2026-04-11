@@ -2,6 +2,9 @@ import 'server-only'
 import { db } from '@/lib/db/client'
 import { extractCharacterFeatures, cosineSimilarity } from './character-engine'
 import type { Character, CharacterFeatures } from '@/types'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('ConsistencyEngine')
 
 /**
  * 生成增强提示词（注入角色特征）
@@ -37,7 +40,7 @@ export function enhancePromptWithCharacter(
   const keywordsPart = keywords.join('、')
   const enhancedPrompt = `${originalPrompt}，${keywordsPart}`
 
-  console.log('[ConsistencyEngine] 提示词增强:', {
+  log.debug('提示词增强:', {
     original: originalPrompt,
     keywords: keywordsPart,
     enhanced: enhancedPrompt.slice(0, 100) + '...',
@@ -88,7 +91,7 @@ export async function verifyConsistency(
     styleSimilarity?: number
   }
 }> {
-  console.log('[ConsistencyEngine] 开始一致性验证:', {
+  log.info('开始一致性验证:', {
     characterId,
     threshold,
   })
@@ -104,7 +107,7 @@ export async function verifyConsistency(
     })
 
     if (!originalCharacter || !originalCharacter.features) {
-      console.warn('[ConsistencyEngine] 未找到原始角色特征:', characterId)
+      log.warn('未找到原始角色特征:', characterId)
       return { consistent: false, similarity: 0 }
     }
 
@@ -120,7 +123,7 @@ export async function verifyConsistency(
     // 5. 判断是否一致
     const consistent = similarity >= threshold
 
-    console.log('[ConsistencyEngine] 一致性验证结果:', {
+    log.info('一致性验证结果:', {
       similarity: similarity.toFixed(3),
       threshold,
       consistent,
@@ -136,7 +139,7 @@ export async function verifyConsistency(
     }
 
   } catch (error) {
-    console.error('[ConsistencyEngine] 一致性验证失败:', error)
+    log.error('一致性验证失败:', error)
     return {
       consistent: false,
       similarity: 0,

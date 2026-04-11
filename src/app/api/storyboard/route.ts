@@ -3,6 +3,7 @@ import { generateStoryboard, fillStoryboardImages } from '@/lib/ai/storyboard-en
 import type { Script, ScriptScene, AudioAnalysisResult } from '@/types'
 import type { CharacterStyle } from '@/lib/video/dreamina-image'
 import type { ProductAnalysis } from '@/lib/ai/product-consistency'
+import { logger } from '@/lib/utils/logger'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
       productDescriptions?: string[]
       productAnalysis?: ProductAnalysis
       audioAnalysis?: AudioAnalysisResult
+      characterId?: string // 角色一致性 - 数据库角色ID
     }
 
     const {
@@ -33,6 +35,7 @@ export async function POST(req: NextRequest) {
       productDescriptions,
       productAnalysis,
       audioAnalysis,
+      characterId, // 角色一致性 - 数据库角色ID
     } = body
 
     if (!script?.scenes?.length) {
@@ -60,11 +63,13 @@ export async function POST(req: NextRequest) {
     // 1. 生成分镜提示词（Claude 会基于注入的参考信息生成更精准的提示词）
     // 如果有产品分析结果，传递给分镜引擎以注入产品一致性约束
     // 如果有音频分析结果，传递以调整帧时长（Chorus 快切，Intro/Outro 慢镜）
-    let storyboard = await generateStoryboard(script, productAnalysis, undefined, audioAnalysis)
+    // 如果有角色ID，从数据库加载角色特征并注入到提示词中
+    let storyboard = await generateStoryboard(script, productAnalysis, characterId, audioAnalysis)
 
     // 2. 生成分镜图片
     if (fillImages) {
       try {
+        logger.info('[Storyboard API] Starting image generation')
         const ratio: '9:16' | '16:9' = script.aspectRatio === '9:16' ? '9:16' : '16:9'
 
         storyboard = await fillStoryboardImages({
@@ -75,15 +80,21 @@ export async function POST(req: NextRequest) {
           characterImagePath,
           characterStyle: characterStyle ?? (characterImagePath ? 'cg_realistic' : undefined),
         })
+
+        const imagesGenerated = storyboard.frames.filter(f => f.imageUrl).length
+        logger.info('[Storyboard API] Image generation completed', {
+          generated: imagesGenerated,
+          total: storyboard.frames.length
+        })
       } catch (imgErr) {
-        console.error('[Storyboard] 图片生成失败，返回无图版本:', imgErr)
+        logger.error('[Storyboard] Image generation failed, returning storyboard without images', imgErr)
       }
     }
 
     return NextResponse.json({ storyboard })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Storyboard generation failed'
-    console.error('[Storyboard API]', err)
+    logger.error('[Storyboard API] Request failed', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

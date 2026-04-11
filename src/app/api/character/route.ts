@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import { extractCharacterFeatures, cosineSimilarity } from '@/lib/ai/character-engine'
 import type { Character, CharacterFeatures } from '@/types'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('CharacterAPI')
 
 /**
  * POST /api/character
@@ -26,7 +29,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    console.log('[Character API] 创建角色:', { name, tags })
+    log.info('Creating character', { name, tags })
 
     // 1. 提取特征
     const features = await extractCharacterFeatures(referenceImageUrl)
@@ -61,7 +64,7 @@ export async function POST(req: NextRequest) {
       return char
     })
 
-    console.log('[Character API] 角色创建成功:', character.id)
+    log.info('Character created successfully', { characterId: character.id, name: character.name })
 
     // 3. 返回完整角色信息（包含特征）
     const fullCharacter = await db.character.findUnique({
@@ -75,11 +78,24 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (error) {
-    console.error('[Character API] 创建失败:', error)
+    log.error('Character creation failed', error)
+
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    let userMessage = '角色创建失败，请重试'
+
+    // 提供更具体的错误提示
+    if (errorMessage.includes('database') || errorMessage.includes('存储')) {
+      userMessage = '数据库保存失败，请检查存储空间'
+    } else if (errorMessage.includes('image') || errorMessage.includes('图片')) {
+      userMessage = '图片处理失败，请检查图片格式（支持 PNG/JPG）'
+    } else if (errorMessage.includes('validation') || errorMessage.includes('验证')) {
+      userMessage = '角色信息不完整，请填写必填项（名称、风格）'
+    }
+
     return NextResponse.json(
       {
-        error: '角色创建失败',
-        details: error instanceof Error ? error.message : String(error),
+        error: userMessage,
+        details: errorMessage,
       },
       { status: 500 }
     )
@@ -102,7 +118,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const tagsFilter = searchParams.get('tags')
 
-    console.log('[Character API] 查询角色:', { searchQuery, limit, tagsFilter })
+    log.info('Querying characters', { searchQuery, limit, tagsFilter })
 
     if (searchQuery) {
       // 语义搜索（基于 embedding 相似度）
@@ -133,11 +149,21 @@ export async function GET(req: NextRequest) {
     }
 
   } catch (error) {
-    console.error('[Character API] 查询失败:', error)
+    log.error('Character query failed', error)
+
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    let userMessage = '角色查询失败，请重试'
+
+    if (errorMessage.includes('database') || errorMessage.includes('连接')) {
+      userMessage = '数据库连接失败，请稍后重试'
+    } else if (errorMessage.includes('not found')) {
+      userMessage = '未找到角色记录'
+    }
+
     return NextResponse.json(
       {
-        error: '角色查询失败',
-        details: error instanceof Error ? error.message : String(error),
+        error: userMessage,
+        details: errorMessage,
       },
       { status: 500 }
     )
@@ -193,7 +219,7 @@ async function handleSemanticSearch(query: string, limit: number) {
     const data = await response.json()
     queryEmbedding = data.data[0].embedding
   } catch (error) {
-    console.error('[Character API] Embedding 生成失败:', error)
+    log.error('Embedding generation failed for semantic search', error, { query })
     // 降级：返回按使用次数排序的结果
     return NextResponse.json({
       success: true,

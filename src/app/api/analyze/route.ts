@@ -3,6 +3,9 @@ import { analyzeVideo } from '@/lib/ai/analysis-engine'
 import path from 'path'
 import fs from 'fs/promises'
 import { v4 as uuid } from 'uuid'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('AnalyzeAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -43,7 +46,7 @@ export async function POST(req: NextRequest) {
 
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Video analysis failed'
-    console.error('[Analyze API]', err)
+    log.error('Video analysis failed', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -2,6 +2,9 @@
  * 音频分析模块
  * 功能：节拍检测、歌词识别、情绪分析
  */
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('AudioAnalyzer')
 
 export interface BeatInfo {
   bpm: number              // 每分钟节拍数
@@ -46,11 +49,23 @@ export interface AudioSegment {
  * @returns 音频分析结果
  */
 export async function analyzeAudio(audioPath: string): Promise<AudioAnalysisResult> {
-  // TODO: 实现音频分析
-  // Phase 1: 使用简单的假数据
-  // Phase 2: 集成真实的音频分析库（如 music-metadata, node-audiocontext）
+  /**
+   * Audio Analysis Implementation Roadmap
+   *
+   * Phase 1 (Current): 简单估算和假数据
+   * - 使用 ffprobe 获取基础信息（时长、采样率）
+   * - 节拍估算（基于固定BPM）
+   *
+   * Phase 2 (Future): 真实音频分析
+   * - 集成音频分析库:
+   *   - music-metadata: 元数据提取
+   *   - node-audiocontext: 波形分析
+   *   - music-tempo: 节拍检测
+   * - 实现频谱分析和能量检测
+   * - 智能分段（基于音乐结构）
+   */
 
-  console.log('[Audio Analyzer] Analyzing:', audioPath)
+  log.info('Analyzing:', audioPath)
 
   // 获取音频时长（使用 ffprobe）
   const duration = await getAudioDuration(audioPath)
@@ -93,7 +108,7 @@ async function getAudioDuration(audioPath: string): Promise<number> {
     ])
     return parseFloat(stdout.trim())
   } catch (error) {
-    console.error('[Audio Analyzer] Failed to get duration:', error)
+    log.error('Failed to get duration:', error)
     return 60 // 默认60秒
   }
 }
@@ -131,8 +146,24 @@ async function detectBeat(audioPath: string, duration: number): Promise<BeatInfo
  * 歌词识别（使用现有的 Whisper）
  */
 async function recognizeLyrics(audioPath: string): Promise<LyricLine[]> {
-  // TODO: 集成现有的 ASR 引擎（analysis-engine.ts 中的 transcribeAudio）
-  // 暂时返回空数组
+  /**
+   * ASR Integration: 语音识别生成歌词
+   *
+   * 可复用现有ASR引擎:
+   * - analysis-engine.ts 中的 transcribeAudio 函数
+   * - 支持 whisper-cpp (本地) 和 OpenAI (云端)
+   *
+   * 实现建议:
+   * ```typescript
+   * import { transcribeAudio } from '@/lib/ai/analysis-engine'
+   * const { text, segments } = await transcribeAudio(audioPath, 'whisper-cpp')
+   * return segments.map(seg => ({
+   *   timestamp: seg.start,
+   *   text: seg.text
+   * }))
+   * ```
+   */
+  // 暂时返回空数组 - ASR集成待实现
   return []
 }
 

@@ -68,7 +68,7 @@ export function CharacterLibrary({
   return (
     <div className="flex h-full flex-col">
       {/* 搜索和筛选栏 */}
-      <div className="border-b border-white/8 bg-[#13131a] p-4">
+      <div className="border-b border-white/8 bg-zinc-900 p-4">
         <div className="flex items-center gap-3">
           {/* 搜索框 */}
           <div className="relative flex-1">
@@ -77,10 +77,10 @@ export function CharacterLibrary({
               placeholder="搜索角色..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-white/12 bg-[#1a1a24] px-4 py-2 font-['DM_Sans'] text-sm text-[#f5f5f7] placeholder-[#71717a] transition-colors focus:border-[#06b6d4] focus:outline-none"
+              className="w-full rounded-lg border border-white/12 bg-zinc-900 px-4 py-2 font-sans text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-cyan-400 focus:outline-none"
             />
             <svg
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717a]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500"
               xmlns="http://www.w3.org/2000/svg"
               width="16"
               height="16"
@@ -100,7 +100,7 @@ export function CharacterLibrary({
           {showCreateButton && (
             <button
               onClick={onCreateClick}
-              className="flex items-center gap-2 rounded-lg bg-[#06b6d4] px-4 py-2 font-['DM_Sans'] text-sm font-semibold text-white transition-all hover:bg-[#0891b2]"
+              className="flex items-center gap-2 rounded-lg bg-cyan-400 px-4 py-2 font-sans text-sm font-semibold text-white transition-all hover:bg-cyan-500"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -128,10 +128,10 @@ export function CharacterLibrary({
               <button
                 key={tag}
                 onClick={() => toggleTag(tag)}
-                className={`rounded-full px-3 py-1 font-['DM_Sans'] text-xs font-medium transition-all ${
+                className={`rounded-full px-3 py-1 font-sans text-xs font-medium transition-all ${
                   selectedTags.includes(tag)
-                    ? 'bg-[#06b6d4] text-white'
-                    : 'bg-white/5 text-[#a1a1aa] hover:bg-white/10'
+                    ? 'bg-cyan-400 text-white'
+                    : 'bg-white/5 text-zinc-400 hover:bg-white/10'
                 }`}
               >
                 {tag}
@@ -140,7 +140,7 @@ export function CharacterLibrary({
             {selectedTags.length > 0 && (
               <button
                 onClick={() => setSelectedTags([])}
-                className="rounded-full bg-white/5 px-3 py-1 font-['DM_Sans'] text-xs font-medium text-[#71717a] hover:bg-white/10"
+                className="rounded-full bg-white/5 px-3 py-1 font-sans text-xs font-medium text-zinc-500 hover:bg-white/10"
               >
                 清除筛选
               </button>
@@ -154,17 +154,17 @@ export function CharacterLibrary({
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <div className="mb-2 inline-block h-8 w-8 animate-spin rounded-full border-4 border-[#06b6d4] border-t-transparent" />
-              <p className="font-['DM_Sans'] text-sm text-[#a1a1aa]">加载中...</p>
+              <div className="mb-2 inline-block h-8 w-8 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent" />
+              <p className="font-sans text-sm text-zinc-400">加载中...</p>
             </div>
           </div>
         ) : error ? (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <p className="font-['DM_Sans'] text-sm text-[#ef4444]">{error}</p>
+              <p className="font-sans text-sm text-red-500">{error}</p>
               <button
                 onClick={fetchCharacters}
-                className="mt-2 font-['DM_Sans'] text-sm text-[#06b6d4] hover:underline"
+                className="mt-2 font-sans text-sm text-cyan-400 hover:underline"
               >
                 重试
               </button>
@@ -174,7 +174,7 @@ export function CharacterLibrary({
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
               <svg
-                className="mx-auto mb-3 text-[#71717a]"
+                className="mx-auto mb-3 text-zinc-500"
                 xmlns="http://www.w3.org/2000/svg"
                 width="48"
                 height="48"
@@ -190,7 +190,7 @@ export function CharacterLibrary({
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
-              <p className="font-['DM_Sans'] text-sm text-[#a1a1aa]">
+              <p className="font-sans text-sm text-zinc-400">
                 {searchQuery || selectedTags.length > 0
                   ? '未找到匹配的角色'
                   : '还没有角色，点击上方按钮创建'}
@@ -213,8 +213,8 @@ export function CharacterLibrary({
 
       {/* 底部统计 */}
       {!loading && !error && characters.length > 0 && (
-        <div className="border-t border-white/8 bg-[#13131a] px-4 py-3">
-          <p className="font-['DM_Sans'] text-xs text-[#71717a]">
+        <div className="border-t border-white/8 bg-zinc-900 px-4 py-3">
+          <p className="font-sans text-xs text-zinc-500">
             共 {characters.length} 个角色
             {searchQuery && ` · 搜索"${searchQuery}"`}
             {selectedTags.length > 0 && ` · 已选标签：${selectedTags.join(', ')}`}

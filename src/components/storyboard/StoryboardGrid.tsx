@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import type { Storyboard, StoryboardFrame } from '@/types'
 import { Image as ImageIcon, Clock, RefreshCw, Grid3x3, CheckSquare, Square } from 'lucide-react'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('StoryboardGrid')
 
 interface Props {
   storyboard: Storyboard
@@ -40,7 +43,7 @@ export function StoryboardGrid({ storyboard, aspectRatio = '9:16', onFrameClick,
         setCompositeUrl(data.compositeUrl)
       }
     } catch (err) {
-      console.error('合成失败:', err)
+      log.error('Composite generation failed', err)
     } finally {
       setIsCompositing(false)
     }

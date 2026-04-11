@@ -9,8 +9,10 @@ import { existsSync } from 'fs'
 import fs from 'fs/promises'
 import path from 'path'
 import type { ASREngine, TranscriptionResult, TranscriptionSegment } from './types'
+import { logger } from '@/lib/utils/logger'
 
 const execAsync = promisify(exec)
+const log = logger.context('Whisper.cpp')
 
 export class WhisperCppEngine implements ASREngine {
   name = 'whisper-cpp'
@@ -60,7 +62,7 @@ export class WhisperCppEngine implements ASREngine {
       // 运行 whisper-cpp
       const cmd = `${this.whisperPath} -m "${modelPath}" -f "${wavPath}" -l zh --output-txt --output-srt --output-json`
 
-      console.log('[Whisper.cpp] 开始转写:', cmd)
+      log.info('开始转写:', cmd)
       const startTime = Date.now()
 
       await execAsync(cmd, {
@@ -69,7 +71,7 @@ export class WhisperCppEngine implements ASREngine {
       })
 
       const duration = ((Date.now() - startTime) / 1000).toFixed(1)
-      console.log(`[Whisper.cpp] 转写完成，耗时 ${duration}秒`)
+      log.info(`转写完成，耗时 ${duration}秒`)
 
       // 读取输出的 JSON 文件
       const jsonPath = wavPath.replace('.wav', '.wav.json')

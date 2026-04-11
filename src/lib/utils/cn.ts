@@ -1,3 +1,8 @@
-export function cn(...classes: (string | boolean | undefined | null)[]): string {
-  return classes.filter(Boolean).join(' ')
+type ClassValue = string | boolean | undefined | null | (string | boolean | undefined | null)[]
+
+export function cn(...classes: ClassValue[]): string {
+  return classes
+    .flat(1)
+    .filter(Boolean)
+    .join(' ')
 }

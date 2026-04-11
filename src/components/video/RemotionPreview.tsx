@@ -10,6 +10,7 @@ import { X, Play, Pause, SkipBack, SkipForward } from 'lucide-react'
 import type { Storyboard } from '@/types'
 import { TextEffectsEditor } from '../editor/TextEffectsEditor'
 import { cn } from '@/lib/utils/cn'
+import { logger } from '@/lib/utils/logger'
 
 interface RemotionPreviewProps {
   storyboard: Storyboard
@@ -56,7 +57,7 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
         return url
       })
     } catch (err) {
-      console.error('[Preview] 渲染失败:', err)
+      logger.error('[Preview] 渲染失败:', err)
       alert(err instanceof Error ? err.message : '预览失败')
     } finally {
       setIsLoading(false)
@@ -120,7 +121,7 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
       >
         <div className="w-full h-full flex" onClick={(e) => e.stopPropagation()}>
           {/* 左侧：分帧列表 */}
-          <div className="w-64 glass border-r border-white/10 p-4 overflow-y-auto">
+          <div className="w-64 bg-[var(--bg-tertiary)] border-r border-white/10 p-4 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-zinc-100">分镜列表</h3>
               <span className="text-xs text-zinc-400">
@@ -137,8 +138,8 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
                     'w-full p-3 rounded-lg text-left transition-all',
                     'hover:bg-white/5',
                     i === currentFrame
-                      ? 'bg-gradient-to-r from-purple-500/20 to-violet-500/20 border border-purple-500/30'
-                      : 'glass border border-white/5'
+                      ? 'bg-gradient-to-r from-cyan-500/20 to-cyan-600/20 border border-cyan-500/30'
+                      : 'bg-[var(--bg-tertiary)] border border-white/5'
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -158,7 +159,7 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
           {/* 右侧：预览区域 */}
           <div className="flex-1 flex flex-col">
             {/* 顶部工具栏 */}
-            <div className="glass border-b border-white/10 px-6 py-4 flex items-center justify-between">
+            <div className="bg-[var(--bg-tertiary)] border-b border-white/10 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <h2 className="text-lg font-bold text-zinc-100">预览编辑器</h2>
                 {renderTime !== null && (
@@ -170,6 +171,7 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
               <button
                 onClick={onClose}
                 className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                aria-label="关闭预览"
               >
                 <X size={20} className="text-zinc-400" />
               </button>
@@ -180,7 +182,7 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
               {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
                     <span className="text-sm text-zinc-300">渲染中...</span>
                   </div>
                 </div>
@@ -202,7 +204,7 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
             </div>
 
             {/* 播放控制 */}
-            <div className="glass border-t border-white/10 px-6 py-4">
+            <div className="bg-[var(--bg-tertiary)] border-t border-white/10 px-6 py-4">
               <div className="flex items-center gap-4">
                 {/* 控制按钮 */}
                 <div className="flex items-center gap-2">
@@ -221,7 +223,7 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
 
                   <button
                     onClick={() => setIsPlaying(!isPlaying)}
-                    className="p-3 rounded-lg bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 transition-all text-white"
+                    className="p-3 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 transition-all text-white"
                   >
                     {isPlaying ? <Pause size={20} /> : <Play size={20} />}
                   </button>
@@ -250,10 +252,10 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
                     onChange={(e) => setCurrentFrame(parseInt(e.target.value))}
                     className="flex-1 h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer
                       [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
-                      [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-purple-500 [&::-webkit-slider-thumb]:to-violet-500
+                      [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-cyan-500 [&::-webkit-slider-thumb]:to-cyan-600
                       [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer
                       [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-gradient-to-r
-                      [&::-moz-range-thumb]:from-purple-500 [&::-moz-range-thumb]:to-violet-500
+                      [&::-moz-range-thumb]:from-cyan-500 [&::-moz-range-thumb]:to-cyan-600
                       [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0"
                   />
                   <span className="text-sm text-zinc-400 min-w-[4rem] text-right">
@@ -270,16 +272,16 @@ export function RemotionPreview({ storyboard, onClose, onSave }: RemotionPreview
             />
 
             {/* 底部操作栏 */}
-            <div className="glass border-t border-white/10 px-6 py-4 flex items-center justify-end gap-4">
+            <div className="bg-[var(--bg-tertiary)] border-t border-white/10 px-6 py-4 flex items-center justify-end gap-4">
               <button
                 onClick={onClose}
-                className="px-6 py-2.5 rounded-lg glass border border-white/10 text-zinc-300 hover:border-white/20 transition-colors"
+                className="px-6 py-2.5 rounded-lg bg-[var(--bg-tertiary)] border border-white/10 text-zinc-300 hover:border-white/20 transition-colors"
               >
                 取消
               </button>
               <button
                 onClick={handleSave}
-                className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 transition-all text-white font-medium shadow-[0_4px_20px_rgba(168,85,247,0.3)]"
+                className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 transition-all text-white font-medium shadow-[0_4px_20px_rgba(168,85,247,0.3)]"
               >
                 保存并渲染
               </button>

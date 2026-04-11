@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Film, Image as ImageIcon, Sparkles } from 'lucide-react'
+import { logger } from '@/lib/utils/logger'
 
 interface Props {
   videoUrl: string
@@ -41,7 +42,7 @@ export function VideoFrameExtractor({ videoUrl, videoPath, onExtracted }: Props)
         onExtracted(data.frames)
       }
     } catch (err) {
-      console.error('关键帧提取失败:', err)
+      logger.error('关键帧提取失败:', err)
       alert(`提取失败：${err instanceof Error ? err.message : '未知错误'}`)
     } finally {
       setIsExtracting(false)
@@ -52,7 +53,7 @@ export function VideoFrameExtractor({ videoUrl, videoPath, onExtracted }: Props)
     <div className="w-full rounded-xl border border-zinc-700 bg-zinc-800/50 p-4 space-y-3">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Film size={16} className="text-violet-400" />
+        <Film size={16} className="text-cyan-400" />
         <h3 className="text-sm font-semibold text-zinc-200">提取关键帧</h3>
         <span className="text-xs text-zinc-500">
           用于保持角色/场景一致性
@@ -77,7 +78,7 @@ export function VideoFrameExtractor({ videoUrl, videoPath, onExtracted }: Props)
             onClick={() => setMode('auto')}
             className={`flex-1 px-3 py-2 rounded-lg text-xs transition-all ${
               mode === 'auto'
-                ? 'bg-violet-600 text-white'
+                ? 'bg-cyan-600 text-white'
                 : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
             }`}
           >
@@ -93,7 +94,7 @@ export function VideoFrameExtractor({ videoUrl, videoPath, onExtracted }: Props)
             onClick={() => setMode('scene')}
             className={`flex-1 px-3 py-2 rounded-lg text-xs transition-all ${
               mode === 'scene'
-                ? 'bg-violet-600 text-white'
+                ? 'bg-cyan-600 text-white'
                 : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
             }`}
           >
@@ -120,7 +121,7 @@ export function VideoFrameExtractor({ videoUrl, videoPath, onExtracted }: Props)
             max="10"
             value={maxFrames}
             onChange={(e) => setMaxFrames(parseInt(e.target.value))}
-            className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-violet-600"
+            className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-cyan-600"
           />
           <div className="flex justify-between text-[10px] text-zinc-600">
             <span>少一点</span>
@@ -133,7 +134,7 @@ export function VideoFrameExtractor({ videoUrl, videoPath, onExtracted }: Props)
       <button
         onClick={handleExtract}
         disabled={isExtracting}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-violet-600 text-white hover:bg-violet-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-cyan-600 text-white hover:bg-cyan-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <ImageIcon size={14} />
         {isExtracting ? '提取中…' : '提取关键帧作为参考'}

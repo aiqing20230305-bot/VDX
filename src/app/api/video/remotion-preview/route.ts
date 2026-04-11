@@ -9,6 +9,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 import fs from 'fs/promises'
 import type { Storyboard, AspectRatio } from '@/types'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('RemotionPreviewAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 60  // 1 分钟
@@ -21,11 +24,11 @@ let cachedBundle: string | null = null
  */
 async function getBundleLocation(): Promise<string> {
   if (cachedBundle) {
-    console.log('[Preview] 使用缓存的 Bundle')
+    log.debug('Using cached bundle')
     return cachedBundle
   }
 
-  console.log('[Preview] 创建新 Bundle...')
+  log.info('Creating new bundle')
   const bundleLocation = await bundle({
     entryPoint: path.join(process.cwd(), 'remotion/index.ts'),
     webpackOverride: (config) => config,
@@ -100,7 +103,7 @@ export async function POST(req: NextRequest) {
 
     // 计算帧号
     const frameNumber = calculateFrameNumber(storyboard.frames, frameIndex, fps)
-    console.log(`[Preview] 渲染第 ${frameIndex} 帧（帧号 ${frameNumber}）`)
+    log.debug('Rendering preview frame', { frameIndex, frameNumber })
 
     // 获取 Bundle
     const bundleLocation = await getBundleLocation()
@@ -131,7 +134,7 @@ export async function POST(req: NextRequest) {
     })
 
     const renderTime = Date.now() - startTime
-    console.log(`[Preview] 渲染完成，耗时 ${renderTime}ms`)
+    log.info('Preview render completed', { renderTimeMs: renderTime })
 
     // 读取渲染的图片
     const frameBuffer = await fs.readFile(outputPath)
@@ -150,7 +153,7 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (err) {
-    console.error('[Preview Error]:', err)
+    log.error('Preview render failed', err)
     const message = err instanceof Error ? err.message : String(err)
 
     // 特定错误处理

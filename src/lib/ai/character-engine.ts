@@ -1,5 +1,8 @@
 import 'server-only'
 import { anthropic } from './claude'
+import { logger } from '../utils/logger'
+
+const log = logger.context('CharacterEngine')
 
 export interface CharacterFeatures {
   // 视觉特征
@@ -38,7 +41,7 @@ export interface CharacterFeatures {
 export async function extractCharacterFeatures(
   imageUrl: string
 ): Promise<CharacterFeatures> {
-  console.log('[CharacterEngine] 开始提取角色特征:', imageUrl)
+  log.info('Starting character feature extraction', { imageUrl })
 
   try {
     // 1. 判断是 URL 还是 base64
@@ -64,8 +67,9 @@ export async function extractCharacterFeatures(
     }
 
     // 2. 使用 Claude Vision 分析图片
+    // 注意：如果使用PPIO等第三方代理，可能需要改为支持的模型（如claude-3-5-sonnet-20241022）
     const visionAnalysis = await anthropic.messages.create({
-      model: 'claude-opus-4-20250514',
+      model: 'claude-opus-4-6',
       max_tokens: 1500,
       messages: [{
         role: 'user',
@@ -113,7 +117,7 @@ export async function extractCharacterFeatures(
       ? visionAnalysis.content[0].text
       : ''
 
-    console.log('[CharacterEngine] Claude Vision 分析结果:', analysisText)
+    log.debug('Claude Vision analysis result', { analysisText: analysisText.substring(0, 200) })
 
     // 3. 解析 JSON（兼容 markdown 代码块）
     let jsonText = analysisText.trim()
@@ -130,7 +134,7 @@ export async function extractCharacterFeatures(
     const features = JSON.parse(jsonMatch[0]) as Omit<CharacterFeatures, 'embedding'>
 
     // 4. 生成 embedding（用于相似度搜索）
-    console.log('[CharacterEngine] 生成文本 embedding...')
+    log.debug('Generating text embedding')
     const embedding = await generateEmbedding(features.detailedDescription)
 
     const result: CharacterFeatures = {
@@ -138,7 +142,7 @@ export async function extractCharacterFeatures(
       embedding,
     }
 
-    console.log('[CharacterEngine] 特征提取完成:', {
+    log.info('Feature extraction completed', {
       faceShape: result.face.shape,
       hair: result.face.hair,
       clothing: result.style.clothing,
@@ -148,7 +152,7 @@ export async function extractCharacterFeatures(
     return result
 
   } catch (error) {
-    console.error('[CharacterEngine] 特征提取失败:', error)
+    log.error('Feature extraction failed', error)
     throw new Error(`角色特征提取失败: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
@@ -164,7 +168,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
   const apiKey = process.env.OPENAI_API_KEY
 
   if (!apiKey) {
-    console.warn('[CharacterEngine] OPENAI_API_KEY 未配置，返回零向量')
+    log.warn('OPENAI_API_KEY not configured, returning zero vector')
     // 返回 1536 维零向量（text-embedding-3-small 的维度）
     return new Array(1536).fill(0)
   }
@@ -191,8 +195,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
     return data.data[0].embedding as number[]
 
   } catch (error) {
-    console.error('[CharacterEngine] Embedding 生成失败:', error)
-    console.warn('[CharacterEngine] 返回零向量作为降级方案')
+    log.error('Embedding generation failed, falling back to zero vector', error)
     return new Array(1536).fill(0)
   }
 }

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { text2Image, image2Image, ensureSupportedFormat, localizeImageUrl } from '@/lib/video/dreamina-image'
 import type { StoryboardFrame } from '@/types'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('RegenerateFrameAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -62,7 +65,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ imageUrl })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Frame regeneration failed'
-    console.error('[Regenerate Frame API]', err)
+    log.error('Frame regeneration failed', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

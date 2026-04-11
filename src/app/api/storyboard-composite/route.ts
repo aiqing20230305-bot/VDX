@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { compositeStoryboard, autoColumns } from '@/lib/video/storyboard-composite'
 import type { Storyboard } from '@/types'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('StoryboardCompositeAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -42,7 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ compositeUrl })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Composite failed'
-    console.error('[Storyboard Composite API]', err)
+    log.error('Storyboard composite failed', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

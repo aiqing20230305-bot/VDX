@@ -15,6 +15,9 @@ import type {
 } from '@/types'
 import { v4 as uuid } from 'uuid'
 import fs from 'fs/promises'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('AnalysisEngine')
 
 const ANALYSIS_SYSTEM_PROMPT = `你是一位专业的视频分析师和内容策略专家，能够：
 - 深度分析视频中的所有视觉元素（角色、场景、物品、文字、特效）
@@ -58,12 +61,15 @@ export async function analyzeVideo(videoPath: string): Promise<VideoAnalysis> {
   // 🎤 提取语音文字（自动选择可用的ASR引擎）
   let transcription: string | null = null
   try {
-    console.log('[视频分析] 开始语音识别...')
+    log.info('Starting speech recognition')
     const result = await transcribeVideoSpeech(videoPath)
     transcription = formatTranscription(result)
-    console.log('[视频分析] 语音识别成功，使用引擎:', result.engine, '文字长度:', transcription.length)
+    log.info('Speech recognition completed', {
+      engine: result.engine,
+      textLength: transcription.length
+    })
   } catch (err) {
-    console.warn('[视频分析] 语音识别失败（将仅分析画面）:', err)
+    log.warn('Speech recognition failed, will analyze visuals only', err)
   }
 
   const prompt = `请分析以下视频（已提取 ${frameImages.length} 个关键帧）：

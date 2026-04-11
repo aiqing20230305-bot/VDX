@@ -10,6 +10,9 @@ import {
   generateRoutingResult,
   MODEL_CAPABILITIES,
 } from '@/lib/ai/model-router'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('ModelRoutingAPI')
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -61,7 +64,7 @@ export async function POST(req: NextRequest) {
       data: result,
     })
   } catch (error) {
-    console.error('[Model Routing Error]', error)
+    log.error('Model routing failed', error)
     return NextResponse.json(
       {
         success: false,
@@ -108,7 +111,7 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('[Get Capabilities Error]', error)
+    log.error('Get capabilities failed', error)
     return NextResponse.json(
       {
         success: false,

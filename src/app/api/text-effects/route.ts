@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { addTextEffects } from '@/lib/ai/text-effects-engine'
 import type { Storyboard } from '@/types'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('TextEffectsAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -30,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result)
   } catch (err) {
-    console.error('[TextEffects API] Error:', err)
+    log.error('Text effects failed', err)
     const message = err instanceof Error ? err.message : String(err)
 
     return NextResponse.json(

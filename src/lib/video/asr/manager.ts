@@ -6,6 +6,9 @@ import type { ASREngine, ASREngineType, TranscriptionResultWithEngine } from './
 import { WhisperCppEngine } from './whisper-cpp'
 import { AliyunASREngine } from './aliyun'
 import { OpenAIASREngine } from './openai'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('ASRManager')
 
 export class ASRManager {
   private engines: ASREngine[]
@@ -29,7 +32,7 @@ export class ASRManager {
       .filter(e => this.enabledEngines.has(e.name as ASREngineType))
       .sort((a, b) => a.priority - b.priority)
 
-    console.log('[ASRManager] 启用的引擎:', this.engines.map(e => e.name).join(', '))
+    log.info('ASR engines enabled', { engines: this.engines.map(e => e.name) })
   }
 
   /**
@@ -47,18 +50,21 @@ export class ASRManager {
         // 检查引擎是否可用
         const available = await engine.isAvailable()
         if (!available) {
-          console.warn(`[ASRManager] ${engine.name} 不可用，跳过`)
+          log.warn('Engine not available, skipping', { engine: engine.name })
           errors.push(`${engine.name}: 未配置或不可用`)
           continue
         }
 
-        console.log(`[ASRManager] 使用 ${engine.name} 进行转写...`)
+        log.info('Starting transcription', { engine: engine.name })
         const startTime = Date.now()
 
         const result = await engine.transcribe(audioPath)
 
         const duration = ((Date.now() - startTime) / 1000).toFixed(1)
-        console.log(`[ASRManager] ${engine.name} 转写成功，耗时 ${duration}秒`)
+        log.info('Transcription completed', {
+          engine: engine.name,
+          durationSeconds: duration,
+        })
 
         return {
           ...result,
@@ -66,7 +72,10 @@ export class ASRManager {
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)
-        console.warn(`[ASRManager] ${engine.name} 失败: ${errorMsg}`)
+        log.warn('Engine transcription failed, trying next', {
+          engine: engine.name,
+          error: errorMsg,
+        })
         errors.push(`${engine.name}: ${errorMsg}`)
         // 继续尝试下一个引擎
       }

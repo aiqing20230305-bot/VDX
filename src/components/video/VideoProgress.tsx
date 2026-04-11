@@ -10,7 +10,7 @@ interface Props {
 
 const statusConfig = {
   pending: { icon: Loader2, color: 'text-zinc-400', label: '等待中', spin: true },
-  running: { icon: Loader2, color: 'text-violet-400', label: '生成中', spin: true },
+  running: { icon: Loader2, color: 'text-cyan-400', label: '生成中', spin: true },
   completed: { icon: CheckCircle, color: 'text-green-400', label: '完成', spin: false },
   failed: { icon: XCircle, color: 'text-red-400', label: '失败', spin: false },
   cancelled: { icon: XCircle, color: 'text-zinc-500', label: '已取消', spin: false },
@@ -37,7 +37,7 @@ export function VideoProgress({ job, onExtractFrames }: Props) {
       {/* Progress bar */}
       <div className="w-full bg-zinc-700 rounded-full h-1.5 mb-2">
         <div
-          className="bg-gradient-to-r from-violet-600 to-blue-500 h-1.5 rounded-full transition-all duration-500"
+          className="bg-cyan-500 h-1.5 rounded-full transition-all duration-500"
           style={{ width: `${job.progress}%` }}
         />
       </div>
@@ -63,7 +63,7 @@ export function VideoProgress({ job, onExtractFrames }: Props) {
               <a
                 href={job.outputUrl}
                 download
-                className="flex-1 text-center py-2 bg-violet-600 hover:bg-violet-500 text-white text-xs rounded-lg font-medium transition-colors"
+                className="flex-1 text-center py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs rounded-lg font-medium transition-colors"
               >
                 下载视频
               </a>

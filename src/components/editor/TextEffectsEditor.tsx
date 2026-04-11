@@ -209,8 +209,8 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
   }
 
   return (
-    <div className="glass border-t border-white/10 max-h-96 overflow-y-auto">
-      <div className="sticky top-0 glass border-b border-white/10 px-6 py-3 z-10">
+    <div className="bg-[var(--bg-tertiary)] border-t border-white/10 max-h-96 overflow-y-auto">
+      <div className="sticky top-0 bg-[var(--bg-tertiary)] border-b border-white/10 px-6 py-3 z-10">
         {/* Tab 切换 */}
         <div className="flex items-center gap-2">
           <button
@@ -218,7 +218,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-medium transition-all',
               activeTab === 'subtitles'
-                ? 'bg-gradient-to-r from-purple-500/20 to-violet-500/20 border border-purple-500/30 text-purple-300'
+                ? 'bg-gradient-to-r bg-cyan-500/10 border border-cyan-500/30 text-cyan-300'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'
             )}
           >
@@ -229,7 +229,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-medium transition-all',
               activeTab === 'titles'
-                ? 'bg-gradient-to-r from-purple-500/20 to-violet-500/20 border border-purple-500/30 text-purple-300'
+                ? 'bg-gradient-to-r bg-cyan-500/10 border border-cyan-500/30 text-cyan-300'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'
             )}
           >
@@ -240,7 +240,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-medium transition-all',
               activeTab === 'bullets'
-                ? 'bg-gradient-to-r from-purple-500/20 to-violet-500/20 border border-purple-500/30 text-purple-300'
+                ? 'bg-gradient-to-r bg-cyan-500/10 border border-cyan-500/30 text-cyan-300'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'
             )}
           >
@@ -255,7 +255,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
           <div className="space-y-4">
             <button
               onClick={addSubtitleTrack}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg glass border border-white/10 text-zinc-300 hover:border-purple-500/30 hover:text-purple-300 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-white/10 text-zinc-300 hover:border-cyan-500/30 hover:text-cyan-300 transition-all"
             >
               <Plus size={16} />
               <span className="text-sm">添加字幕轨道</span>
@@ -263,7 +263,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
 
             {storyboard.subtitles && storyboard.subtitles.length > 0 ? (
               storyboard.subtitles.map((track, trackIndex) => (
-                <div key={track.id} className="glass rounded-lg p-4 border border-white/5">
+                <div key={track.id} className="bg-[var(--bg-tertiary)] rounded-lg p-4 border border-white/5">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-semibold text-zinc-100">
                       字幕轨道 {trackIndex + 1}
@@ -271,7 +271,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => addSubtitleEntry(track.id)}
-                        className="px-3 py-1 text-xs rounded glass border border-white/10 text-zinc-300 hover:border-purple-500/30 transition-colors"
+                        className="px-3 py-1 text-xs rounded bg-[var(--bg-tertiary)] border border-white/10 text-zinc-300 hover:border-cyan-500/30 transition-colors"
                       >
                         + 添加
                       </button>
@@ -294,7 +294,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                           value={entry.text}
                           onChange={(e) => updateSubtitle(track.id, i, { text: e.target.value })}
                           placeholder="字幕文本"
-                          className="px-3 py-2 rounded glass border border-white/10 bg-zinc-900/50 text-zinc-100 text-sm focus:border-purple-500/30 focus:outline-none transition-colors"
+                          className="px-3 py-2 rounded bg-[var(--bg-tertiary)] border border-white/10 bg-zinc-900/50 text-zinc-100 text-sm focus:border-cyan-500/30 focus:outline-none transition-colors"
                         />
 
                         <input
@@ -304,7 +304,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                             startTime: parseFloat(e.target.value)
                           })}
                           placeholder="开始"
-                          className="w-20 px-2 py-2 rounded glass border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-purple-500/30 focus:outline-none transition-colors"
+                          className="w-20 px-2 py-2 rounded bg-[var(--bg-tertiary)] border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-cyan-500/30 focus:outline-none transition-colors"
                         />
 
                         <input
@@ -314,7 +314,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                             endTime: parseFloat(e.target.value)
                           })}
                           placeholder="结束"
-                          className="w-20 px-2 py-2 rounded glass border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-purple-500/30 focus:outline-none transition-colors"
+                          className="w-20 px-2 py-2 rounded bg-[var(--bg-tertiary)] border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-cyan-500/30 focus:outline-none transition-colors"
                         />
 
                         <button
@@ -341,7 +341,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
           <div className="space-y-4">
             <button
               onClick={addTitleTrack}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg glass border border-white/10 text-zinc-300 hover:border-purple-500/30 hover:text-purple-300 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-white/10 text-zinc-300 hover:border-cyan-500/30 hover:text-cyan-300 transition-all"
             >
               <Plus size={16} />
               <span className="text-sm">添加标题轨道</span>
@@ -349,7 +349,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
 
             {storyboard.titles && storyboard.titles.length > 0 ? (
               storyboard.titles.map((track, trackIndex) => (
-                <div key={track.id} className="glass rounded-lg p-4 border border-white/5">
+                <div key={track.id} className="bg-[var(--bg-tertiary)] rounded-lg p-4 border border-white/5">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-semibold text-zinc-100">
                       标题轨道 {trackIndex + 1}
@@ -357,7 +357,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => addTitleEntry(track.id)}
-                        className="px-3 py-1 text-xs rounded glass border border-white/10 text-zinc-300 hover:border-purple-500/30 transition-colors"
+                        className="px-3 py-1 text-xs rounded bg-[var(--bg-tertiary)] border border-white/10 text-zinc-300 hover:border-cyan-500/30 transition-colors"
                       >
                         + 添加
                       </button>
@@ -380,7 +380,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                           value={entry.text}
                           onChange={(e) => updateTitle(track.id, i, { text: e.target.value })}
                           placeholder="标题文本"
-                          className="px-3 py-2 rounded glass border border-white/10 bg-zinc-900/50 text-zinc-100 text-sm focus:border-purple-500/30 focus:outline-none transition-colors"
+                          className="px-3 py-2 rounded bg-[var(--bg-tertiary)] border border-white/10 bg-zinc-900/50 text-zinc-100 text-sm focus:border-cyan-500/30 focus:outline-none transition-colors"
                         />
 
                         <input
@@ -390,7 +390,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                             startTime: parseFloat(e.target.value)
                           })}
                           placeholder="开始"
-                          className="w-20 px-2 py-2 rounded glass border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-purple-500/30 focus:outline-none transition-colors"
+                          className="w-20 px-2 py-2 rounded bg-[var(--bg-tertiary)] border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-cyan-500/30 focus:outline-none transition-colors"
                         />
 
                         <input
@@ -400,7 +400,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                             endTime: parseFloat(e.target.value)
                           })}
                           placeholder="结束"
-                          className="w-20 px-2 py-2 rounded glass border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-purple-500/30 focus:outline-none transition-colors"
+                          className="w-20 px-2 py-2 rounded bg-[var(--bg-tertiary)] border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-cyan-500/30 focus:outline-none transition-colors"
                         />
 
                         <button
@@ -427,7 +427,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
           <div className="space-y-4">
             <button
               onClick={addBulletTrack}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg glass border border-white/10 text-zinc-300 hover:border-purple-500/30 hover:text-purple-300 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-white/10 text-zinc-300 hover:border-cyan-500/30 hover:text-cyan-300 transition-all"
             >
               <Plus size={16} />
               <span className="text-sm">添加弹幕轨道</span>
@@ -435,7 +435,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
 
             {storyboard.bullets && storyboard.bullets.length > 0 ? (
               storyboard.bullets.map((track, trackIndex) => (
-                <div key={track.id} className="glass rounded-lg p-4 border border-white/5">
+                <div key={track.id} className="bg-[var(--bg-tertiary)] rounded-lg p-4 border border-white/5">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-semibold text-zinc-100">
                       弹幕轨道 {trackIndex + 1}
@@ -443,7 +443,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => addBulletEntry(track.id)}
-                        className="px-3 py-1 text-xs rounded glass border border-white/10 text-zinc-300 hover:border-purple-500/30 transition-colors"
+                        className="px-3 py-1 text-xs rounded bg-[var(--bg-tertiary)] border border-white/10 text-zinc-300 hover:border-cyan-500/30 transition-colors"
                       >
                         + 添加
                       </button>
@@ -466,7 +466,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                           value={entry.text}
                           onChange={(e) => updateBullet(track.id, i, { text: e.target.value })}
                           placeholder="弹幕文本"
-                          className="px-3 py-2 rounded glass border border-white/10 bg-zinc-900/50 text-zinc-100 text-sm focus:border-purple-500/30 focus:outline-none transition-colors"
+                          className="px-3 py-2 rounded bg-[var(--bg-tertiary)] border border-white/10 bg-zinc-900/50 text-zinc-100 text-sm focus:border-cyan-500/30 focus:outline-none transition-colors"
                         />
 
                         <input
@@ -476,7 +476,7 @@ export function TextEffectsEditor({ storyboard, onUpdate }: TextEffectsEditorPro
                             time: parseFloat(e.target.value)
                           })}
                           placeholder="时间"
-                          className="w-24 px-2 py-2 rounded glass border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-purple-500/30 focus:outline-none transition-colors"
+                          className="w-24 px-2 py-2 rounded bg-[var(--bg-tertiary)] border border-white/10 bg-zinc-900/50 text-zinc-100 text-xs focus:border-cyan-500/30 focus:outline-none transition-colors"
                         />
 
                         <button

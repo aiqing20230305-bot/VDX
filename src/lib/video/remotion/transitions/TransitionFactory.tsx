@@ -8,7 +8,15 @@ import { SlideTransition } from './SlideTransition'
 import { ZoomTransition } from './ZoomTransition'
 import { RotateTransition } from './RotateTransition'
 import { WipeTransition } from './WipeTransition'
+import { FlipTransition } from './FlipTransition'
+import { CubeTransition } from './CubeTransition'
+import { PageCurlTransition } from './PageCurlTransition'
+import { BlurTransition } from './BlurTransition'
+import { PixelateTransition } from './PixelateTransition'
+import { GlitchTransition } from './GlitchTransition'
+import { RippleTransition } from './RippleTransition'
 import type { TransitionConfig } from './types'
+import { logger } from '@/lib/utils/logger'
 
 export interface TransitionFactoryProps {
   children: React.ReactNode
@@ -70,9 +78,58 @@ export const TransitionFactory: React.FC<TransitionFactoryProps> = ({
         </WipeTransition>
       )
 
+    case 'flip':
+      return (
+        <FlipTransition progress={progress} config={parsedConfig}>
+          {children}
+        </FlipTransition>
+      )
+
+    case 'cube':
+      return (
+        <CubeTransition progress={progress} config={parsedConfig}>
+          {children}
+        </CubeTransition>
+      )
+
+    case 'pagecurl':
+      return (
+        <PageCurlTransition progress={progress} config={parsedConfig}>
+          {children}
+        </PageCurlTransition>
+      )
+
+    case 'blur':
+      return (
+        <BlurTransition progress={progress} config={parsedConfig}>
+          {children}
+        </BlurTransition>
+      )
+
+    case 'pixelate':
+      return (
+        <PixelateTransition progress={progress} config={parsedConfig}>
+          {children}
+        </PixelateTransition>
+      )
+
+    case 'glitch':
+      return (
+        <GlitchTransition progress={progress} config={parsedConfig}>
+          {children}
+        </GlitchTransition>
+      )
+
+    case 'ripple':
+      return (
+        <RippleTransition progress={progress} config={parsedConfig}>
+          {children}
+        </RippleTransition>
+      )
+
     default:
       // 未知类型，不应用转场
-      console.warn(`Unknown transition type: ${(parsedConfig as any).type}`)
+      logger.warn(`Unknown transition type: ${(parsedConfig as any).type}`)
       return <>{children}</>
   }
 }

@@ -181,6 +181,48 @@ contextState: {
 
 详见：`.claude/CONTEXT_SYSTEM.md`
 
+## Building Blocks 系统 ⭐ 新增（v2.0）
+
+**目标**：从线性 Skills 升级为可组合、可复用的构建块系统
+
+### 核心概念
+- **Block（构建块）**：原子化的功能单元，具有明确的输入输出
+- **Workflow（工作流）**：多个 Blocks 的组合，支持 DAG 结构和并行执行
+- **WorkflowEngine（执行引擎）**：解析工作流、拓扑排序、智能调度
+
+### 已实现 Blocks（15 个）
+**输入类**：input.text, input.image, input.product  
+**生成类**：generate.script, generate.prompts, generate.image, generate.video  
+**处理类**：process.analyze, process.transform, process.filter  
+**合成类**：compose.merge, compose.subtitle, compose.transition  
+**输出类**：output.video, output.export
+
+### 预设模板（3 个）
+1. `template.product-promo` — 产品宣传片生成（完整流程）
+2. `template.simple-text2image` — 简单文生图
+3. `template.image-analysis` — 图片分析
+
+### API 路由
+- `GET /api/blocks/list` — 列出所有可用 Blocks
+- `GET /api/workflow/templates` — 列出模板
+- `POST /api/workflow/execute` — 执行工作流（支持流式）
+
+### 测试页面
+访问 `http://localhost:3000/test-blocks` 可视化测试
+
+### 文档
+详见 `docs/BUILDING_BLOCKS.md`
+
+### 优势对比
+| 维度 | Skills | Building Blocks |
+|------|--------|----------------|
+| 可组合性 | ❌ 固定 | ✅ 自由组合 |
+| 并行执行 | ❌ 串行 | ✅ 智能并行 |
+| 成本可见 | ❌ 不透明 | ✅ 精确预估 |
+| 新功能开发 | 🐌 修改核心 | ⚡ 新增 Block |
+
+---
+
 ## 进化方向
 
 1. ✅ **多模型路由**（v1.5.0 已完成）⭐ 新增
@@ -189,8 +231,22 @@ contextState: {
    - 4 种策略（质量/速度/成本/平衡）
    - 自动集成到生成流程
    - 详见：`docs/MODEL_ROUTING.md`
-2. 角色一致性系统（IP 角色在所有帧保持一致）
-3. 音频同步（歌词/节拍驱动分镜节奏）
+2. ✅ **音频同步（歌词/节拍驱动分镜节奏）**（v1.0.10 已完成）⭐ 新增
+   - Phase 1-2.2: 音频分析 + 前端集成 ✅
+   - Phase 2.3: 脚本引擎音频驱动（歌词关键词 + 段落情绪映射）✅
+   - Phase 2.4: 分镜引擎节奏同步（Chorus 1.5x密度 + 提示词节奏修饰）✅
+   - 自动识别Intro/Verse/Chorus/Bridge/Outro段落
+   - 根据BPM和能量级别调整画面节奏
+   - 歌词关键词融入场景视觉主题
+3. ✅ **角色一致性系统**（v1.0.12 已完成）⭐ 新增
+   - ✅ 数据库模式（Character + CharacterFeatures 表）
+   - ✅ Claude Vision API 自动特征提取
+   - ✅ 角色 CRUD API（/api/character + /api/character/extract-features）
+   - ✅ 分镜引擎集成（characterId → 提示词增强）
+   - ✅ UI 组件（CharacterLibrary, CharacterCreateModal, CharacterSelector）
+   - ✅ 端到端测试和文档完善（Task #243）
+   - IP 角色在所有帧中保持视觉一致性
+   - 详见：`docs/CHARACTER_CONSISTENCY.md` (用户) 和 `docs/dev/CHARACTER_SYSTEM_API.md` (开发者)
 4. ✅ **Remotion 程序化视频渲染**（v1.7.0 已完成 Phase 4 全部）⭐
    - Phase 1: React 组件描述视频、基础转场 ✅
    - Phase 2: 5 种转场效果（fade/slide/zoom/rotate/wipe） ✅
@@ -203,6 +259,11 @@ contextState: {
      - Part 2: 科技时尚 UI 改造 ✅
      - Part 3: 端到端流程打通 ✅
      - Part 4: 预览和编辑器 ✅
+   - Phase 5: 高级转场效果库 ✅（v2.1.0 新增）⭐⭐⭐
+     - 3个3D转场：Flip（翻转）、Cube（立方体）、PageCurl（翻页）
+     - 4个创意转场：Blur（模糊）、Pixelate（像素化）、Glitch（故障艺术）、Ripple（水波纹）
+     - **总计12种转场**（5基础 + 7高级）
+     - 显著提升视频质量和视觉冲击力
    - 7 种缓动函数、GPU 加速
    - 与 FFmpeg/Seedance/Kling 并存
 5. ✅ **Pretext 精确文字动画**（v1.2.0 已完成 Phase 1）⭐ 新增
@@ -210,7 +271,22 @@ contextState: {
    - 字符级精确控制（@chenglou/pretext）
    - 60fps 高性能渲染
    - 与 Remotion 无缝集成
-6. 异步任务队列（BullMQ，长视频）
+6. ✅ **异步任务队列**（v1.8.0 已完成）⭐ 新增
+   - BullMQ + Redis 任务队列系统
+   - 视频生成、图片生成、分镜生成队列
+   - SSE 实时进度推送
+   - 长视频分段生成支持（30秒/段）
+   - Worker 进程管理
+   - 自动重试（指数退避）
+   - 详见：`docs/ASYNC_TASKS.md`
+7. ✅ **完整视频导出功能**（v1.8.2 已完成 P0.1）⭐ 新增
+   - Remotion 渲染集成到 Export Panel
+   - 实时进度追踪（SSE）
+   - 多分辨率支持（720p/1080p/4K）
+   - 可配置帧率（24/30/60 FPS）
+   - 下载和预览功能
+   - Render Worker 管理
+   - 详见：`docs/VIDEO_EXPORT.md`
 
 
 ## 设计系统 (Design System)

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import type { Script } from '@/types'
-import { ChevronDown, ChevronUp, Clock, Film } from 'lucide-react'
+import { ChevronDown, ChevronUp, Clock, Film, Copy, Check } from 'lucide-react'
+import { useToast } from '@/contexts/ToastContext'
+import { logger } from '@/lib/utils/logger'
 
 interface Props {
   script: Script
@@ -13,18 +14,55 @@ interface Props {
 
 export function ScriptCard({ script, selected, onSelect }: Props) {
   const [expanded, setExpanded] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const { showSuccess } = useToast()
+
+  useEffect(() => {
+    // Trigger animation on next frame for smoother rendering
+    const frameId = requestAnimationFrame(() => {
+      setIsVisible(true)
+    })
+    return () => cancelAnimationFrame(frameId)
+  }, [])
+
+  const copyScriptText = async () => {
+    // 生成完整脚本文本
+    let text = `${script.title}\n${script.logline}\n\n`
+    text += `时长: ${script.duration}s | 风格: ${script.style} | 比例: ${script.aspectRatio}\n\n`
+    text += '--- 场景详情 ---\n\n'
+
+    script.scenes.forEach(scene => {
+      text += `场景 ${scene.index + 1} (${scene.duration}s):\n`
+      text += `${scene.visual}\n`
+      if (scene.narration) {
+        text += `旁白: "${scene.narration}"\n`
+      }
+      if (scene.emotion || scene.cameraMove) {
+        text += `[${[scene.emotion, scene.cameraMove].filter(Boolean).join(' · ')}]\n`
+      }
+      text += '\n'
+    })
+
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      showSuccess('复制成功', '脚本内容已复制到剪贴板')
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      logger.error('复制失败:', err)
+    }
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+    <div
       className={`
-        w-full rounded-xl border transition-smooth overflow-hidden
+        w-full rounded-xl border transition-all duration-300 ease-out overflow-hidden
         ${selected
           ? 'border-[var(--accent-primary)] bg-[var(--accent-subtle)]'
           : 'border-[var(--border-medium)] bg-[var(--bg-secondary)] hover:border-[var(--border-strong)]'
         }
+        ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10px]'}
       `}
     >
       {/* Header */}
@@ -51,6 +89,13 @@ export function ScriptCard({ script, selected, onSelect }: Props) {
         </div>
 
         <div className="flex gap-2">
+          <button
+            onClick={copyScriptText}
+            className="p-1.5 text-zinc-500 hover:text-[var(--accent-primary)] transition-colors"
+            title="复制脚本"
+          >
+            {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+          </button>
           {onSelect && (
             <button
               onClick={onSelect}
@@ -101,6 +146,6 @@ export function ScriptCard({ script, selected, onSelect }: Props) {
           ))}
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }

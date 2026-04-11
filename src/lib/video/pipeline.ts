@@ -13,6 +13,9 @@ import { generateVideo as seedanceGenerate } from './seedance'
 import { generateVideo as klingGenerate, pollUntilDone as klingPoll } from './kling'
 import { concatVideos, downloadVideo } from './ffmpeg-utils'
 import { v4 as uuid } from 'uuid'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('VideoPipeline')
 
 export interface PipelineOptions {
   engine: VideoEngine
@@ -87,7 +90,7 @@ export async function runVideoPipeline(options: PipelineOptions): Promise<string
       onProgress?.(i + 1, frames.length, clipUrl)
 
     } catch (err) {
-      console.error(`Frame ${i} generation failed:`, err)
+      log.error('Frame generation failed', err, { frameIndex: i })
       throw err
     }
   }
@@ -99,7 +102,9 @@ export async function runVideoPipeline(options: PipelineOptions): Promise<string
     localPaths.push(localPath)
   }
 
-  const finalVideoPath = await concatVideos(localPaths)
+  const finalVideoPath = await concatVideos({
+    inputFiles: localPaths,
+  })
   return `/outputs/${finalVideoPath.split('/outputs/')[1]}`
 }
 

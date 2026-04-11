@@ -4,6 +4,9 @@ import { analyzeProduct, getMultiViewSuggestion, type ProductAnalysis } from '@/
 import path from 'path'
 import fs from 'fs/promises'
 import { v4 as uuid } from 'uuid'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('UploadAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -105,7 +108,7 @@ export async function POST(req: NextRequest) {
           } catch { /* ignore parse error */ }
         }
       } catch (err) {
-        console.error(`[Upload] 图片分析失败: ${file.name}`, err)
+        log.error('Image analysis failed', err, { fileName: file.name })
       }
 
       results.push({ name: file.name, url: `/uploads/${filename}`, absolutePath, category, description })
@@ -128,7 +131,7 @@ export async function POST(req: NextRequest) {
         )
         multiViewSuggestion = getMultiViewSuggestion(productAnalysis.type)
       } catch (err) {
-        console.error('[Upload] 产品深度分析失败:', err)
+        log.error('Product analysis failed', err)
       }
     }
 

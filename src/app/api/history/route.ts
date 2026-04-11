@@ -5,6 +5,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { db as prisma } from '@/lib/db/client'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('HistoryAPI')
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -154,7 +157,7 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('[History API Error]', error)
+    log.error('History query failed', error)
     return NextResponse.json(
       {
         success: false,
@@ -205,7 +208,7 @@ export async function DELETE(req: NextRequest) {
       message: '删除成功',
     })
   } catch (error) {
-    console.error('[Delete History Error]', error)
+    log.error('Delete history failed', error)
     return NextResponse.json(
       {
         success: false,

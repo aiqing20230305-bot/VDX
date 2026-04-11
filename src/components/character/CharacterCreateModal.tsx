@@ -135,16 +135,17 @@ export function CharacterCreateModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-2xl rounded-xl border border-white/18 bg-[#1a1a24] shadow-2xl">
+      <div className="w-full max-w-2xl rounded-xl border border-white/18 bg-zinc-900 shadow-2xl">
         {/* 标题栏 */}
         <div className="flex items-center justify-between border-b border-white/12 p-6">
-          <h2 className="font-['Instrument_Serif'] text-2xl font-bold text-[#f5f5f7]">
+          <h2 className="font-['Instrument_Serif'] text-2xl font-bold text-zinc-100">
             创建角色
           </h2>
           <button
             onClick={handleClose}
             disabled={loading}
-            className="rounded-lg p-2 text-[#a1a1aa] transition-colors hover:bg-white/5 hover:text-[#f5f5f7] disabled:opacity-50"
+            className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-100 disabled:opacity-50"
+            aria-label="关闭"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -168,16 +169,16 @@ export function CharacterCreateModal({
           <div className="space-y-5">
             {/* 参考图片上传 */}
             <div>
-              <label className="mb-2 block font-['DM_Sans'] text-sm font-semibold text-[#f5f5f7]">
-                参考图片 <span className="text-[#ef4444]">*</span>
+              <label className="mb-2 block font-sans text-sm font-semibold text-zinc-100">
+                参考图片 <span className="text-red-500">*</span>
               </label>
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className={`flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-colors ${
                   imagePreview
-                    ? 'border-[#06b6d4]'
+                    ? 'border-cyan-400'
                     : 'border-white/12 hover:border-white/18'
-                } bg-[#13131a]`}
+                } bg-zinc-900`}
               >
                 {imagePreview ? (
                   <div className="relative h-full w-full">
@@ -191,7 +192,7 @@ export function CharacterCreateModal({
                 ) : (
                   <div className="text-center">
                     <svg
-                      className="mx-auto mb-2 text-[#71717a]"
+                      className="mx-auto mb-2 text-zinc-500"
                       xmlns="http://www.w3.org/2000/svg"
                       width="32"
                       height="32"
@@ -206,10 +207,10 @@ export function CharacterCreateModal({
                       <polyline points="17 8 12 3 7 8" />
                       <line x1="12" x2="12" y1="3" y2="15" />
                     </svg>
-                    <p className="font-['DM_Sans'] text-sm text-[#a1a1aa]">
+                    <p className="font-sans text-sm text-zinc-400">
                       点击上传图片
                     </p>
-                    <p className="mt-1 font-['DM_Sans'] text-xs text-[#71717a]">
+                    <p className="mt-1 font-sans text-xs text-zinc-500">
                       支持 JPG、PNG、WEBP（最大 10MB）
                     </p>
                   </div>
@@ -228,9 +229,9 @@ export function CharacterCreateModal({
             <div>
               <label
                 htmlFor="name"
-                className="mb-2 block font-['DM_Sans'] text-sm font-semibold text-[#f5f5f7]"
+                className="mb-2 block font-sans text-sm font-semibold text-zinc-100"
               >
-                角色名称 <span className="text-[#ef4444]">*</span>
+                角色名称 <span className="text-red-500">*</span>
               </label>
               <input
                 id="name"
@@ -238,7 +239,7 @@ export function CharacterCreateModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="例如：小红、李明、主角..."
-                className="w-full rounded-lg border border-white/12 bg-[#13131a] px-4 py-2.5 font-['DM_Sans'] text-sm text-[#f5f5f7] placeholder-[#71717a] transition-colors focus:border-[#06b6d4] focus:outline-none"
+                className="w-full rounded-lg border border-white/12 bg-zinc-900 px-4 py-2.5 font-sans text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-cyan-400 focus:outline-none"
               />
             </div>
 
@@ -246,7 +247,7 @@ export function CharacterCreateModal({
             <div>
               <label
                 htmlFor="description"
-                className="mb-2 block font-['DM_Sans'] text-sm font-semibold text-[#f5f5f7]"
+                className="mb-2 block font-sans text-sm font-semibold text-zinc-100"
               >
                 角色描述（可选）
               </label>
@@ -256,7 +257,7 @@ export function CharacterCreateModal({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="简短描述角色的特点、用途..."
                 rows={3}
-                className="w-full resize-none rounded-lg border border-white/12 bg-[#13131a] px-4 py-2.5 font-['DM_Sans'] text-sm text-[#f5f5f7] placeholder-[#71717a] transition-colors focus:border-[#06b6d4] focus:outline-none"
+                className="w-full resize-none rounded-lg border border-white/12 bg-zinc-900 px-4 py-2.5 font-sans text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-cyan-400 focus:outline-none"
               />
             </div>
 
@@ -264,7 +265,7 @@ export function CharacterCreateModal({
             <div>
               <label
                 htmlFor="tags"
-                className="mb-2 block font-['DM_Sans'] text-sm font-semibold text-[#f5f5f7]"
+                className="mb-2 block font-sans text-sm font-semibold text-zinc-100"
               >
                 标签（可选）
               </label>
@@ -281,12 +282,12 @@ export function CharacterCreateModal({
                     }
                   }}
                   placeholder="输入标签后按回车"
-                  className="flex-1 rounded-lg border border-white/12 bg-[#13131a] px-4 py-2.5 font-['DM_Sans'] text-sm text-[#f5f5f7] placeholder-[#71717a] transition-colors focus:border-[#06b6d4] focus:outline-none"
+                  className="flex-1 rounded-lg border border-white/12 bg-zinc-900 px-4 py-2.5 font-sans text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-cyan-400 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={addTag}
-                  className="rounded-lg border border-white/12 bg-[#13131a] px-4 py-2.5 font-['DM_Sans'] text-sm text-[#06b6d4] transition-colors hover:border-[#06b6d4]"
+                  className="rounded-lg border border-white/12 bg-zinc-900 px-4 py-2.5 font-sans text-sm text-cyan-400 transition-colors hover:border-cyan-400"
                 >
                   添加
                 </button>
@@ -296,13 +297,13 @@ export function CharacterCreateModal({
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-1 rounded-full bg-[#06b6d4]/10 px-3 py-1 font-['DM_Sans'] text-xs text-[#06b6d4]"
+                      className="flex items-center gap-1 rounded-full bg-cyan-400/10 px-3 py-1 font-sans text-xs text-cyan-400"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="hover:text-[#f5f5f7]"
+                        className="hover:text-zinc-100"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -327,7 +328,7 @@ export function CharacterCreateModal({
 
             {/* 错误提示 */}
             {error && (
-              <div className="rounded-lg bg-[#ef4444]/10 p-3 font-['DM_Sans'] text-sm text-[#ef4444]">
+              <div className="rounded-lg bg-red-500/10 p-3 font-sans text-sm text-red-500">
                 {error}
               </div>
             )}
@@ -339,14 +340,14 @@ export function CharacterCreateModal({
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="rounded-lg border border-white/12 px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold text-[#a1a1aa] transition-colors hover:border-white/18 hover:text-[#f5f5f7] disabled:opacity-50"
+              className="rounded-lg border border-white/12 px-4 py-2.5 font-sans text-sm font-semibold text-zinc-400 transition-colors hover:border-white/18 hover:text-zinc-100 disabled:opacity-50"
             >
               取消
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 rounded-lg bg-[#06b6d4] px-4 py-2.5 font-['DM_Sans'] text-sm font-semibold text-white transition-colors hover:bg-[#0891b2] disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-cyan-400 px-4 py-2.5 font-sans text-sm font-semibold text-white transition-colors hover:bg-cyan-500 disabled:opacity-50"
             >
               {loading ? (
                 <>

@@ -265,7 +265,25 @@ export async function rewritePromptWithClaude(
   prompt: string,
   violations: Array<{ word: string; category: string }>
 ): Promise<string> {
-  // TODO: 调用 Claude API，让其重写提示词
-  // 这里先返回基础过滤结果
+  /**
+   * Claude API Integration: 智能提示词重写
+   *
+   * 功能: 保留用户意图，替换违禁词为合规表达
+   *
+   * 实现建议:
+   * ```typescript
+   * import { streamText } from '@/lib/ai/claude'
+   * const systemPrompt = `重写以下提示词，移除违禁词但保留创意意图：
+   * 违禁词列表: ${violations.map(v => v.word).join(', ')}`
+   *
+   * let rewritten = ''
+   * for await (const chunk of streamText(systemPrompt, prompt, [])) {
+   *   rewritten += chunk
+   * }
+   * return rewritten
+   * ```
+   *
+   * 当前: 使用基础过滤器作为fallback
+   */
   return filterPrompt(prompt).filtered
 }

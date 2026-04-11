@@ -5,6 +5,9 @@
 import { renderWithRemotion } from '@/lib/video/remotion-pipeline'
 import { NextRequest, NextResponse } from 'next/server'
 import type { Storyboard } from '@/types'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('RemotionRenderAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 300 // 5 分钟
@@ -12,10 +15,12 @@ export const maxDuration = 300 // 5 分钟
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { storyboard, aspectRatio = '16:9', fps = 30 } = body as {
+    const { storyboard, aspectRatio = '16:9', fps = 30, filterId, filterIntensity } = body as {
       storyboard: Storyboard
       aspectRatio?: string
       fps?: number
+      filterId?: string
+      filterIntensity?: number
     }
 
     // 1. 验证输入
@@ -34,25 +39,29 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    console.log('[API] 开始 Remotion 渲染')
-    console.log(`[API] 分镜帧数: ${storyboard.frames.length}`)
-    console.log(`[API] 比例: ${aspectRatio}`)
+    log.info('Starting Remotion render', {
+      frameCount: storyboard.frames.length,
+      aspectRatio,
+      fps,
+    })
 
     // 3. 渲染视频
     const outputUrl = await renderWithRemotion({
       storyboard,
       aspectRatio: aspectRatio as any,
       fps,
+      filterId: filterId as any,
+      filterIntensity,
       onProgress: (progress) => {
-        console.log(`[API] 渲染进度: ${(progress * 100).toFixed(1)}%`)
+        log.debug('Render progress', { progress: (progress * 100).toFixed(1) + '%' })
       },
     })
 
-    console.log('[API] 渲染成功:', outputUrl)
+    log.info('Render completed successfully', { outputUrl })
 
     return NextResponse.json({ outputUrl })
   } catch (err) {
-    console.error('[Remotion Render Error]:', err)
+    log.error('Remotion render failed', err)
     const message = err instanceof Error ? err.message : String(err)
 
     // 特定错误处理

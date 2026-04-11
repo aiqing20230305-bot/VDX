@@ -7,8 +7,10 @@ import { promisify } from 'util'
 import fs from 'fs/promises'
 import { getASRManager } from './asr/manager'
 import type { TranscriptionResult, TranscriptionResultWithEngine } from './asr/types'
+import { logger } from '@/lib/utils/logger'
 
 const execAsync = promisify(exec)
+const log = logger.context('ASR')
 
 // 重新导出类型
 export type { TranscriptionResult, TranscriptionResultWithEngine, TranscriptionSegment } from './asr/types'
@@ -37,8 +39,8 @@ export async function transcribeAudio(audioPath: string): Promise<TranscriptionR
   const manager = getASRManager()
   const result = await manager.transcribe(audioPath)
 
-  console.log(`[ASR] 使用引擎: ${result.engine}`)
-  console.log(`[ASR] 识别文字长度: ${result.text.length} 字符`)
+  log.info(`使用引擎: ${result.engine}`)
+  log.info(`识别文字长度: ${result.text.length} 字符`)
 
   return result
 }
@@ -48,12 +50,12 @@ export async function transcribeAudio(audioPath: string): Promise<TranscriptionR
  */
 export async function transcribeVideoSpeech(videoPath: string): Promise<TranscriptionResultWithEngine> {
   // 1. 提取音频
-  console.log('[ASR] 提取音频...')
+  log.info('提取音频...')
   const audioPath = await extractAudioFromVideo(videoPath)
 
   try {
     // 2. 转写文字（自动选择引擎）
-    console.log('[ASR] 开始转写...')
+    log.info('开始转写...')
     const result = await transcribeAudio(audioPath)
 
     // 3. 清理临时音频文件

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { parseModificationIntent, applyModification, applyGlobalModification } from '@/lib/ai/prompt-modifier'
 import type { Storyboard } from '@/types'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('StoryboardModifyAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Modification failed'
-    console.error('[Modify API]', err)
+    log.error('Storyboard modification failed', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

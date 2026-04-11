@@ -10,6 +10,13 @@ export type TransitionType =
   | 'zoom'       // 缩放
   | 'rotate'     // 旋转
   | 'wipe'       // 擦除
+  | 'flip'       // 翻转（3D）
+  | 'cube'       // 立方体旋转（3D）
+  | 'pagecurl'   // 书页翻页（3D）
+  | 'blur'       // 模糊转场
+  | 'pixelate'   // 像素化转场
+  | 'glitch'     // 故障艺术效果
+  | 'ripple'     // 水波纹扩散
 
 // 缓动函数类型
 export type EasingFunction =
@@ -75,6 +82,65 @@ export interface WipeTransitionConfig extends BaseTransitionConfig {
   direction: WipeDirection    // 擦除方向
 }
 
+// 翻转方向
+export type FlipDirection = 'horizontal' | 'vertical' | 'diagonal-left' | 'diagonal-right'
+
+// 翻转转场配置（3D卡片翻转效果）
+export interface FlipTransitionConfig extends BaseTransitionConfig {
+  type: 'flip'
+  direction: FlipDirection    // 翻转方向
+  perspective?: number        // 透视距离（默认 1200）
+}
+
+// 立方体转场方向
+export type CubeDirection = 'left' | 'right' | 'up' | 'down'
+
+// 立方体转场配置（3D立方体旋转）
+export interface CubeTransitionConfig extends BaseTransitionConfig {
+  type: 'cube'
+  direction: CubeDirection    // 旋转方向
+  perspective?: number        // 透视距离（默认 1500）
+}
+
+// 书页翻页方向
+export type PageCurlDirection = 'left' | 'right'
+
+// 书页翻页转场配置（3D翻页效果）
+export interface PageCurlTransitionConfig extends BaseTransitionConfig {
+  type: 'pagecurl'
+  direction: PageCurlDirection // 翻页方向
+  curlIntensity?: number      // 翻页卷曲强度（0-1，默认0.5）
+}
+
+// 模糊转场配置
+export interface BlurTransitionConfig extends BaseTransitionConfig {
+  type: 'blur'
+  maxBlur?: number            // 最大模糊半径（px，默认50）
+  blurType?: 'gaussian' | 'motion' // 模糊类型（默认gaussian）
+}
+
+// 像素化转场配置
+export interface PixelateTransitionConfig extends BaseTransitionConfig {
+  type: 'pixelate'
+  maxPixelSize?: number       // 最大像素大小（默认50）
+}
+
+// 故障艺术转场配置
+export interface GlitchTransitionConfig extends BaseTransitionConfig {
+  type: 'glitch'
+  intensity?: number          // 故障强度（0-1，默认0.5）
+  rgbSplit?: boolean          // RGB通道分离（默认true）
+  scanlines?: boolean         // 扫描线效果（默认true）
+}
+
+// 水波纹转场配置
+export interface RippleTransitionConfig extends BaseTransitionConfig {
+  type: 'ripple'
+  center?: { x: number; y: number }  // 波纹中心（0-1，默认中心）
+  frequency?: number                 // 波纹频率（默认8）
+  amplitude?: number                 // 波纹振幅（默认0.05）
+}
+
 // 联合转场配置类型
 export type TransitionConfig =
   | { type: 'none' }
@@ -83,6 +149,13 @@ export type TransitionConfig =
   | ZoomTransitionConfig
   | RotateTransitionConfig
   | WipeTransitionConfig
+  | FlipTransitionConfig
+  | CubeTransitionConfig
+  | PageCurlTransitionConfig
+  | BlurTransitionConfig
+  | PixelateTransitionConfig
+  | GlitchTransitionConfig
+  | RippleTransitionConfig
 
 // 转场组件 Props
 export interface TransitionProps {

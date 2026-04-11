@@ -8,6 +8,9 @@ import {
 import path from 'path'
 import fs from 'fs/promises'
 import { v4 as uuid } from 'uuid'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('CharacterStyleAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -74,7 +77,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Character style conversion failed'
-    console.error('[CharacterStyle API]', err)
+    log.error('Character style conversion failed', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

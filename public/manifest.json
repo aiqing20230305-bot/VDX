@@ -1,0 +1,14 @@
+{
+  "name": "超级视频Agent - AI视频生产力OS",
+  "short_name": "超级视频",
+  "description": "用AI生成顶尖短视频和长视频，支持脚本创意、分镜图、视频生成与二创",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#06b6d4",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "multimedia", "entertainment"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "scope": "/"
+}

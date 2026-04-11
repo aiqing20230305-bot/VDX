@@ -1,0 +1,9 @@
+{
+  "performance": 0.51,
+  "accessibility": 0.95,
+  "lcp": 8118.59,
+  "fcp": 910.53,
+  "cls": 0.533955,
+  "tbt": 190,
+  "speedIndex": 1220.903275982857
+}

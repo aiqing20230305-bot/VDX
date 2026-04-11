@@ -45,3 +45,21 @@ dev.db
 
 # credentials / cookies
 .jimeng-cookies.json
+
+# User uploads (all file types, 469MB+)
+public/uploads/
+
+# Test/debug artifacts
+lighthouse-report.*
+test-*.mjs
+messages/
+
+# PWA Service Worker (auto-generated)
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+# Service worker backup files (numbered versions)
+public/sw *.js
+public/sw.js *.map
+public/workbox-*.js *.map

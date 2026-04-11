@@ -1,6 +1,9 @@
 import 'server-only'
 import Anthropic from '@anthropic-ai/sdk'
 import { db } from '@/lib/db/client'
+import { logger } from '../utils/logger'
+
+const log = logger.context('Claude')
 
 export const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -22,21 +25,50 @@ async function recordUsage(
       data: { source, model, inputTokens, outputTokens },
     })
   } catch (err) {
-    console.error('[TokenUsage] Failed to record:', err)
+    log.error('Token usage recording failed', err, { source, model })
   }
 }
 
 export async function generateText(
   systemPrompt: string,
   userPrompt: string,
-  options: { maxTokens?: number; temperature?: number; source?: string } = {}
+  options: {
+    maxTokens?: number
+    temperature?: number
+    source?: string
+    images?: string[] // Vision API支持
+  } = {}
 ): Promise<string> {
   const model = DEFAULT_MODEL
+
+  // 构建消息内容（支持Vision API）
+  let userContent: Anthropic.MessageParam['content']
+
+  if (options.images && options.images.length > 0) {
+    // Vision API格式：包含文字和图片
+    userContent = [
+      ...options.images.map((imageUrl) => ({
+        type: 'image' as const,
+        source: {
+          type: 'url' as const,
+          url: imageUrl,
+        },
+      })),
+      {
+        type: 'text' as const,
+        text: userPrompt,
+      },
+    ]
+  } else {
+    // 纯文本格式
+    userContent = userPrompt
+  }
+
   const message = await anthropic.messages.create({
     model,
     max_tokens: options.maxTokens ?? 4096,
     system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
+    messages: [{ role: 'user', content: userContent }],
   })
 
   const block = message.content[0]
@@ -55,7 +87,11 @@ export async function generateText(
 export async function generateJSON<T>(
   systemPrompt: string,
   userPrompt: string,
-  options: { maxTokens?: number; source?: string } = {}
+  options: {
+    maxTokens?: number
+    source?: string
+    images?: string[] // Vision API支持
+  } = {}
 ): Promise<T> {
   const text = await generateText(
     systemPrompt + '\n\n**CRITICAL**: Return ONLY valid JSON. No markdown, no code fences, no explanation. Properly escape all strings. Ensure complete JSON structure (no truncation).',
@@ -66,11 +102,12 @@ export async function generateJSON<T>(
   try {
     return parseJSONRobust<T>(text)
   } catch (err) {
-    console.error(`[generateJSON] 解析失败 (source: ${options.source})`)
-    console.error('错误信息:', err instanceof Error ? err.message : String(err))
-    console.error('响应文本长度:', text.length)
-    console.error('响应文本开头:', text.substring(0, 200))
-    console.error('响应文本结尾:', text.substring(Math.max(0, text.length - 200)))
+    log.error('JSON parsing failed', err, {
+      source: options.source,
+      textLength: text.length,
+      textStart: text.substring(0, 200),
+      textEnd: text.substring(Math.max(0, text.length - 200))
+    })
     throw err
   }
 }
@@ -151,14 +188,16 @@ function parseJSONRobust<T>(raw: string): T {
   try {
     return JSON.parse(fixed) as T
   } catch (finalErr) {
-    console.error('[generateJSON] 所有修复尝试均失败')
-    console.error('原始文本（前1000字符）:', raw.substring(0, 1000))
-    console.error('原始文本（后500字符）:', raw.substring(Math.max(0, raw.length - 500)))
+    const debugInfo: any = {
+      rawStart: raw.substring(0, 1000),
+      rawEnd: raw.substring(Math.max(0, raw.length - 500))
+    }
     if (finalErr instanceof SyntaxError) {
       const pos = extractPosition(finalErr.message)
-      console.error('错误位置:', pos)
-      console.error('错误位置附近:', fixed.substring(Math.max(0, pos - 100), Math.min(fixed.length, pos + 100)))
+      debugInfo.errorPosition = pos
+      debugInfo.errorContext = fixed.substring(Math.max(0, pos - 100), Math.min(fixed.length, pos + 100))
     }
+    log.error('All JSON repair attempts failed', finalErr, debugInfo)
     throw new Error(`JSON解析失败: ${finalErr instanceof Error ? finalErr.message : String(finalErr)}`)
   }
 }

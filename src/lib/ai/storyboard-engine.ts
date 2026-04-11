@@ -20,6 +20,9 @@ import { getStylePreset, applyStyleToPrompt, simplifyPrompt } from './style-pres
 import { buildProductConstraint, type ProductAnalysis } from './product-consistency'
 import { filterPrompt } from './content-filter'
 import { v4 as uuid } from 'uuid'
+import { logger } from '../utils/logger'
+
+const log = logger.context('StoryboardEngine')
 
 const SYSTEM_PROMPT = `你是一位专业的分镜师和提示词工程师，精通：
 - 将视频脚本转化为精确的分镜画面
@@ -84,8 +87,28 @@ export async function generateStoryboard(
         description: character.features.detailedDescription,
         features,
       }
-      console.log('[Storyboard] 应用角色一致性约束:', character.name)
+      log.debug('Applying character consistency constraint', { characterName: character.name })
     }
+  }
+
+  // 构建音频上下文（如果有）
+  let audioContext = ''
+  if (audioAnalysis) {
+    const segmentsSummary = audioAnalysis.segments.map(seg => {
+      const duration = seg.endTime - seg.startTime
+      return `${seg.type}(${duration.toFixed(1)}s)`
+    }).join(' → ')
+
+    audioContext = `
+
+音频驱动信息：
+- BPM: ${audioAnalysis.beat.bpm}（${audioAnalysis.mood[0]?.tempo || 'medium'} tempo）
+- 段落结构：${segmentsSummary}
+- ⭐ 重要：请根据音频段落类型调整画面节奏：
+  * Chorus → 动态快切，色彩鲜艳，快速运镜
+  * Intro/Outro → 舒缓渐入/渐出，柔和光线，慢镜头
+  * Verse → 叙事感，平稳节奏，正常速度
+  * Bridge → 转折变化，对比强烈`
   }
 
   const prompt = `请将以下视频脚本转化为 ${totalFrames} 帧分镜图：
@@ -95,7 +118,7 @@ export async function generateStoryboard(
 - 风格：${script.style}（${stylePreset.claudeGuidance}）
 - 总时长：${script.duration} 秒
 - 画面比例：${script.aspectRatio}
-- 主题：${script.theme}
+- 主题：${script.theme}${audioContext}
 
 风格要求：
 - 风格基础提示词参考：${stylePreset.styleBase}
@@ -161,9 +184,54 @@ ${script.scenes.map(s => `
     source: 'storyboard-engine',
   })
 
+  // 🎵 构建音频段落到帧的映射（如果有音频）
+  const frameSegmentMap = new Map<number, { type: string; energy: number }>()
+  if (audioAnalysis) {
+    const segments = audioAnalysis.segments
+    let currentFrameIndex = 0
+    const avgFrameDuration = script.duration / totalFrames
+
+    for (const segment of segments) {
+      const segmentStartFrame = Math.floor(segment.startTime / avgFrameDuration)
+      const segmentEndFrame = Math.floor(segment.endTime / avgFrameDuration)
+
+      for (let i = segmentStartFrame; i < segmentEndFrame && i < totalFrames; i++) {
+        frameSegmentMap.set(i, { type: segment.type, energy: segment.energy })
+      }
+    }
+  }
+
   const frames: StoryboardFrame[] = result.frames.map((f): StoryboardFrame => {
     // 组合提示词：风格 + 帧描述（不重复添加 style_base）
     let fullPrompt = f.image_prompt
+
+    // 🎵 根据音频段落类型调整提示词节奏感
+    if (audioAnalysis && frameSegmentMap.has(f.index)) {
+      const segment = frameSegmentMap.get(f.index)!
+      let rhythmModifier = ''
+
+      switch (segment.type) {
+        case 'chorus':
+          rhythmModifier = 'dynamic action, energetic movement, vibrant colors, fast-paced'
+          break
+        case 'intro':
+          rhythmModifier = 'slow and smooth, gentle atmosphere, soft lighting, calm entrance'
+          break
+        case 'outro':
+          rhythmModifier = 'fading away, peaceful ending, soft exit, nostalgic mood'
+          break
+        case 'verse':
+          rhythmModifier = 'steady narrative, moderate pace, consistent mood'
+          break
+        case 'bridge':
+          rhythmModifier = 'transitional change, shifting mood, contrasting atmosphere'
+          break
+      }
+
+      if (rhythmModifier) {
+        fullPrompt = `${fullPrompt}, ${rhythmModifier}`
+      }
+    }
 
     // 添加角色一致性描述（如果有）
     if (result.character_description) {
@@ -181,7 +249,7 @@ ${script.scenes.map(s => `
     // 🛡️ 智能过滤违禁词
     const filtered = filterPrompt(fullPrompt)
     if (filtered.hasChanges) {
-      console.log(`[Frame ${f.index}] 违禁词过滤: ${filtered.replacements.length} 处替换`)
+      log.debug('Content filter applied', { frameIndex: f.index, replacements: filtered.replacements.length })
     }
 
     // ✂️ 简化提示词，确保符合平台规范
@@ -208,7 +276,7 @@ ${script.scenes.map(s => `
     frames.forEach((frame, i) => {
       frame.duration = adjustedDurations[i]
     })
-    console.log('[Storyboard] 音频驱动: 帧时长已调整 (Chorus 1.5x, Intro/Outro 0.7x)')
+    log.info('Audio-driven frame durations adjusted (Chorus 1.5x, Intro/Outro 0.7x)')
   }
 
   return {
@@ -301,6 +369,7 @@ export async function fillStoryboardImages(
   const useComposite = mode === 'composite' || (!referenceImages?.length && !characterImagePath && !productImages?.length)
 
   if (useComposite) {
+    log.info('Using composite mode for image generation', { frameCount: storyboard.frames.length })
     try {
       const sheetCount = Math.ceil(storyboard.frames.length / MAX_FRAMES_PER_SHEET)
       const compositeUrls: string[] = []
@@ -316,6 +385,7 @@ export async function fillStoryboardImages(
 
         const prompt = `Professional cinematic storyboard sheet with ${sheetFrames.length} panels arranged in a ${Math.min(4, sheetFrames.length)} column grid. Each panel is clearly numbered in the top-left corner. Consistent cinematic style and color grading throughout. ${frameDescs}`
 
+        log.debug('Generating composite sheet', { current: s + 1, total: sheetCount })
         const urls = await text2Image({
           prompt,
           ratio: ratio ?? '9:16',
@@ -326,23 +396,29 @@ export async function fillStoryboardImages(
         if (urls[0]) {
           const localUrl = await localizeImageUrl(urls[0])
           compositeUrls.push(localUrl)
+          log.debug('Composite sheet generated', { sheet: s + 1, url: localUrl })
+        } else {
+          log.warn('Composite sheet generation failed: no URL returned', { sheet: s + 1 })
         }
       }
 
       if (compositeUrls.length > 0) {
-        // 把合成图分配给对应帧段
+        // 把合成图分配给对应帧段（每帧都使用其所属sheet的合成图）
         const frames = storyboard.frames.map((f, i) => {
           const sheetIdx = Math.floor(i / MAX_FRAMES_PER_SHEET)
-          // 每组第一帧放合成图，其余帧不单独放图
-          if (i % MAX_FRAMES_PER_SHEET === 0 && compositeUrls[sheetIdx]) {
+          // 每帧都使用对应的合成图，确保所有帧都有图片
+          if (compositeUrls[sheetIdx]) {
             return { ...f, imageUrl: compositeUrls[sheetIdx] }
           }
           return f
         })
+        log.info('Composite mode SUCCESS', { sheetCount: compositeUrls.length, frameCount: frames.length })
         return { ...storyboard, frames }
+      } else {
+        log.warn('Composite mode failed: No sheets generated, falling back to per-frame')
       }
     } catch (err) {
-      console.error('Composite storyboard failed, falling back to per-frame:', err)
+      log.error('Composite storyboard failed, falling back to per-frame', err)
     }
   }
 
@@ -354,7 +430,7 @@ export async function fillStoryboardImages(
         const localPath = img.startsWith('http') ? await downloadImage(img) : await ensureSupportedFormat(img)
         localRefImages.push(localPath)
       } catch (err) {
-        console.error(`参考图处理失败: ${img}`, err)
+        log.error('Reference image processing failed', err, { imageUrl: img })
       }
     }
   }
@@ -372,7 +448,7 @@ export async function fillStoryboardImages(
       })
       characterRefUrl = urls[0]
     } catch (err) {
-      console.error('人物风格转换失败:', err)
+      log.error('Character style conversion failed', err)
     }
   }
 
@@ -389,7 +465,7 @@ export async function fillStoryboardImages(
         const safePath = await ensureSupportedFormat(img)
         safeProductImages.push(safePath)
       } catch (err) {
-        console.error(`产品图处理失败: ${img}`, err)
+        log.error('Product image processing failed', err, { imageUrl: img })
       }
     }
   }
@@ -440,7 +516,7 @@ export async function fillStoryboardImages(
       filledFrames[i] = { ...frame, imageUrl }
       if (imageUrl) onFrameFilled?.(frame.index, imageUrl)
     } catch (err) {
-      console.error(`Frame ${frame.index} image generation failed:`, err)
+      log.error('Frame image generation failed', err, { frameIndex: frame.index })
       filledFrames[i] = frame
     }
   }
@@ -636,7 +712,11 @@ ${script.scenes.map(s => `
       // 🛡️ 智能过滤违禁词
       const filtered = filterPrompt(fullPrompt)
       if (filtered.hasChanges) {
-        console.log(`[Variant ${style.name}] Frame ${f.index} 违禁词过滤: ${filtered.replacements.length} 处替换`)
+        log.debug('Variant content filter applied', {
+          variant: style.name,
+          frameIndex: f.index,
+          replacements: filtered.replacements.length
+        })
       }
 
       // ✂️ 简化提示词

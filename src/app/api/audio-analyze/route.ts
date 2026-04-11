@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { analyzeAudio } from '@/lib/audio/audio-analyzer'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('AudioAnalyzeAPI')
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -54,16 +57,16 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await audioFile.arrayBuffer()
     await writeFile(filePath, Buffer.from(arrayBuffer))
 
-    console.log('[Audio Analyze API] Saved audio to:', filePath)
+    log.info('Audio file saved', { filePath, fileName })
 
     // 分析音频
     const analysis = await analyzeAudio(filePath)
 
-    console.log('[Audio Analyze API] Analysis complete:', {
+    log.info('Audio analysis completed', {
       duration: analysis.duration,
       bpm: analysis.beat.bpm,
-      segments: analysis.segments.length,
-      lyrics: analysis.lyrics.length,
+      segmentCount: analysis.segments.length,
+      lyricCount: analysis.lyrics.length,
     })
 
     return NextResponse.json({
@@ -72,7 +75,7 @@ export async function POST(req: NextRequest) {
       analysis,
     })
   } catch (error) {
-    console.error('[Audio Analyze API] Error:', error)
+    log.error('Audio analysis failed', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Audio analysis failed' },
       { status: 500 }

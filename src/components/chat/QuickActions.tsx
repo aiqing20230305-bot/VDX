@@ -12,13 +12,13 @@ interface Props {
 export function QuickActions({ actions, onAction }: Props) {
   return (
     <motion.div
-      className="flex flex-wrap gap-2 mt-1"
+      className="flex flex-wrap gap-3 mt-1" // gap-2 → gap-3 (触摸友好)
       initial="hidden"
       animate="visible"
       variants={{
         visible: {
           transition: {
-            staggerChildren: 0.08,
+            staggerChildren: 0.05, // Faster: 0.08s → 0.05s
           },
         },
       }}
@@ -30,19 +30,56 @@ export function QuickActions({ actions, onAction }: Props) {
             hidden: { opacity: 0, y: 10, scale: 0.95 },
             visible: { opacity: 1, y: 0, scale: 1 },
           }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
+          transition={{ duration: 0.15, ease: 'easeOut' }} // Faster: 0.3s → 0.15s
           onClick={() => onAction?.(action.action, action.params)}
           title={action.description}
           className={cn(
-            'px-3 py-1.5 rounded-xl text-sm font-medium transition-smooth cursor-pointer',
-            'hover:scale-105 active:scale-95',
-            action.variant === 'primary' && 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-hover)]',
-            action.variant === 'secondary' && 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]',
-            (!action.variant || action.variant === 'outline') &&
-              'border border-[var(--border-medium)] text-[var(--text-secondary)] hover:border-[var(--accent-border)] hover:text-[var(--accent-primary)] bg-transparent'
+            'group relative flex items-center gap-2', // 新增：支持图标和tooltip
+            'px-5 py-3', // px-3 py-1.5 → px-5 py-3 (增大点击区域)
+            'min-h-[44px]', // 新增：确保触摸友好 (WCAG 2.1 AA)
+            'rounded-xl font-medium text-sm',
+            'transition-all duration-200 ease-out',
+            'hover:scale-[1.02] active:scale-[0.98]', // 微调：hover效果更subtle
+            'cursor-pointer',
+            // Primary 样式（增强）
+            action.variant === 'primary' && [
+              'bg-[var(--accent-primary)] text-white',
+              'hover:bg-[var(--accent-hover)]',
+              'shadow-[0_4px_12px_rgba(6,182,212,0.25)]', // 新增：默认阴影
+              'hover:shadow-[0_6px_16px_rgba(6,182,212,0.35)]', // 增强：hover阴影
+            ],
+            // Secondary 样式
+            action.variant === 'secondary' && [
+              'bg-[var(--bg-tertiary)] text-[var(--text-primary)]',
+              'border border-[var(--border-medium)]',
+              'hover:border-[var(--accent-border)]',
+              'hover:bg-[rgba(6,182,212,0.08)]',
+            ],
+            // Outline 样式
+            (!action.variant || action.variant === 'outline') && [
+              'bg-transparent text-[var(--text-secondary)]',
+              'border border-[var(--border-subtle)]',
+              'hover:border-[var(--accent-border)]',
+              'hover:text-[var(--accent-primary)]',
+            ]
           )}
         >
-          {action.label}
+          <span className="relative z-10">{action.label}</span>
+
+          {/* Description tooltip（新增）*/}
+          {action.description && (
+            <div className={cn(
+              'absolute bottom-full left-1/2 -translate-x-1/2 mb-2',
+              'px-3 py-2 rounded-lg',
+              'bg-[var(--bg-elevated)] border border-[var(--border-medium)]',
+              'text-xs text-[var(--text-secondary)] whitespace-nowrap',
+              'opacity-0 group-hover:opacity-100',
+              'pointer-events-none transition-opacity duration-200',
+              'shadow-lg z-20'
+            )}>
+              {action.description}
+            </div>
+          )}
         </motion.button>
       ))}
     </motion.div>

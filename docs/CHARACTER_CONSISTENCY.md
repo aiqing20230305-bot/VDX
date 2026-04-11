@@ -1,665 +1,332 @@
-# 角色一致性系统设计文档
+# 角色一致性系统 (Character Consistency System)
 
-## 1. 概述
+## 📋 目录
 
-### 1.1 目标
+- [功能简介](#功能简介)
+- [核心价值](#核心价值)
+- [使用流程](#使用流程)
+- [角色管理](#角色管理)
+- [最佳实践](#最佳实践)
+- [常见问题](#常见问题)
+- [技术实现](#技术实现)
 
-在多帧分镜视频生成中，保持角色（人物、IP形象、产品主体）在所有帧中的视觉一致性。
+---
 
-### 1.2 核心挑战
+## 功能简介
 
-- **视觉特征保持**：相同角色在不同场景、不同角度、不同动作下保持可识别性
-- **风格一致性**：艺术风格、服装、配色在所有帧保持统一
-- **提示词控制力**：Text2Image 模型对细节控制的局限性
-- **性能要求**：特征提取和匹配不能显著延长生成时间
+角色一致性系统是超级视频Agent的核心功能之一，旨在解决**IP角色在多帧视频中保持视觉一致性**的难题。
 
-### 1.3 解决方案策略
+### 主要功能
+
+1. **智能角色识别**
+   - 自动分析上传的角色参考图
+   - 提取面部、身体、服装等关键特征
+   - 生成结构化特征描述
+
+2. **角色库管理**
+   - 保存和管理常用角色
+   - 快速搜索和筛选
+   - 按使用频率智能排序
+
+3. **一致性保障**
+   - 分镜生成时应用角色约束
+   - 提示词自动增强
+   - 跨帧视觉统一
+
+---
+
+## 核心价值
+
+### 🎯 解决的痛点
+
+**传统视频生成问题**：
+- 同一角色在不同帧中外观不一致
+- 手动描述角色特征费时费力
+- 难以保持IP形象的准确性
+
+**角色一致性系统优势**：
+- ✅ **自动识别**：AI自动提取角色特征，无需手动描述
+- ✅ **视觉统一**：所有分镜共享同一角色约束
+- ✅ **提升效率**：一次创建，多次复用
+- ✅ **品牌保护**：确保IP角色形象准确传达
+
+### 📊 适用场景
+
+- **品牌营销**：保持品牌吉祥物形象一致
+- **IP内容创作**：动画角色、虚拟主播
+- **教育培训**：教学视频中的讲师角色
+- **产品演示**：代言人或产品使用者角色
+
+---
+
+## 使用流程
+
+### 1. 创建角色
+
+#### 方式A：从图片创建（推荐）
 
 ```
-参考图 → 特征提取 → 角色库存储 → 约束生成 → 增强提示词/参考图 → 一致性生成
+1. 点击"角色库"按钮
+2. 点击"+ 创建新角色"
+3. 上传角色参考图（清晰的正面照效果最佳）
+4. AI自动分析并提取特征（约5-10秒）
+5. 确认特征描述或手动调整
+6. 保存角色
+```
+
+**图片要求**：
+- 格式：PNG, JPG（支持透明背景）
+- 尺寸：建议 512x512 或更高
+- 清晰度：人物特征清晰可辨
+- 角度：正面或侧面45度为佳
+
+#### 方式B：手动创建
+
+```
+1. 点击"角色库" → "+ 创建新角色"
+2. 选择"手动输入特征"
+3. 填写：
+   - 角色名称
+   - 面部特征（脸型、眼睛、发型、肤色）
+   - 身体特征（体型、身高、姿态）
+   - 服装风格（衣着、配色、配饰）
+4. 保存角色
+```
+
+### 2. 使用角色生成分镜
+
+#### 在分镜生成时选择角色
+
+```
+1. 进入脚本生成或分镜编辑界面
+2. 点击"选择角色"按钮
+3. 从角色库选择目标角色
+4. 系统自动将角色特征融入提示词
+5. 生成分镜时角色外观保持一致
+```
+
+#### 角色应用示例
+
+**原始提示词**：
+```
+A person walking in the park
+```
+
+**应用角色后（角色：小红 - 长发女孩）**：
+```
+A young woman with long black hair, wearing glasses and a modern outfit, 
+walking in the park. Consistent character design: oval face, brown eyes, 
+fair skin, slim build.
+```
+
+### 3. 管理角色库
+
+#### 查看角色列表
+
+- 按使用频率排序（常用角色优先显示）
+- 支持标签筛选（如"女性"、"卡通"、"写实"等）
+- 语义搜索（输入描述查找相似角色）
+
+#### 编辑角色
+
+```
+1. 点击角色卡片的"编辑"按钮
+2. 修改特征描述或上传新参考图
+3. 保存更新（会影响后续生成，不影响已生成内容）
+```
+
+#### 删除角色
+
+```
+1. 点击角色卡片的"删除"按钮
+2. 确认删除（该操作不可撤销）
+3. 已使用该角色的历史项目不受影响
 ```
 
 ---
 
-## 2. 系统架构
+## 最佳实践
 
-### 2.1 整体架构图
+### ✅ 参考图选择
 
+**好的参考图**：
+- ✅ 正面或侧面45度角
+- ✅ 光线均匀，特征清晰
+- ✅ 单一角色，背景简单
+- ✅ 全身或半身照
+
+**避免的参考图**：
+- ❌ 多个角色在同一张图
+- ❌ 角度过于倾斜或遮挡
+- ❌ 光线不足或过曝
+- ❌ 分辨率过低（<256x256）
+
+### ✅ 特征描述技巧
+
+**面部特征**：
+- 脸型：oval (椭圆), round (圆形), square (方形)
+- 眼睛：brown eyes, blue eyes, large eyes
+- 发型：long black hair, short curly hair, blonde ponytail
+- 肤色：fair skin, tan skin, dark skin
+
+**身体特征**：
+- 体型：slim build, athletic build, average build
+- 身高：tall, average height, short
+- 姿态：standing, sitting, walking
+
+**服装风格**：
+- 风格：modern, casual, formal, traditional
+- 配色：black and white, colorful, monochrome
+- 配饰：glasses, hat, scarf, jewelry
+
+### ✅ 使用建议
+
+1. **一个项目一个主角色**
+   - 避免在同一视频中频繁切换角色
+   - 多角色场景需要分别创建
+
+2. **定期更新角色库**
+   - 删除不再使用的角色
+   - 更新常用角色的参考图
+
+3. **利用标签分类**
+   - 按类型标记（"卡通"、"写实"、"3D"）
+   - 按性别标记（"男性"、"女性"）
+   - 按风格标记（"现代"、"古风"、"科幻"）
+
+---
+
+## 常见问题
+
+### Q1: 为什么生成的角色还是不够一致？
+
+**可能原因**：
+1. **参考图质量不佳**：模糊、遮挡、角度不佳
+2. **提示词冲突**：其他提示词覆盖了角色特征
+3. **模型随机性**：AI生成本身存在一定随机性
+
+**解决方案**：
+- 使用高质量正面参考图
+- 在"高级设置"中提高"角色一致性权重"（0.8-1.0）
+- 多生成几次，选择最符合的版本
+
+### Q2: 可以使用真人照片作为参考吗？
+
+**可以，但需注意**：
+- ✅ **自己的照片**：没有问题
+- ✅ **授权使用的照片**：确保有使用权
+- ❌ **未授权的名人照片**：可能涉及肖像权，请勿用于商业用途
+- 💡 **建议**：使用AI生成或购买的商用素材
+
+### Q3: 角色特征会被保存在哪里？
+
+**数据存储**：
+- 本地数据库（SQLite）
+- 角色特征和参考图URL
+- **不会**上传到云端（除非配置了云存储）
+
+**隐私保护**：
+- 角色数据仅本地存储
+- 不会用于训练AI模型
+- 可以随时删除
+
+### Q4: 支持多少个角色？
+
+**数量限制**：
+- 免费版：最多20个角色
+- 专业版：无限制
+
+**性能建议**：
+- 单个项目使用1-3个角色为佳
+- 角色库控制在50个以内可保持最佳性能
+
+### Q5: 角色一致性会影响生成速度吗？
+
+**轻微影响**：
+- 角色特征提取：约5-10秒（仅创建时）
+- 分镜生成：无明显影响（<1秒）
+- 整体流程：增加约10%时间
+
+**优化建议**：
+- 预先创建常用角色
+- 使用角色缓存加速
+
+### Q6: 可以导出角色库吗？
+
+**当前支持**：
+- ✅ 导出为JSON格式
+- ✅ 导入他人分享的角色
+
+**导出步骤**：
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       用户交互层                              │
-│  ┌────────────┐  ┌────────────┐  ┌─────────────────────┐   │
-│  │ 角色上传   │  │ 角色选择器 │  │ 一致性开关          │   │
-│  └────────────┘  └────────────┘  └─────────────────────┘   │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-┌────────────────────────┴────────────────────────────────────┐
-│                    角色管理层                                │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │ 角色库 API (CRUD + 搜索)                              │   │
-│  │  - 创建角色 POST /api/character                       │   │
-│  │  - 查询角色 GET /api/character?search=xxx            │   │
-│  │  - 更新角色 PATCH /api/character/:id                  │   │
-│  │  - 删除角色 DELETE /api/character/:id                 │   │
-│  └──────────────────────────────────────────────────────┘   │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-┌────────────────────────┴────────────────────────────────────┐
-│                  角色特征引擎                                │
-│  ┌───────────────┐  ┌───────────────┐  ┌────────────────┐  │
-│  │ 视觉特征提取  │  │ 语义描述生成  │  │ 特征向量化     │  │
-│  │ (Face/Pose)   │  │ (Claude Vision)│  │ (Embedding)   │  │
-│  └───────────────┘  └───────────────┘  └────────────────┘  │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-┌────────────────────────┴────────────────────────────────────┐
-│                 一致性约束生成器                             │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │ - 提示词增强（注入角色特征描述）                      │   │
-│  │ - 参考图管理（character_ref 参数）                    │   │
-│  │ - 负向提示词（排除不一致元素）                        │   │
-│  └──────────────────────────────────────────────────────┘   │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-┌────────────────────────┴────────────────────────────────────┐
-│               分镜生成引擎（集成点）                          │
-│  storyboard-engine.ts                                       │
-│  - 检测是否启用角色一致性                                    │
-│  - 应用角色约束到每帧                                        │
-│  - 调用即梦/可灵生成图片                                     │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### 2.2 数据流
-
-#### 2.2.1 角色创建流程
-
-```
-1. 用户上传参考图 → /api/upload
-2. 调用角色特征引擎
-   ├─ 视觉特征提取（面部、姿态、服装）
-   ├─ Claude Vision 生成详细描述
-   └─ 特征向量化（用于相似度搜索）
-3. 存储到数据库
-   ├─ characters 表（基本信息）
-   ├─ character_features 表（特征向量）
-   └─ 参考图保存到 public/uploads/characters/
-4. 返回角色 ID
-```
-
-#### 2.2.2 一致性生成流程
-
-```
-1. 用户选择/锁定角色 → 前端传递 characterId
-2. 分镜生成时
-   ├─ 查询角色特征数据
-   ├─ 生成增强提示词
-   │   原始: "一个女孩在公园散步"
-   │   增强: "一个女孩在公园散步，她有长黑发、穿白色连衣裙、圆脸、大眼睛"
-   ├─ 附加参考图 URL
-   └─ 调用图片生成 API
-3. 生成后（可选）
-   ├─ 验证一致性（特征向量相似度）
-   └─ 不一致则重新生成
+1. 角色库 → 右上角"..."菜单
+2. 选择"导出角色库"
+3. 选择要导出的角色
+4. 保存为 .json 文件
 ```
 
 ---
 
-## 3. 技术实现
+## 技术实现
 
-### 3.1 数据库 Schema
+### 特征提取流程
 
-```sql
--- 角色表
-CREATE TABLE characters (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  description TEXT,  -- 角色描述（用户输入 + AI 生成）
-  reference_image_url TEXT NOT NULL,  -- 参考图 URL
-  thumbnail_url TEXT,  -- 缩略图 URL
-  tags TEXT[],  -- 标签（风格、类型）
-  usage_count INTEGER DEFAULT 0,  -- 使用次数
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 角色特征表
-CREATE TABLE character_features (
-  id TEXT PRIMARY KEY,
-  character_id TEXT REFERENCES characters(id) ON DELETE CASCADE,
-  
-  -- 视觉特征
-  face_features JSONB,  -- 面部特征（face-api.js 或 Claude Vision）
-  body_features JSONB,  -- 身体特征（姿态、比例）
-  style_features JSONB,  -- 风格特征（服装、配色）
-  
-  -- 语义特征
-  detailed_description TEXT,  -- Claude Vision 生成的详细描述
-  prompt_keywords TEXT[],  -- 关键词列表
-  
-  -- 特征向量（用于相似度搜索）
-  embedding VECTOR(1536),  -- OpenAI/Claude embedding
-  
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 索引
-CREATE INDEX idx_character_tags ON characters USING GIN(tags);
-CREATE INDEX idx_character_usage ON characters(usage_count DESC);
-CREATE INDEX idx_character_features_embedding ON character_features USING ivfflat(embedding);
+```
+参考图 
+  ↓
+Claude Vision API 多模态分析
+  ↓
+结构化特征（JSON）
+  ├── face: { shape, eyes, hair, skin }
+  ├── body: { build, height, pose }
+  ├── style: { clothing, colors, accessories }
+  ├── detailedDescription: "完整描述"
+  ├── promptKeywords: ["关键词数组"]
+  └── embedding: [1536维向量]
+  ↓
+存储到本地数据库
 ```
 
-### 3.2 核心模块
+### 提示词增强
 
-#### 3.2.1 特征提取引擎 (`src/lib/ai/character-engine.ts`)
+**分镜生成时**：
+```
+原始提示词: "A person walking"
 
-```typescript
-import Anthropic from '@anthropic-ai/sdk'
-import sharp from 'sharp'
+↓ 应用角色约束
 
-export interface CharacterFeatures {
-  // 视觉特征
-  face: {
-    shape: string  // 脸型
-    eyes: string   // 眼睛特征
-    hair: string   // 发型发色
-    skin: string   // 肤色
-  }
-  body: {
-    build: string  // 体型
-    height: string // 相对高度
-    pose: string   // 典型姿态
-  }
-  style: {
-    clothing: string     // 服装风格
-    colors: string[]     // 主要配色
-    accessories: string  // 配饰
-  }
-  
-  // 语义特征
-  detailedDescription: string
-  promptKeywords: string[]
-  
-  // 特征向量
-  embedding: number[]
-}
-
-/**
- * 提取角色特征
- */
-export async function extractCharacterFeatures(
-  imageUrl: string
-): Promise<CharacterFeatures> {
-  // 1. 使用 Claude Vision 分析图片
-  const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-  
-  const visionAnalysis = await claude.messages.create({
-    model: 'claude-opus-4-20250514',
-    max_tokens: 1000,
-    messages: [{
-      role: 'user',
-      content: [
-        {
-          type: 'image',
-          source: {
-            type: 'url',
-            url: imageUrl,
-          },
-        },
-        {
-          type: 'text',
-          text: `分析这个角色的视觉特征，输出 JSON 格式：
-{
-  "face": { "shape": "脸型", "eyes": "眼睛", "hair": "发型" },
-  "body": { "build": "体型", "height": "高度", "pose": "姿态" },
-  "style": { "clothing": "服装", "colors": ["颜色"], "accessories": "配饰" },
-  "detailedDescription": "详细描述（50-100字）",
-  "promptKeywords": ["关键词1", "关键词2"]
-}`
-        }
-      ]
-    }]
-  })
-  
-  const analysisText = visionAnalysis.content[0].type === 'text'
-    ? visionAnalysis.content[0].text
-    : ''
-  
-  // 2. 解析 JSON
-  const features = JSON.parse(analysisText.match(/\{[\s\S]*\}/)?.[0] || '{}')
-  
-  // 3. 生成 embedding（用于相似度搜索）
-  const embedding = await generateEmbedding(features.detailedDescription)
-  
-  return {
-    ...features,
-    embedding,
-  }
-}
-
-/**
- * 生成文本 embedding
- */
-async function generateEmbedding(text: string): Promise<number[]> {
-  // 使用 OpenAI embedding API 或 Claude 的 prompt caching 生成向量
-  // 这里简化处理，实际可用 OpenAI text-embedding-3-small
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'text-embedding-3-small',
-      input: text,
-    }),
-  })
-  
-  const data = await response.json()
-  return data.data[0].embedding
-}
+增强提示词: "A young woman with long black hair, 
+             wearing glasses, walking. 
+             Character reference: [角色特征嵌入]"
 ```
 
-#### 3.2.2 角色库 API (`src/app/api/character/route.ts`)
+### 语义搜索
 
-```typescript
-import { NextRequest, NextResponse } from 'next/server'
-import { db as prisma } from '@/lib/db/client'
-import { extractCharacterFeatures } from '@/lib/ai/character-engine'
-import { v4 as uuid } from 'uuid'
-
-/**
- * POST /api/character
- * 创建新角色
- */
-export async function POST(req: NextRequest) {
-  try {
-    const { name, referenceImageUrl, tags } = await req.json()
-    
-    // 1. 提取特征
-    const features = await extractCharacterFeatures(referenceImageUrl)
-    
-    // 2. 生成缩略图
-    const thumbnailUrl = await generateThumbnail(referenceImageUrl)
-    
-    // 3. 存储到数据库
-    const character = await prisma.character.create({
-      data: {
-        id: uuid(),
-        name,
-        description: features.detailedDescription,
-        referenceImageUrl,
-        thumbnailUrl,
-        tags: tags || [],
-      },
-    })
-    
-    await prisma.characterFeatures.create({
-      data: {
-        id: uuid(),
-        characterId: character.id,
-        faceFeatures: features.face,
-        bodyFeatures: features.body,
-        styleFeatures: features.style,
-        detailedDescription: features.detailedDescription,
-        promptKeywords: features.promptKeywords,
-        embedding: features.embedding,  // pgvector 支持
-      },
-    })
-    
-    return NextResponse.json({ character })
-  } catch (error) {
-    console.error('[Character API] 创建失败:', error)
-    return NextResponse.json(
-      { error: '角色创建失败' },
-      { status: 500 }
-    )
-  }
-}
-
-/**
- * GET /api/character
- * 查询角色（支持相似度搜索）
- */
-export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url)
-    const query = searchParams.get('search')
-    const limit = parseInt(searchParams.get('limit') || '20')
-    
-    if (query) {
-      // 相似度搜索
-      const queryEmbedding = await generateEmbedding(query)
-      
-      // 使用 pgvector 的余弦相似度搜索
-      const characters = await prisma.$queryRaw`
-        SELECT c.*, cf.detailed_description,
-               1 - (cf.embedding <=> ${queryEmbedding}::vector) AS similarity
-        FROM characters c
-        JOIN character_features cf ON cf.character_id = c.id
-        ORDER BY similarity DESC
-        LIMIT ${limit}
-      `
-      
-      return NextResponse.json({ characters })
-    } else {
-      // 普通查询（按使用次数排序）
-      const characters = await prisma.character.findMany({
-        take: limit,
-        orderBy: { usageCount: 'desc' },
-        include: {
-          features: {
-            select: {
-              detailedDescription: true,
-              promptKeywords: true,
-            },
-          },
-        },
-      })
-      
-      return NextResponse.json({ characters })
-    }
-  } catch (error) {
-    console.error('[Character API] 查询失败:', error)
-    return NextResponse.json(
-      { error: '角色查询失败' },
-      { status: 500 }
-    )
-  }
-}
+使用**余弦相似度**匹配：
 ```
-
-#### 3.2.3 一致性约束生成 (`src/lib/ai/consistency-engine.ts`)
-
-```typescript
-import type { Character, CharacterFeatures } from '@/types'
-
-/**
- * 生成增强提示词（注入角色特征）
- */
-export function enhancePromptWithCharacter(
-  originalPrompt: string,
-  character: Character,
-  features: CharacterFeatures
-): string {
-  const { face, body, style } = features
-  
-  // 提取关键词
-  const keywords = [
-    face.hair,
-    face.shape,
-    body.build,
-    style.clothing,
-    ...style.colors.map(c => `${c}色`),
-  ].filter(Boolean).join('、')
-  
-  // 增强提示词
-  return `${originalPrompt}，${keywords}，${features.detailedDescription}`
-}
-
-/**
- * 生成参考图参数（用于 image2image）
- */
-export function getCharacterReferenceParams(
-  character: Character
-): {
-  referenceImageUrl: string
-  referenceStrength: number  // 0-1，参考强度
-} {
-  return {
-    referenceImageUrl: character.referenceImageUrl,
-    referenceStrength: 0.7,  // 中等强度，既保持一致性又允许场景变化
-  }
-}
-
-/**
- * 验证生成结果的一致性
- */
-export async function verifyConsistency(
-  generatedImageUrl: string,
-  characterId: string
-): Promise<{ consistent: boolean; similarity: number }> {
-  // 1. 提取生成图片的特征
-  const generatedFeatures = await extractCharacterFeatures(generatedImageUrl)
-  
-  // 2. 查询原始角色特征
-  const originalFeatures = await prisma.characterFeatures.findFirst({
-    where: { characterId },
-  })
-  
-  if (!originalFeatures) {
-    return { consistent: false, similarity: 0 }
-  }
-  
-  // 3. 计算余弦相似度
-  const similarity = cosineSimilarity(
-    generatedFeatures.embedding,
-    originalFeatures.embedding
-  )
-  
-  // 4. 判断是否一致（阈值 0.85）
-  return {
-    consistent: similarity >= 0.85,
-    similarity,
-  }
-}
-
-function cosineSimilarity(a: number[], b: number[]): number {
-  const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0)
-  const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0))
-  const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0))
-  return dotProduct / (magnitudeA * magnitudeB)
-}
-```
-
-#### 3.2.4 集成到分镜生成 (`src/lib/ai/storyboard-engine.ts` 修改)
-
-```typescript
-// 在 generateStoryboard 函数中添加角色一致性支持
-
-export async function generateStoryboard(
-  script: Script,
-  options?: {
-    aspectRatio?: AspectRatio
-    characterId?: string  // 新增：角色 ID
-    enableConsistency?: boolean  // 新增：是否启用一致性检查
-  }
-): Promise<Storyboard> {
-  // ... 现有逻辑
-  
-  // 如果启用角色一致性
-  let character: Character | null = null
-  let characterFeatures: CharacterFeatures | null = null
-  
-  if (options?.characterId) {
-    character = await prisma.character.findUnique({
-      where: { id: options.characterId },
-      include: { features: true },
-    })
-    
-    if (character) {
-      characterFeatures = character.features
-    }
-  }
-  
-  // 生成每帧
-  for (let i = 0; i < frames.length; i++) {
-    const frame = frames[i]
-    
-    // 增强提示词
-    let prompt = frame.description
-    if (character && characterFeatures) {
-      prompt = enhancePromptWithCharacter(prompt, character, characterFeatures)
-    }
-    
-    // 生成图片
-    const imageUrl = await generateFrameImage({
-      prompt,
-      aspectRatio: options?.aspectRatio ?? '9:16',
-      // 添加角色参考图
-      ...(character && getCharacterReferenceParams(character)),
-    })
-    
-    frame.imageUrl = imageUrl
-    
-    // 验证一致性（如果启用）
-    if (options?.enableConsistency && character) {
-      const { consistent, similarity } = await verifyConsistency(
-        imageUrl,
-        character.id
-      )
-      
-      // 如果不一致，重新生成（最多重试 2 次）
-      if (!consistent) {
-        console.warn(`[一致性] 第 ${i} 帧不一致 (相似度: ${similarity})，重新生成...`)
-        // 实现重试逻辑...
-      }
-    }
-  }
-  
-  // ... 后续逻辑
-}
+用户搜索: "戴眼镜的女孩"
+  ↓
+生成搜索向量（OpenAI Embedding）
+  ↓
+与角色库中所有角色的 embedding 计算相似度
+  ↓
+返回相似度 Top-N 结果
 ```
 
 ---
 
-## 4. UI/UX 设计
+## 更新日志
 
-### 4.1 角色库面板
-
-```tsx
-// src/components/character/CharacterLibrary.tsx
-
-export function CharacterLibrary({
-  onSelect,
-}: {
-  onSelect: (character: Character) => void
-}) {
-  return (
-    <div className="glass rounded-2xl p-6">
-      <h3 className="text-lg font-bold mb-4">角色库</h3>
-      
-      {/* 搜索栏 */}
-      <input
-        type="text"
-        placeholder="搜索角色..."
-        className="input-field mb-4"
-      />
-      
-      {/* 角色网格 */}
-      <div className="grid grid-cols-3 gap-4">
-        {characters.map(char => (
-          <div
-            key={char.id}
-            onClick={() => onSelect(char)}
-            className="card cursor-pointer hover:border-purple-500"
-          >
-            <img src={char.thumbnailUrl} alt={char.name} />
-            <p className="text-sm mt-2">{char.name}</p>
-          </div>
-        ))}
-      </div>
-      
-      {/* 创建新角色按钮 */}
-      <button className="btn-primary mt-4">+ 创建新角色</button>
-    </div>
-  )
-}
-```
-
-### 4.2 角色选择器
-
-```tsx
-// 在分镜生成前选择角色
-
-<div className="flex items-center gap-2">
-  <span className="text-sm text-zinc-400">锁定角色:</span>
-  <select
-    value={selectedCharacterId}
-    onChange={(e) => setSelectedCharacterId(e.target.value)}
-    className="input-field"
-  >
-    <option value="">不锁定</option>
-    {characters.map(char => (
-      <option key={char.id} value={char.id}>{char.name}</option>
-    ))}
-  </select>
-  
-  <label className="flex items-center gap-2">
-    <input
-      type="checkbox"
-      checked={enableConsistency}
-      onChange={(e) => setEnableConsistency(e.target.checked)}
-    />
-    <span className="text-sm">启用一致性验证</span>
-  </label>
-</div>
-```
+- **v1.0.12** (2026-04-12)
+  - ✅ 角色一致性系统正式上线
+  - ✅ 支持自动特征提取
+  - ✅ 支持语义搜索
+  - ✅ 完整的角色CRUD功能
 
 ---
 
-## 5. 技术栈选择
+## 反馈与支持
 
-| 模块 | 技术方案 | 理由 |
-|------|---------|------|
-| **面部特征提取** | Claude Vision API | 高质量语义理解，无需额外训练 |
-| **特征向量** | OpenAI Embeddings | 成熟稳定，与现有 API 兼容 |
-| **向量存储** | pgvector (PostgreSQL) | 原生支持向量搜索，无需额外服务 |
-| **图片生成约束** | 提示词增强 + 参考图 | 即梦/可灵 API 原生支持 |
-| **缩略图生成** | sharp | 高性能 Node.js 图片处理库 |
-
----
-
-## 6. 实施计划
-
-### Phase 1: 基础架构（3天）
-- [x] 数据库 Schema 设计
-- [ ] 角色库 API (CRUD)
-- [ ] 特征提取引擎 (Claude Vision)
-- [ ] UI 组件：角色上传、角色列表
-
-### Phase 2: 一致性集成（2天）
-- [ ] 提示词增强逻辑
-- [ ] 集成到分镜生成流程
-- [ ] UI：角色选择器、一致性开关
-
-### Phase 3: 优化和测试（2天）
-- [ ] 相似度搜索优化
-- [ ] 一致性验证和重试
-- [ ] 端到端测试
-- [ ] 文档和示例
-
----
-
-## 7. 成功指标
-
-- **一致性准确率**: 90%+ 的生成帧通过人工审核
-- **相似度分数**: 平均 0.85+ 的余弦相似度
-- **性能开销**: 特征提取 <3秒，一致性验证 <2秒
-- **用户体验**: 角色库搜索 <500ms，角色应用无感知
-
----
-
-## 8. 风险和应对
-
-| 风险 | 影响 | 应对策略 |
-|------|------|----------|
-| **提示词控制力不足** | 无法保证 100% 一致性 | 结合 image2image 参考图增强 |
-| **特征提取不准确** | 错误的角色描述导致偏差 | 人工审核 + 用户可编辑特征 |
-| **性能开销** | 生成时间增加 | 特征提取异步化，结果缓存 |
-| **向量存储成本** | pgvector 性能瓶颈 | 限制角色库规模，定期清理 |
-
----
-
-## 9. 未来扩展
-
-- **风格迁移**: 保持角色特征，改变艺术风格（写实 → 动漫）
-- **角色动态库**: 记录角色在不同场景的表现，智能推荐最佳生成参数
-- **多角色管理**: 一个场景中同时保持多个角色一致性
-- **角色社区**: 用户分享和交易角色库
-
----
-
-**文档版本**: v1.0  
-**作者**: 超级视频Agent 开发团队  
-**最后更新**: 2026-04-06
+- 💬 问题反馈：[GitHub Issues](https://github.com/your-org/super-video-agent/issues)
+- 📧 联系我们：support@example.com
+- 📖 开发者文档：[API文档](./dev/CHARACTER_SYSTEM_API.md)

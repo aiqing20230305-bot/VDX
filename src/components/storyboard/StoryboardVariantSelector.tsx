@@ -85,6 +85,7 @@ export function StoryboardVariantSelector({ variants, onSelect, selectedId }: Pr
                     alt={variant.name}
                     fill
                     className="object-cover"
+                    unoptimized
                   />
                   {/* 序号标记 */}
                   <div className="absolute top-2 left-2 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-sm font-bold text-cyan-400">
@@ -92,8 +93,9 @@ export function StoryboardVariantSelector({ variants, onSelect, selectedId }: Pr
                   </div>
                 </div>
               ) : (
-                <div className="w-full aspect-video rounded-lg bg-zinc-800 flex items-center justify-center">
+                <div className="w-full aspect-video rounded-lg bg-zinc-800 flex items-center justify-center flex-col gap-2">
                   <Icon className="w-12 h-12 text-zinc-600" />
+                  <span className="text-xs text-zinc-600">预览图生成中...</span>
                 </div>
               )}
 

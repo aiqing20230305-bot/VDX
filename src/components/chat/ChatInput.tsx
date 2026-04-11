@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useCallback } from 'react'
-import { Send, Paperclip, Video, Music, X } from 'lucide-react'
+import { Send, Paperclip, Video, Music, X, Check } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
 export function ChatInput({ onSend, disabled, placeholder }: Props) {
   const [text, setText] = useState('')
   const [files, setFiles] = useState<File[]>([])
+  const [justSent, setJustSent] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
@@ -21,9 +22,15 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
   const handleSend = useCallback(() => {
     const trimmed = text.trim()
     if (!trimmed && files.length === 0) return
+
     onSend(trimmed, files.length > 0 ? files : undefined)
     setText('')
     setFiles([])
+
+    // 成功反馈动画
+    setJustSent(true)
+    setTimeout(() => setJustSent(false), 1000)
+
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
     }
@@ -48,7 +55,18 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
     if (!newFiles) return
     const arr = Array.from(newFiles)
     const maxFiles = type === 'image' ? 10 : 1 // 图片最多10个，视频/音频最多1个
-    setFiles(prev => [...prev, ...arr].slice(0, maxFiles))
+
+    // 文件大小验证
+    const maxSize = type === 'image' ? 10 * 1024 * 1024 : 100 * 1024 * 1024 // 图片10MB，视频/音频100MB
+    const validFiles = arr.filter(file => {
+      if (file.size > maxSize) {
+        alert(`文件 ${file.name} 太大，${type === 'image' ? '图片' : '视频/音频'}最大支持 ${maxSize / 1024 / 1024}MB`)
+        return false
+      }
+      return true
+    })
+
+    setFiles(prev => [...prev, ...validFiles].slice(0, maxFiles))
   }
 
   return (
@@ -59,7 +77,7 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
           {files.map((file, i) => (
             <div
               key={i}
-              className="relative flex items-center gap-2 glass rounded-xl px-3 py-1.5 text-xs text-zinc-200 border border-white/10"
+              className="relative flex items-center gap-2 bg-[var(--bg-tertiary)] rounded-xl px-3 py-1.5 text-xs text-zinc-200 border border-[var(--border-subtle)]"
             >
               <span className="font-medium">{file.name.length > 20 ? file.name.slice(0, 18) + '…' : file.name}</span>
               <button
@@ -75,7 +93,7 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
 
       {/* Input row - Industrial Minimalism v1.8.0 */}
       <div className={cn(
-        'relative flex items-end gap-3 glass rounded-2xl px-4 py-3 border border-white/10',
+        'relative flex items-end gap-3 bg-[var(--bg-tertiary)] rounded-2xl px-4 py-3 border border-[var(--border-subtle)]',
         'focus-within:border-[var(--accent-border)]',
         'transition-smooth',
         disabled && 'opacity-50 pointer-events-none'
@@ -130,40 +148,49 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
         />
 
         {/* Textarea */}
-        <textarea
-          ref={textareaRef}
-          value={text}
-          onChange={handleTextChange}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder ?? '告诉我你想做什么视频…'}
-          rows={1}
-          className={cn(
-            'flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]',
-            'resize-none outline-none leading-relaxed py-1',
-            'min-h-[28px] max-h-[200px]'
+        <div className="flex-1 flex flex-col">
+          <textarea
+            ref={textareaRef}
+            value={text}
+            onChange={handleTextChange}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder ?? '告诉我你想做什么视频…'}
+            rows={1}
+            className={cn(
+              'flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)]',
+              'resize-none outline-none leading-relaxed py-1',
+              'min-h-[28px] max-h-[200px]'
+            )}
+            style={{ fontFamily: 'var(--font-body)' }}
+          />
+          {/* Character count */}
+          {text.length > 0 && (
+            <div className="text-[10px] text-[var(--text-tertiary)] text-right mt-1">
+              {text.length} 字符 {text.length > 500 && '· 建议 50-500 字'}
+            </div>
           )}
-          style={{ fontFamily: 'var(--font-body)' }}
-        />
+        </div>
 
         {/* Send button */}
         <button
           onClick={handleSend}
           disabled={!text.trim() && files.length === 0}
           className={cn(
-            'flex-shrink-0 p-2.5 rounded-xl transition-smooth',
+            'flex-shrink-0 p-2.5 rounded-xl transition-all duration-300',
             (text.trim() || files.length > 0)
               ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-hover)] hover:scale-105 active:scale-95'
-              : 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'
+              : 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed',
+            justSent && 'scale-110 bg-green-500'
           )}
         >
-          <Send size={18} />
+          {justSent ? <Check size={18} /> : <Send size={18} />}
         </button>
       </div>
 
       <p className="text-xs text-[var(--text-tertiary)] text-center font-medium" style={{ fontFamily: 'var(--font-body)' }}>
-        <kbd className="px-2 py-0.5 glass rounded border border-white/10">Enter</kbd> 发送 ·
-        <kbd className="px-2 py-0.5 glass rounded border border-white/10 mx-1">Shift+Enter</kbd> 换行 ·
-        支持上传图片、视频、音频
+        <kbd className="px-2 py-0.5 bg-[var(--bg-tertiary)] rounded border border-[var(--border-subtle)]">Enter</kbd> 发送 ·
+        <kbd className="px-2 py-0.5 bg-[var(--bg-tertiary)] rounded border border-[var(--border-subtle)] mx-1">Shift+Enter</kbd> 换行 ·
+        支持图片（≤10MB）、视频/音频（≤100MB）
       </p>
     </div>
   )

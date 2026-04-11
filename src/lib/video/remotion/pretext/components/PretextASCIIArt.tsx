@@ -6,6 +6,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import { useVideoConfig } from 'remotion'
 import { getDensityChar, generateDensityMap } from '../utils'
 import type { ASCIIArtConfig } from '../types'
+import { logger } from '@/lib/utils/logger'
 
 export interface PretextASCIIArtProps extends ASCIIArtConfig {
   imageUrl: string // 必需
@@ -39,7 +40,7 @@ export const PretextASCIIArt: React.FC<PretextASCIIArtProps> = ({
     generateDensityMap(imageUrl, calcCols, calcRows)
       .then(setDensityMap)
       .catch((err) => {
-        console.error('[PretextASCIIArt] Failed to generate density map:', err)
+        logger.error('[PretextASCIIArt] Failed to generate density map:', err)
       })
   }, [imageUrl, width, height, fontSize, charSpacing])
 

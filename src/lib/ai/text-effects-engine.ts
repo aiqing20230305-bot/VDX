@@ -10,6 +10,9 @@ import type {
   BulletTrack,
 } from '@/types'
 import { v4 as uuid } from 'uuid'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('TextEffectsEngine')
 
 export interface TextEffectsInput {
   storyboard: Storyboard
@@ -126,25 +129,25 @@ export async function addTextEffects(
       `用户请求：${userRequest}`
     )
 
-    console.log('[TextEffects] AI 响应:', response)
+    log.debug('AI response received', { responseLength: response.length })
 
     // 解析 JSON 响应 - 支持多种格式
     let jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/)
     if (jsonMatch) {
       // 匹配 ```json ... ``` 格式
-      console.log('[TextEffects] 使用 JSON 代码块格式')
+      log.debug('Using JSON code block format')
     } else {
       // 匹配普通 JSON 对象
       jsonMatch = response.match(/\{[\s\S]*\}/)
     }
 
     if (!jsonMatch) {
-      console.error('[TextEffects] 无法从响应中提取 JSON')
+      log.error('Failed to extract JSON from response')
       throw new Error('无法解析 AI 响应，请尝试更具体的描述')
     }
 
     const jsonStr = jsonMatch[1] || jsonMatch[0]
-    console.log('[TextEffects] 提取的 JSON:', jsonStr)
+    log.debug('Extracted JSON', { jsonLength: jsonStr.length })
 
     const result = JSON.parse(jsonStr)
 
@@ -188,7 +191,7 @@ export async function addTextEffects(
       summary: result.summary || '已添加文字效果',
     }
   } catch (err) {
-    console.error('[TextEffectsEngine] 处理失败:', err)
+    log.error('Text effects processing failed', err)
 
     // 提供更详细的错误信息
     if (err instanceof SyntaxError) {

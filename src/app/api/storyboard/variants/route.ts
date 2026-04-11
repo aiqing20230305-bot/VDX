@@ -4,6 +4,9 @@ import { buildCompositeStoryboardPrompt } from '@/lib/ai/storyboard-engine'
 import { text2Image, localizeImageUrl } from '@/lib/video/dreamina-image'
 import type { Script, AudioAnalysisResult } from '@/types'
 import type { ProductAnalysis } from '@/lib/ai/product-consistency'
+import { logger } from '@/lib/utils/logger'
+
+const log = logger.context('StoryboardVariantsAPI')
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -26,12 +29,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '脚本数据无效' }, { status: 400 })
     }
 
-    console.log('[Storyboard Variants] 开始生成3个分镜变体...')
+    log.info('Starting storyboard variant generation', { sceneCount: script.scenes.length })
 
     // 1. 生成3个变体（不同镜头语言）
     const variants = await generateStoryboardVariants(script, productAnalysis, audioAnalysis)
 
-    console.log(`[Storyboard Variants] 已生成 ${variants.length} 个变体，正在生成概览图...`)
+    log.info('Generated variants, creating preview images', { variantCount: variants.length })
 
     // 2. 为每个变体生成概览图
     const variantsWithPreview = await Promise.all(
@@ -40,7 +43,10 @@ export async function POST(req: NextRequest) {
           // 生成合成提示词（所有帧的组合）
           const compositePrompt = buildCompositeStoryboardPrompt(variant.storyboard)
 
-          console.log(`[Variant ${index + 1}] 生成概览图: ${compositePrompt.substring(0, 100)}...`)
+          log.debug('Generating preview image for variant', {
+            variantIndex: index + 1,
+            promptPreview: compositePrompt.substring(0, 100),
+          })
 
           // 生成概览图
           const imageUrls = await text2Image({
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest) {
             previewImageUrl: previewUrl,
           }
         } catch (err) {
-          console.error(`[Variant ${index + 1}] 概览图生成失败:`, err)
+          log.error('Preview image generation failed for variant', err, { variantIndex: index + 1 })
           return {
             ...variant,
             previewImageUrl: undefined,
@@ -71,12 +77,12 @@ export async function POST(req: NextRequest) {
       })
     )
 
-    console.log('[Storyboard Variants] 全部完成')
+    log.info('Storyboard variants completed', { variantCount: variantsWithPreview.length })
 
     return NextResponse.json({ variants: variantsWithPreview })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Storyboard variants generation failed'
-    console.error('[Storyboard Variants API]', err)
+    log.error('Storyboard variants generation failed', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

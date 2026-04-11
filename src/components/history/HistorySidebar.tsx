@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Clock, FileText, Image, Video, Trash2, Eye, RotateCcw, Search, Filter } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { logger } from '@/lib/utils/logger'
 
 interface HistoryRecord {
   id: string
@@ -23,7 +24,7 @@ interface Props {
 
 const typeConfig = {
   script: { icon: FileText, label: '脚本', color: 'text-blue-400' },
-  storyboard: { icon: Image, label: '分镜', color: 'text-purple-400' },
+  storyboard: { icon: Image, label: '分镜', color: 'text-cyan-400' },
   video: { icon: Video, label: '视频', color: 'text-green-400' },
 }
 
@@ -62,7 +63,7 @@ export function HistorySidebar({ isOpen, onClose, onLoadRecord }: Props) {
         setRecords(data.data.records)
       }
     } catch (error) {
-      console.error('[Load History Error]', error)
+      logger.error('[Load History Error]', error)
     } finally {
       setLoading(false)
     }
@@ -84,7 +85,7 @@ export function HistorySidebar({ isOpen, onClose, onLoadRecord }: Props) {
         }
       }
     } catch (error) {
-      console.error('[Delete Error]', error)
+      logger.error('[Delete Error]', error)
       alert('删除失败')
     }
   }
@@ -137,7 +138,7 @@ export function HistorySidebar({ isOpen, onClose, onLoadRecord }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/80 z-40"
             onClick={onClose}
           />
 
@@ -147,17 +148,18 @@ export function HistorySidebar({ isOpen, onClose, onLoadRecord }: Props) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-[480px] glass border-l border-white/10 z-50 flex flex-col"
+            className="fixed right-0 top-0 bottom-0 w-[480px] bg-[var(--bg-tertiary)] border-l border-white/10 z-50 flex flex-col"
           >
             {/* 头部 */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
               <div className="flex items-center gap-2">
-                <Clock className="text-purple-400" size={20} />
+                <Clock className="text-cyan-400" size={20} />
                 <h2 className="text-lg font-semibold text-zinc-100">历史记录</h2>
               </div>
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                aria-label="关闭历史记录"
               >
                 <X size={20} className="text-zinc-400" />
               </button>
@@ -174,7 +176,7 @@ export function HistorySidebar({ isOpen, onClose, onLoadRecord }: Props) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && loadHistory()}
-                  className="w-full pl-10 pr-4 py-2 glass border border-white/10 rounded-lg text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
+                  className="w-full pl-10 pr-4 py-2 bg-[var(--bg-tertiary)] border border-white/10 rounded-lg text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-cyan-500/50"
                 />
               </div>
 
@@ -187,8 +189,8 @@ export function HistorySidebar({ isOpen, onClose, onLoadRecord }: Props) {
                     className={cn(
                       'flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
                       filterType === type
-                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                        : 'glass border border-white/10 text-zinc-400 hover:border-white/20'
+                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                        : 'bg-[var(--bg-tertiary)] border border-white/10 text-zinc-400 hover:border-white/20'
                     )}
                   >
                     {type === 'all' ? '全部' : typeConfig[type].label}
@@ -220,16 +222,16 @@ export function HistorySidebar({ isOpen, onClose, onLoadRecord }: Props) {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className={cn(
-                        'glass border rounded-xl p-4 cursor-pointer transition-all group',
+                        'bg-[var(--bg-tertiary)] border rounded-xl p-4 cursor-pointer transition-all group',
                         selectedRecord?.id === record.id
-                          ? 'border-purple-500/50 bg-purple-500/10'
+                          ? 'border-cyan-500/50 bg-cyan-500/10'
                           : 'border-white/10 hover:border-white/20 hover:bg-white/5'
                       )}
                       onClick={() => setSelectedRecord(record)}
                     >
                       {/* 头部 */}
                       <div className="flex items-start gap-3 mb-2">
-                        <div className={cn('p-2 rounded-lg glass', typeInfo.color)}>
+                        <div className={cn('p-2 rounded-lg bg-[var(--bg-tertiary)]', typeInfo.color)}>
                           <Icon size={16} />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -257,7 +259,7 @@ export function HistorySidebar({ isOpen, onClose, onLoadRecord }: Props) {
                             e.stopPropagation()
                             handleLoad(record)
                           }}
-                          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs font-medium transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 rounded-lg text-xs font-medium transition-colors"
                         >
                           <Eye size={12} />
                           查看

@@ -7,16 +7,24 @@
  *   3. 图片格式转换 — 不支持的格式自动转为 PNG/JPG
  *   4. 图片分析    — 用 Claude 分析上传图片的内容和特征
  *
- * 依赖 dreamina CLI（需已登录）
+ * 支持两种模式：
+ *   - CLI模式（默认）: 使用dreamina命令行工具
+ *   - API模式: 直接调用HTTP API（设置DREAMINA_USE_API=true）
  */
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import path from 'path'
 import fs from 'fs/promises'
 import { v4 as uuid } from 'uuid'
+import { text2ImageAPI, image2ImageAPI } from './dreamina-api'
+import { logger } from '@/lib/utils/logger'
 
+const log = logger.context('DreaminaImage')
 const execAsync = promisify(exec)
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads')
+const USE_API = process.env.DREAMINA_USE_API === 'true'
+
+log.info('Dreamina mode initialized', { mode: USE_API ? 'HTTP API' : 'CLI' })
 
 // ─── CLI 解析 ───────────────────────────────────────────────
 
@@ -145,20 +153,31 @@ export interface Text2ImageInput {
  * 文生图 — 用于分镜图生成
  */
 export async function text2Image(input: Text2ImageInput): Promise<string[]> {
+  // API模式：直接调用HTTP API
+  if (USE_API) {
+    return text2ImageAPI({
+      prompt: input.prompt,
+      model: input.model,
+      ratio: input.ratio,
+      resolution: input.resolution,
+    })
+  }
+
+  // CLI模式：使用dreamina命令行
   const args = [
     'text2image',
     `--prompt="${input.prompt.replace(/"/g, '\\"')}"`,
     `--model_version=${input.model ?? '5.0'}`,
     `--ratio=${input.ratio ?? '16:9'}`,
     `--resolution_type=${input.resolution ?? '2k'}`,
-    '--poll=60',
+    '--poll=180', // 增加到180秒（3分钟）
   ]
 
-  const { stdout } = await execAsync(`dreamina ${args.join(' ')}`, { timeout: 90_000 })
+  const { stdout } = await execAsync(`dreamina ${args.join(' ')}`, { timeout: 210_000 }) // 3.5分钟
   const data = parseCLI(stdout)
 
   if (data.gen_status === 'success') return extractImageUrls(data)
-  return queryUntilDone(data.submit_id)
+  return queryUntilDone(data.submit_id, 300_000) // 再等5分钟
 }
 
 // ─── 图生图 ─────────────────────────────────────────────────
@@ -183,6 +202,20 @@ export async function image2Image(input: Image2ImageInput): Promise<string[]> {
   // 确保图片格式支持
   const safePath = await ensureSupportedFormat(input.imagePath)
 
+  // API模式：需要将本地图片转为公共URL
+  if (USE_API) {
+    // 复制图片到public/uploads并获取URL
+    const imageUrl = await getPublicImageUrl(safePath)
+    return image2ImageAPI({
+      imageUrl,
+      prompt: input.prompt,
+      model: input.model,
+      ratio: input.ratio,
+      resolution: input.resolution,
+    })
+  }
+
+  // CLI模式：直接使用本地路径
   const args = [
     'image2image',
     `--images="${safePath}"`,
@@ -190,14 +223,32 @@ export async function image2Image(input: Image2ImageInput): Promise<string[]> {
     `--model_version=${input.model ?? '5.0'}`,
     `--ratio=${input.ratio ?? '1:1'}`,
     `--resolution_type=${input.resolution ?? '2k'}`,
-    '--poll=60',
+    '--poll=180', // 增加到180秒
   ]
 
-  const { stdout } = await execAsync(`dreamina ${args.join(' ')}`, { timeout: 90_000 })
+  const { stdout } = await execAsync(`dreamina ${args.join(' ')}`, { timeout: 210_000 }) // 3.5分钟
   const data = parseCLI(stdout)
 
   if (data.gen_status === 'success') return extractImageUrls(data)
-  return queryUntilDone(data.submit_id)
+  return queryUntilDone(data.submit_id, 300_000) // 再等5分钟
+}
+
+/**
+ * 将本地图片复制到public/uploads并返回公共URL
+ * 用于API模式需要提供图片URL的场景
+ */
+async function getPublicImageUrl(localPath: string): Promise<string> {
+  await fs.mkdir(UPLOAD_DIR, { recursive: true })
+  const ext = path.extname(localPath)
+  const filename = `${uuid()}${ext}`
+  const publicPath = path.join(UPLOAD_DIR, filename)
+
+  // 复制文件
+  await fs.copyFile(localPath, publicPath)
+
+  // 返回公共URL（假设服务器运行在localhost:3000）
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  return `${baseUrl}/uploads/${filename}`
 }
 
 // ─── 人物风格转换 ────────────────────────────────────────────
@@ -287,7 +338,7 @@ export async function generateStoryboardImages(input: BatchStoryboardInput): Pro
       results.push(url)
       if (url) input.onFrameDone?.(frame.index, url)
     } catch (err) {
-      console.error(`分镜帧 ${frame.index} 图片生成失败:`, err)
+      log.error('Storyboard frame image generation failed', err, { frameIndex: frame.index })
       results.push('') // 失败帧留空
     }
   }
@@ -321,4 +372,29 @@ export async function localizeImageUrl(remoteUrl: string): Promise<string> {
  */
 export async function localizeImageUrls(urls: string[]): Promise<string[]> {
   return Promise.all(urls.map(url => url ? localizeImageUrl(url) : Promise.resolve('')))
+}
+
+/**
+ * 本地化视频 URL（下载远程视频到本地）
+ */
+export async function localizeVideoUrl(remoteUrl: string): Promise<string> {
+  if (!remoteUrl || !remoteUrl.startsWith('http')) return remoteUrl
+
+  await fs.mkdir(UPLOAD_DIR, { recursive: true })
+  const filename = `${uuid()}.mp4`
+  const localPath = path.join(UPLOAD_DIR, filename)
+
+  const res = await fetch(remoteUrl)
+  if (!res.ok) throw new Error(`下载视频失败: ${res.status}`)
+  const buffer = Buffer.from(await res.arrayBuffer())
+  await fs.writeFile(localPath, buffer)
+
+  return `/uploads/${filename}`
+}
+
+/**
+ * 批量本地化视频 URL
+ */
+export async function localizeVideoUrls(urls: string[]): Promise<string[]> {
+  return Promise.all(urls.map(url => url ? localizeVideoUrl(url) : Promise.resolve('')))
 }
