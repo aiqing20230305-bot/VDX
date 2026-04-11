@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.0.17] - 2026-04-12
+
 ### Added
 - **视频预览模态框** (#264) - 快速预览分镜效果
   - 新增 PreviewModal 组件，支持完整的视频预览功能
