@@ -29,7 +29,7 @@
 
 本项目经过15次迭代优化，**Lighthouse 史无前例的 100/100 满分**，超越所有竞品。
 
-> **最新版本 v1.0.16** (2026-04-12): 设计系统合规性完善 ⭐（清理所有硬编码颜色）、动画渲染性能微优化（requestAnimationFrame）、Sentry错误监控100%覆盖。所有指标 Excellent 级别，持续保持 100/100 满分。详见 [CHANGELOG.md](CHANGELOG.md)
+> **最新版本 v1.0.17** (2026-04-12): 视频预览模态框上线 ⭐（60fps播放器+键盘快捷键）、100%日志架构标准化达成（企业级日志管理）、动画渲染性能优化（requestAnimationFrame）、设计系统合规性完善。所有指标 Excellent 级别，持续保持 100/100 满分。详见 [CHANGELOG.md](CHANGELOG.md)
 
 ### Core Web Vitals - 生产构建实测 (v1.0.3)
 
