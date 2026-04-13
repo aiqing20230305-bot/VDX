@@ -5,6 +5,7 @@
  * 用于测试工作流执行和 Block 系统
  */
 import { useState, useEffect } from 'react'
+import { logger } from '@/lib/utils/logger'
 
 interface Template {
   id: string
@@ -41,7 +42,7 @@ export default function TestBlocksPage() {
     fetch('/api/workflow/templates')
       .then(res => res.json())
       .then(data => setTemplates(data.templates || []))
-      .catch(err => console.error('Failed to load templates:', err))
+      .catch(err => logger.error('Failed to load templates:', err))
   }, [])
 
   // 加载 Blocks 列表
@@ -49,7 +50,7 @@ export default function TestBlocksPage() {
     fetch('/api/blocks/list')
       .then(res => res.json())
       .then(data => setBlocks(data.blocks || []))
-      .catch(err => console.error('Failed to load blocks:', err))
+      .catch(err => logger.error('Failed to load blocks:', err))
   }, [])
 
   // 执行工作流
