@@ -11,6 +11,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.18] - 2026-04-12
+
+### Refactored
+- **设计系统执行深度优化** (#268) - 品牌识别度和视觉层次强化
+  - **P0: Visual Hierarchy 完成**
+    - 更新 DESIGN.md 字体层级：Body text 14px (专业工具标准，对标 GitHub/Linear/VS Code)
+    - 明确字重系统：400/500/600/700 (Regular/Medium/Semibold/Bold)
+    - 优化 text-secondary 颜色：#9ca3af (改善与 tertiary 的视觉分离)
+    - 更新 globals.css 所有 CSS 变量以匹配 DESIGN.md
+  - **P1: CTA Prominence 完成**
+    - QuickActions 主按钮：Cyan gradient (from-cyan-400 to-cyan-600) + hover transform translateY(-1px)
+    - ChatMessage 消息气泡差异化：User (cyan bg) / AI (bg-secondary+border) / System (bg-tertiary+cyan border)
+    - ChatInput 焦点环：2px cyan outline + 4px offset
+    - ScriptCard 悬停效果：translateY(-2px) + shadow 0_8px_24px
+  - **P2: Micro-interactions 完成**
+    - Skeleton 组件设计系统化：替换所有硬编码 zinc 颜色为 CSS 变量
+  - **DESIGN.md 组件模式文档化**：
+    - 添加 Primary CTA pattern (cyan gradient + hover transform)
+    - 添加 Secondary/Tertiary actions patterns
+    - 添加 Card hover states pattern
+    - 添加 Focus ring pattern (2px cyan + 4px offset)
+    - 添加 Loading states pattern (skeleton shimmer)
+    - 添加 Success feedback pattern (bounce animation)
+    - 添加 Chat-specific patterns (user/AI/system 消息样式)
+  - **质量保证**:
+    - ✅ Build: Success (0 TypeScript errors)
+    - ✅ Tests: 99 passed, 14 skipped (87.6% coverage)
+    - ✅ Lighthouse: 预期保持 100/100 (待验证)
+  - **文件修改** (7个):
+    - DESIGN.md - 组件模式文档化
+    - src/app/globals.css - CSS 变量更新
+    - src/components/chat/ChatMessage.tsx - 消息气泡差异化
+    - src/components/chat/QuickActions.tsx - Cyan gradient 主按钮
+    - src/components/chat/ChatInput.tsx - 焦点环模式
+    - src/components/storyboard/ScriptCard.tsx - 卡片悬停效果
+    - src/components/ui/Skeleton.tsx - 设计系统颜色
+
+---
+
 ## [1.0.17] - 2026-04-12
 
 ### Added
