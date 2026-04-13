@@ -11,6 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.20] - 2026-04-13
+
+### Changed
+- **Sentry配置现代化** (#274) - 迁移到instrumentation-client.ts
+  - 创建新的 `instrumentation-client.ts` 文件，符合Next.js最新最佳实践
+  - 添加 `onRouterTransitionStart` 钩子函数，追踪客户端路由导航性能
+  - 删除旧的 `sentry.client.config.ts` 文件
+  - 修复构建时的deprecation警告："[Sentry] It is recommended renaming your sentry.client.config.ts file"
+  - 确保Turbopack兼容性（Turbopack将不再支持旧的命名方式）
+
+### Technical Details
+- **迁移动机**: Next.js 和 Sentry 推荐使用 `instrumentation-client.ts` 替代 `sentry.client.config.ts`
+- **新增功能**: 路由导航性能追踪（`captureRouterTransitionStart`）
+- **文件变更**:
+  - ➕ `instrumentation-client.ts` (新增)
+  - ➖ `sentry.client.config.ts` (删除)
+- **验证通过**:
+  - ✅ 构建无 deprecation 警告
+  - ✅ 构建无 "ACTION REQUIRED" 警告
+  - ✅ TypeScript: 0 errors
+  - ✅ Tests: 99/99 passed
+
+### Quality Metrics
+- ✅ Lighthouse: 100/100（保持满分）
+- ✅ Security: 0 Critical vulnerabilities
+- ✅ Tests: 99/99 passed (100%)
+- ✅ TypeScript: 0 errors
+- ✅ Build: Success with 0 warnings
+
+---
+
 ## [1.0.19] - 2026-04-13
 
 ### Fixed
