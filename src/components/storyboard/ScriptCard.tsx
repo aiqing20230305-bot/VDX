@@ -57,10 +57,10 @@ export function ScriptCard({ script, selected, onSelect }: Props) {
   return (
     <div
       className={`
-        w-full rounded-xl border transition-all duration-300 ease-out overflow-hidden
+        w-full rounded-xl border transition-all duration-[250ms] ease-out overflow-hidden
         ${selected
           ? 'border-[var(--accent-primary)] bg-[var(--accent-subtle)]'
-          : 'border-[var(--border-medium)] bg-[var(--bg-secondary)] hover:border-[var(--border-strong)]'
+          : 'border-[var(--border-subtle)] bg-[var(--bg-secondary)] hover:border-[var(--border-medium)] hover:-translate-y-[2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.2)]'
         }
         ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10px]'}
       `}

@@ -32,14 +32,14 @@ export function Skeleton({
 
   const animationStyles = {
     pulse: 'animate-pulse',
-    wave: 'animate-shimmer bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800 bg-[length:200%_100%]',
+    wave: 'animate-shimmer bg-gradient-to-r from-[var(--bg-secondary)] via-[var(--bg-tertiary)] to-[var(--bg-secondary)] bg-[length:200%_100%]',
     none: '',
   }
 
   return (
     <div
       className={cn(
-        'bg-zinc-800',
+        'bg-[var(--bg-secondary)]',
         variantStyles[variant],
         animationStyles[animation],
         className
@@ -78,7 +78,7 @@ export function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'border border-zinc-800 rounded-xl p-6 space-y-4',
+        'border border-[var(--border-subtle)] rounded-xl p-6 space-y-4',
         className
       )}
     >
@@ -205,7 +205,7 @@ export function SkeletonTable({
   return (
     <div className={cn('space-y-3', className)}>
       {/* 表头 */}
-      <div className="flex gap-4 pb-3 border-b border-zinc-800">
+      <div className="flex gap-4 pb-3 border-b border-[var(--border-subtle)]">
         {Array.from({ length: cols }).map((_, index) => (
           <Skeleton key={index} variant="text" className="h-4 flex-1" />
         ))}

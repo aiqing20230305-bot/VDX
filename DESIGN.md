@@ -13,25 +13,32 @@
 - **Reference sites:** Linear (clean dark UI), GitHub Dark Theme (information density), Adobe Premiere (professional tool aesthetic)
 
 ## Typography
-- **Display/Hero:** Instrument Serif Bold — Elegant serif for branding. Professional, memorable, breaks from geometric sans trend. Differentiates from "AI startup" look.
-- **Body:** DM Sans (keep existing) — Clean, readable, has tabular-nums for data tables, excellent for long reading sessions
-- **UI/Labels:** DM Sans — Same as body for consistency
+- **Display/Hero:** Instrument Serif Bold (32-42px, 700 weight) — Elegant serif for branding. Professional, memorable, breaks from geometric sans trend. Differentiates from "AI startup" look.
+- **Body:** DM Sans 14px (400 weight) — Clean, readable, data-dense for professional tools. Has tabular-nums for data tables.
+- **UI/Labels:** DM Sans 12px (400 weight) — Same as body for consistency
+- **Primary Actions:** DM Sans 16-18px (600 weight) — Semibold for CTA buttons and key actions
 - **Data/Tables:** DM Sans (tabular-nums variant) or JetBrains Mono — Both support monospaced numerals for data alignment
 - **Code:** JetBrains Mono (keep existing) — Best monospace for technical content
 - **Loading:** 
   - Instrument Serif: `@import url('https://fonts.cdnfonts.com/css/instrument-serif');`
   - DM Sans: `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');`
   - JetBrains Mono: `@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');`
-- **Scale:** 
-  - xs: 12px / 0.75rem
-  - sm: 14px / 0.875rem (body text, UI labels)
-  - base: 16px / 1rem
-  - lg: 18px / 1.125rem
-  - xl: 20px / 1.25rem
-  - 2xl: 24px / 1.5rem
-  - 3xl: 32px / 2rem
+- **Scale (Updated for better hierarchy):** 
+  - xs: 11px / 0.6875rem
+  - sm: 12px / 0.75rem (UI labels, tertiary text)
+  - base: 14px / 0.875rem (body text - professional tool standard)
+  - md: 16px / 1rem (primary actions, emphasized text)
+  - lg: 18px / 1.125rem (section headings, primary CTAs)
+  - xl: 20px / 1.25rem (page titles)
+  - 2xl: 24px / 1.5rem (major headings)
+  - 3xl: 32px / 2rem (hero text)
   - 4xl: 42px / 2.625rem (display headings)
-  - 5xl: 48px / 3rem (hero/logo)
+  - 5xl: 48px / 3rem (brand logo)
+- **Weight System:**
+  - 400 (Regular): Body text, labels
+  - 500 (Medium): Emphasis, active states
+  - 600 (Semibold): Primary actions, CTAs, section headings
+  - 700 (Bold): Hero text, display headings, brand elements
 
 ## Color
 - **Approach:** Restrained (1 accent + neutrals, color is rare and meaningful)
@@ -43,9 +50,9 @@
   - Tertiary: `#1a1a24` (keep existing)
   - Elevated: `#1f1f2a`
 - **Neutrals:** 
-  - Text Primary: `#f5f5f7` (high contrast white)
-  - Text Secondary: `#a1a1aa` (mid gray)
-  - Text Tertiary: `#71717a` (muted gray)
+  - Text Primary: `#f5f5f7` (high contrast white - WCAG AAA)
+  - Text Secondary: `#9ca3af` (mid gray - improved separation from tertiary)
+  - Text Tertiary: `#71717a` (muted gray - for truly de-emphasized content)
 - **Borders:**
   - Subtle: `rgba(255, 255, 255, 0.08)`
   - Medium: `rgba(255, 255, 255, 0.12)`
@@ -90,11 +97,206 @@
   - enter: ease-out (elements appearing)
   - exit: ease-in (elements disappearing)
   - move: ease-in-out (position changes)
+  - bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55) (success feedback only)
 - **Duration:** 
-  - micro: 150ms (hover, focus states)
-  - short: 250ms (panel transitions, modals)
-  - medium: 400ms (not recommended - prefer short)
-  - long: 600ms+ (avoid - too slow for professional tool)
+  - micro: 100ms (icon scales, subtle highlights)
+  - short: 150ms (hover, focus states)
+  - medium: 250ms (panel transitions, modals)
+  - long: 400ms (success animations with bounce)
+  - avoid: 600ms+ (too slow for professional tool)
+
+## Component Patterns
+
+### Primary CTA (Call-to-Action)
+**Visual treatment:**
+```css
+.btn-primary {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(6, 182, 212, 0.3);
+  transition: all 150ms ease-out;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(6, 182, 212, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(6, 182, 212, 0.3);
+}
+```
+
+**Rationale:** Subtle cyan gradient signals "primary action" without AI-purple-blob cliché. Transform+shadow on hover makes it feel responsive and premium (Linear/Figma pattern).
+
+### Secondary Actions
+```css
+.btn-secondary {
+  background: transparent;
+  color: #06b6d4;
+  border: 1.5px solid #06b6d4;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 150ms ease-out;
+}
+
+.btn-secondary:hover {
+  background: rgba(6, 182, 212, 0.1);
+  border-color: #0891b2;
+}
+```
+
+### Card Hover States
+```css
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 250ms ease-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: var(--border-medium);
+}
+```
+
+### Focus States (Accessibility)
+```css
+.focusable:focus {
+  outline: 2px solid #06b6d4;
+  outline-offset: 4px;
+}
+
+.focusable:focus:not(:focus-visible) {
+  outline: none;
+}
+```
+
+**Rationale:** Cyan outline with offset is visible against dark backgrounds. `:focus-visible` respects user preference for keyboard navigation vs mouse.
+
+### Loading States
+- **Skeleton screens** (not spinners) for content placeholders
+- **Shimmer effect:**
+  ```css
+  @keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: 200px 0; }
+  }
+  
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--bg-secondary) 0%,
+      var(--bg-tertiary) 50%,
+      var(--bg-secondary) 100%
+    );
+    background-size: 200px 100%;
+    animation: shimmer 1.5s infinite linear;
+  }
+  ```
+
+### Success Feedback
+```css
+.success-icon {
+  animation: success-bounce 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes success-bounce {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+```
+
+## Chat-Specific Patterns
+
+### Message Bubbles
+**User messages:**
+```css
+.message-user {
+  background: #06b6d4;
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 12px 12px 4px 12px;
+  font-size: 14px;
+  max-width: 80%;
+  margin-left: auto;
+}
+```
+
+**AI messages:**
+```css
+.message-ai {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  padding: 12px 16px;
+  border-radius: 12px 12px 12px 4px;
+  font-size: 14px;
+  max-width: 80%;
+  margin-right: auto;
+}
+```
+
+**System messages:**
+```css
+.message-system {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-left: 4px solid #06b6d4;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-system-icon {
+  color: #06b6d4;
+  flex-shrink: 0;
+}
+```
+
+### Chat Input Area
+```css
+.chat-input-container {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-medium);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  resize: none;
+  outline: none;
+}
+
+.chat-send-btn {
+  /* Use Primary CTA styles */
+  flex-shrink: 0;
+}
+```
+
+**Rationale:** Elevated background makes input area feel "above" the conversation. Cyan send button is unmissable.
 
 ## Anti-Patterns (DO NOT USE)
 - ❌ Glass morphism (backdrop-filter blur)
@@ -150,7 +352,7 @@ Professionals generating dozens of videos daily need efficiency:
 
   /* Colors - Text */
   --text-primary: #f5f5f7;
-  --text-secondary: #a1a1aa;
+  --text-secondary: #9ca3af;
   --text-tertiary: #71717a;
 
   /* Colors - Accent (Cyan) */
@@ -170,10 +372,28 @@ Professionals generating dozens of videos daily need efficiency:
   --border-medium: rgba(255, 255, 255, 0.12);
   --border-strong: rgba(255, 255, 255, 0.18);
 
-  /* Typography */
+  /* Typography - Families */
   --font-display: 'Instrument Serif', Georgia, serif;
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+  
+  /* Typography - Sizes (updated hierarchy) */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 42px;
+  --text-5xl: 48px;
+  
+  /* Typography - Weights */
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
 
   /* Spacing (8px base) */
   --space-xs: 8px;
@@ -205,6 +425,13 @@ Professionals generating dozens of videos daily need efficiency:
 | 2026-04-06 | High information density | Respect professional users' expertise, faster workflows |
 | 2026-04-06 | Industrial minimalism aesthetic | Function over decoration, matches Adobe/Linear/GitHub Dark |
 | 2026-04-06 | Initial design system created | Created by /design-consultation based on product context |
+| 2026-04-13 | Body text 14px (was 16px) | Professional tool standard (GitHub/Linear/VS Code use 13-14px for density) |
+| 2026-04-13 | Secondary text #9ca3af (was #a1a1aa) | Improve visual separation between secondary and tertiary text |
+| 2026-04-13 | Primary CTA with subtle gradient | Cyan-to-darker-cyan gradient + shadow + hover transform (Figma/Linear pattern) |
+| 2026-04-13 | Explicit focus ring pattern | 2px cyan outline + 4px offset for accessibility |
+| 2026-04-13 | Chat bubble differentiation | User=cyan bg, AI=secondary bg+border, System=tertiary+cyan left border |
+| 2026-04-13 | Card hover transforms | translateY(-2px) + shadow (makes interactive elements obvious) |
+| 2026-04-13 | Component pattern codification | Document exact CSS for CTAs, cards, focus states, loading, chat
 
 ## Implementation Priority
 

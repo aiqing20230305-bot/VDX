@@ -74,28 +74,26 @@ export function ChatMessage({ message, onAction, hideActions = false }: Props) {
           </div>
         )}
 
-        {/* Text bubble - UX Optimized v2.1 */}
+        {/* Text bubble - Industrial Minimalism v2.2 (Task #268) */}
         {message.content && !message.streaming && (
           <div
             className={cn(
-              'group text-sm leading-relaxed whitespace-pre-wrap transition-all duration-[150ms] ease-out',
-              // User message: compact, right-aligned, cyan left border
-              !isAssistant && 'bg-[var(--bg-secondary)] border-l-2 border-[var(--accent-primary)] px-4 py-3 rounded-lg',
-              // AI message (system guidance): ENHANCED v2.1 - Task #237: 更强视觉效果
-              isSystemGuidance && isAssistant && 'w-full bg-[rgba(6,182,212,0.15)] border-l-[6px] border-[var(--accent-primary)] border-t border-r border-b border-[rgba(6,182,212,0.25)] px-6 py-4 rounded-lg flex items-start gap-4 shadow-[0_0_20px_rgba(6,182,212,0.2)] animate-pulse-subtle',
-              // AI message (regular): full-width, light cyan bg
-              !isSystemGuidance && isAssistant && 'w-full bg-[rgba(6,182,212,0.05)] border border-[rgba(6,182,212,0.1)] px-5 py-3 rounded-lg hover:border-[rgba(6,182,212,0.2)]',
+              'group leading-relaxed whitespace-pre-wrap transition-all duration-[150ms] ease-out',
+              // Font size: 14px body text (professional tool standard)
+              'text-[var(--text-base)]',
+              // User message: cyan background, white text, rounded 12px 12px 4px 12px
+              !isAssistant && 'bg-cyan-400 text-white px-4 py-3 rounded-[12px_12px_4px_12px] max-w-[80%]',
+              // System guidance: bg-tertiary + 4px cyan left border + rounded 4px
+              isSystemGuidance && isAssistant && 'w-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] border-l-4 border-cyan-400 px-4 py-3 rounded-[4px] flex items-start gap-3',
+              // AI message (regular): bg-secondary + subtle border + rounded 12px 12px 12px 4px
+              !isSystemGuidance && isAssistant && 'w-full bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-medium)] px-4 py-3 rounded-[12px_12px_12px_4px] hover:border-[var(--accent-border)] transition-colors',
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[5px]'
             )}
             style={{ fontFamily: 'var(--font-body)' }}
           >
             {isSystemGuidance && isAssistant && (
-              <div className="relative flex-shrink-0 mt-0.5">
-                <Lightbulb className="w-6 h-6 text-[var(--accent-primary)] relative z-10" />
-                {/* Breathing glow effect */}
-                <div className="absolute inset-0 animate-ping opacity-20">
-                  <Lightbulb className="w-6 h-6 text-[var(--accent-primary)]" />
-                </div>
+              <div className="flex-shrink-0 mt-0.5">
+                <Lightbulb className="w-5 h-5 text-cyan-400" />
               </div>
             )}
             <div className="flex-1">

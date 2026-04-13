@@ -91,11 +91,11 @@ export function ChatInput({ onSend, disabled, placeholder }: Props) {
         </div>
       )}
 
-      {/* Input row - Industrial Minimalism v1.8.0 */}
+      {/* Input row - Industrial Minimalism v2.2 (Task #268) */}
       <div className={cn(
-        'relative flex items-end gap-3 bg-[var(--bg-tertiary)] rounded-2xl px-4 py-3 border border-[var(--border-subtle)]',
-        'focus-within:border-[var(--accent-border)]',
-        'transition-smooth',
+        'relative flex items-end gap-3 bg-[var(--bg-tertiary)] rounded-lg px-4 py-3 border border-[var(--border-subtle)]',
+        'focus-within:border-cyan-400 focus-within:outline focus-within:outline-2 focus-within:outline-cyan-400 focus-within:outline-offset-4',
+        'transition-all duration-[150ms] ease-out',
         disabled && 'opacity-50 pointer-events-none'
       )}>
         {/* Attach image */}

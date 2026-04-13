@@ -37,16 +37,16 @@ export function QuickActions({ actions, onAction }: Props) {
             'group relative flex items-center gap-2', // 新增：支持图标和tooltip
             'px-5 py-3', // px-3 py-1.5 → px-5 py-3 (增大点击区域)
             'min-h-[44px]', // 新增：确保触摸友好 (WCAG 2.1 AA)
-            'rounded-xl font-medium text-sm',
-            'transition-all duration-200 ease-out',
-            'hover:scale-[1.02] active:scale-[0.98]', // 微调：hover效果更subtle
+            'rounded-lg font-semibold text-base', // Updated: rounded-xl→lg, font-medium→semibold, text-sm→base (16px)
+            'transition-all duration-[150ms] ease-out', // Updated: 200ms→150ms (--transition-short)
+            'active:scale-[0.98]',
             'cursor-pointer',
-            // Primary 样式（增强）
+            // Primary 样式（Task #268: Cyan gradient + hover transform）
             action.variant === 'primary' && [
-              'bg-[var(--accent-primary)] text-white',
-              'hover:bg-[var(--accent-hover)]',
-              'shadow-[0_4px_12px_rgba(6,182,212,0.25)]', // 新增：默认阴影
-              'hover:shadow-[0_6px_16px_rgba(6,182,212,0.35)]', // 增强：hover阴影
+              'bg-gradient-to-br from-cyan-400 to-cyan-600 text-white',
+              'shadow-[0_1px_2px_rgba(6,182,212,0.3)]',
+              'hover:shadow-[0_4px_8px_rgba(6,182,212,0.4)]',
+              'hover:-translate-y-[1px]', // Lift effect on hover
             ],
             // Secondary 样式
             action.variant === 'secondary' && [
